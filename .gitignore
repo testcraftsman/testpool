@@ -1,0 +1,10 @@
+*.pyc
+*~
+.#*
+#*
+.cache
+build
+dist
+*.egg-info
+*.swp
+http/static

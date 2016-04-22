@@ -1,6 +1,7 @@
 import unittest
 import libvirt
 import logging
+from testpool.libexec import kvm
 
 TEST_HOST="192.168.0.27"
 
@@ -13,6 +14,15 @@ def request_cred(credentials, user_data):
     return 0
 
 class Testsuite(unittest.TestCase):
+
+    def test_clone(self):
+        """ test clone """
+
+        fmt = "qemu+ssh://mhamilton@%s/system"
+        connect = fmt % TEST_HOST
+        kvm.destroy(connect, "kvm10")
+        kvm.clone(connect, "template", "kvm10")
+
     def test_info(self):
         """ test_info """
         fmt = "qemu+ssh://mhamilton@%s/system"
@@ -38,7 +48,6 @@ class Testsuite(unittest.TestCase):
             print "Active: Info: ", dom.info()
 
     def btest_auth(self):
-
         fmt = "qemu+tcp://%s/system"
         cmd = fmt % TEST_HOST
         auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE],
