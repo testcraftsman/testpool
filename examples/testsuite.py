@@ -20,8 +20,8 @@ class Testsuite(unittest.TestCase):
 
         fmt = "qemu+ssh://mhamilton@%s/system"
         connect = fmt % TEST_HOST
-        kvm.destroy(connect, "kvm10")
-        kvm.clone(connect, "template", "kvm10")
+        #kvm.destroy(connect, "kvm10")
+        kvm.clone(connect, "template", "template.ubuntu1404")
 
     def test_info(self):
         """ test_info """
