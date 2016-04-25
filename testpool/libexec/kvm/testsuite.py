@@ -20,8 +20,25 @@ class Testsuite(unittest.TestCase):
 
         fmt = "qemu+ssh://mhamilton@%s/system"
         connect = fmt % TEST_HOST
-        #kvm.destroy(connect, "kvm10")
-        kvm.clone(connect, "template", "template.ubuntu1404")
+        hv1 = kvm.api.vmpool_get(connect)
+
+        for item in range(5):
+            vm_name = "pool.ubuntu1404.%d" % item
+            try:
+                hv1.destroy(vm_name)
+            except Exception:
+                continue
+
+        pool = [item for item in hv1.conn.listAllDomains()]
+        pool = [item.name() for item in pool]
+        pool = [item for item in pool if item.startswith("pool.ubuntu1404")]
+        print "MARK", pool
+        for item in range(5):
+            vm_name = "pool.ubuntu1404.%d" % item
+            if vm_name not in pool:
+                logging.debug("creating %s", vm_name)
+                hv1.clone("template.ubuntu1404", vm_name)
+                hv1.start(vm_name)
 
     def test_info(self):
         """ test_info """
