@@ -25,6 +25,7 @@ class Testsuite(unittest.TestCase):
         for item in range(5):
             vm_name = "pool.ubuntu1404.%d" % item
             try:
+                hv1.clone("template.ubuntu1404", vm_name)
                 hv1.destroy(vm_name)
             except Exception:
                 continue
@@ -39,7 +40,7 @@ class Testsuite(unittest.TestCase):
                 hv1.clone("template.ubuntu1404", vm_name)
                 hv1.start(vm_name)
 
-    def test_info(self):
+    def btest_info(self):
         """ test_info """
         fmt = "qemu+ssh://mhamilton@%s/system"
         cmd = fmt % TEST_HOST
@@ -49,7 +50,7 @@ class Testsuite(unittest.TestCase):
         self.assertTrue(hndl.getInfo())
         self.assertTrue(hndl.getHostname())
 
-    def test_storage(self):
+    def btest_storage(self):
         """ test_storage """
         fmt = "qemu+ssh://mhamilton@%s/system"
         cmd = fmt % TEST_HOST

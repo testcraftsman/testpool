@@ -2,6 +2,7 @@ import sys
 import logging
 import virtinst.CloneManager as clmgr
 import urlgrabber.progress as progress
+from xml.etree import ElementTree
 
 import optparse
 from optparse import OptionGroup
@@ -76,21 +77,28 @@ class VMPool(object):
         """ Destroy VM.
         Shutdown the VM if necessary.
         """
-
+        print "MARK: destroy api"
         logging.debug("vm_destroy VM %s" % vm_name)
+
         vm_hndl = self.conn.lookupByName(vm_name)
+        print "MARK: api 2"
         vm_info = vm_hndl.info()
         if vm_info[0] != 5:
             vm_hndl.shutdown()
 
+        print "MARK: what"
         vm_xml = vm_hndl.XMLDesc(0)
         pool = self.conn.storagePoolLookupByName("default")
-        vm_vol = pool.createXML(vm_xml, 0)
-
+        print "MARK: vol", pool
+        root = ElementTree.fromstring(vm_xml)
+        disk_source = root.find("./devices/disk/source")
+        volume_in_use = disk_source.get("file")
+        print "MARK: storage", volume_in_use
         vm_hndl.undefine()
 
-        vm_vol.wipe(0)
-        vm_vol.delete(0)
+        #vm_vol = pool.createXML(vm_xml, 0)
+        #vm_vol.wipe(0)
+        #vm_vol.delete(0)
 
 
     ### Let's do it!
