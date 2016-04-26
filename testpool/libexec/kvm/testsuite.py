@@ -32,7 +32,6 @@ class Testsuite(unittest.TestCase):
         pool = [item for item in hv1.conn.listAllDomains()]
         pool = [item.name() for item in pool]
         pool = [item for item in pool if item.startswith("pool.ubuntu1404")]
-        print "MARK", pool
         for item in range(5):
             vm_name = "pool.ubuntu1404.%d" % item
             if vm_name not in pool:

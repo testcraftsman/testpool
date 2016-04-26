@@ -84,9 +84,14 @@ class VMPool(object):
             vm_hndl.shutdown()
 
         vm_xml = vm_hndl.XMLDesc(0)
+        pool = self.conn.storagePoolLookupByName("default")
+        vm_vol = pool.createXML(vm_xml, 0)
+
         vm_hndl.undefine()
 
-        pool = self.conn.storagePoolLookupByName("default")
+        vm_vol.wipe(0)
+        vm_vol.delete(0)
+
 
     ### Let's do it!
     def clone(self, orig_name, new_name):
