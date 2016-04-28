@@ -32,7 +32,6 @@ class Testsuite(unittest.TestCase):
             except libvirt.libvirtError:
                 continue
             except Exception, arg:
-                print "MARK: caught"
                 logging.exception(arg)
 
         pool = [item for item in hv1.conn.listAllDomains()]
@@ -108,7 +107,6 @@ class Testsuite(unittest.TestCase):
 
         vm_name = "pool.ubuntu1404.create"
         try:
-            print "MARK: clone"
             logging.info("%s: cloning", vm_name)
             hv1.clone("template.ubuntu1404", vm_name)
             hv1.start(vm_name)
@@ -116,15 +114,12 @@ class Testsuite(unittest.TestCase):
             pass
 
         try:
-            print "MARK: clone"
-
             logging.info("%s: cloning", vm_name)
             hv1.clone("template.ubuntu1404", vm_name)
             hv1.start(vm_name)
         except ValueError:
             pass
 
-        print "MARK: destroy"
         hv1.destroy(vm_name)
 
         try:
@@ -133,8 +128,28 @@ class Testsuite(unittest.TestCase):
         except ValueError:
             pass
 
-        print "MARK: destroy"
         hv1.destroy(vm_name)
+
+    def test_create_destroy(self):
+        """ test_create_destroy. """
+
+
+        fmt = "qemu+ssh://mhamilton@%s/system"
+        connect = fmt % TEST_HOST
+        hv1 = kvm.api.vmpool_get(connect)
+
+        hndl = libvirt.open(connect)
+
+        vm_name = "pool.ubuntu1404.create_destroy"
+        for _ in range(5):
+            try:
+                logging.info("%s: cloning", vm_name)
+                hv1.clone("template.ubuntu1404", vm_name)
+                hv1.start(vm_name)
+            except ValueError:
+                pass
+
+            hv1.destroy(vm_name)
 
 if __name__ == "__main__":
     unittest.main()
