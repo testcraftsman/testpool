@@ -1,5 +1,8 @@
 import sys
+import os
+import time
 import logging
+import libvirt
 import virtinst.CloneManager as clmgr
 import urlgrabber.progress as progress
 from xml.etree import ElementTree
@@ -57,6 +60,19 @@ def get_clone_sparse(sparse, design):
 def get_preserve(preserve, design):
     design.preserve = preserve
 
+states = {
+    libvirt.VIR_DOMAIN_NOSTATE: 'no state',
+    libvirt.VIR_DOMAIN_RUNNING: 'running',
+    libvirt.VIR_DOMAIN_BLOCKED: 'blocked on resource',
+    libvirt.VIR_DOMAIN_PAUSED: 'paused by user',
+    libvirt.VIR_DOMAIN_SHUTDOWN: 'being shut down',
+    libvirt.VIR_DOMAIN_SHUTOFF: 'shut off',
+    libvirt.VIR_DOMAIN_CRASHED: 'crashed',
+}
+
+def vm_state(dom):
+    [state, maxmem, mem, ncpu, cputime] = dom.info()
+    return '%s is %s,' % (dom.name(), states.get(state, state))
 
 class Options(object):
     def __init__(self):
@@ -77,28 +93,33 @@ class VMPool(object):
         """ Destroy VM.
         Shutdown the VM if necessary.
         """
-        print "MARK: destroy api"
-        logging.debug("vm_destroy VM %s" % vm_name)
+        logging.debug("%s vm_destroy" % vm_name)
 
         vm_hndl = self.conn.lookupByName(vm_name)
-        print "MARK: api 2"
-        vm_info = vm_hndl.info()
-        if vm_info[0] != 5:
-            vm_hndl.shutdown()
+        logging.debug("%s vm_destroy VM state %s" % (vm_name,
+                                                     vm_state(vm_hndl)))
+        vm_xml = vm_hndl.XMLDesc()
 
-        print "MARK: what"
-        vm_xml = vm_hndl.XMLDesc(0)
-        pool = self.conn.storagePoolLookupByName("default")
-        print "MARK: vol", pool
         root = ElementTree.fromstring(vm_xml)
         disk_source = root.find("./devices/disk/source")
-        volume_in_use = disk_source.get("file")
-        print "MARK: storage", volume_in_use
-        vm_hndl.undefine()
+        volume_in_use = str(disk_source.get("file"))
+        (_, vol_name) = os.path.split(volume_in_use)
 
-        #vm_vol = pool.createXML(vm_xml, 0)
-        #vm_vol.wipe(0)
-        #vm_vol.delete(0)
+
+        [state, _, _, _, _] = vm_hndl.info()
+        if state != libvirt.VIR_DOMAIN_SHUTOFF:
+            logging.debug("%s destroy VM", vm_name)
+            vm_hndl.destroy()
+
+        [state, _, _, _, _] = vm_hndl.info()
+        if state == libvirt.VIR_DOMAIN_SHUTOFF:
+            logging.debug("%s undefine VM", vm_name)
+            vm_hndl.undefineFlags(libvirt.VIR_DOMAIN_UNDEFINE_MANAGED_SAVE)
+
+        logging.debug("%s destroy volume %s", vm_name, volume_in_use)
+        vm_vol = self.conn.storageVolLookupByPath(volume_in_use)
+        vm_vol.wipe(0)
+        vm_vol.delete(0)
 
 
     ### Let's do it!
