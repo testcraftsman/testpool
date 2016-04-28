@@ -1,23 +1,21 @@
+"""
+API for KVM hypervisors.
+"""
 import sys
-import os
-import time
 import logging
 import libvirt
 import virtinst.CloneManager as clmgr
 import urlgrabber.progress as progress
 from xml.etree import ElementTree
 
-import optparse
-from optparse import OptionGroup
 import virtinst.cli as cli
-from virtinst.cli import fail, print_stdout, print_stderr
 from virtinst.User import User
 
 cli.setupGettext()
 
-
 def get_clone_diskfile(new_diskfiles, design, conn, preserve=False,
                        auto_clone=False):
+    """ Define clone's disk file. """
     if new_diskfiles is None:
         new_diskfiles = [None]
 
@@ -37,13 +35,14 @@ def get_clone_diskfile(new_diskfiles, design, conn, preserve=False,
         if origdev is None:
             devpath = None
         else:
-            dev = _check_disk(conn, disk, origdev, preserve)
+            dev = check_disk(conn, disk, origdev, preserve)
             devpath = dev.path
 
         design.clone_devices = devpath
         newidx += 1
 
-def _check_disk(conn, clone_path, orig_path, preserve):
+def check_disk(conn, clone_path, orig_path, preserve):
+    """ Check disk. """
 
     prompt_txt = (_("What would you like to use as the cloned disk "
                     "(file path) for '%s'?") % orig_path)
@@ -55,9 +54,11 @@ def _check_disk(conn, clone_path, orig_path, preserve):
                            path_to_clone=orig_path)
 
 def get_clone_sparse(sparse, design):
+    """ Get clone sparse. """
     design.clone_sparse = sparse
 
 def get_preserve(preserve, design):
+    """ Get clone preserve. """
     design.preserve = preserve
 
 states = {
@@ -71,10 +72,11 @@ states = {
 }
 
 def vm_state(dom):
-    [state, maxmem, mem, ncpu, cputime] = dom.info()
+    state = dom.info()[0]
     return '%s is %s,' % (dom.name(), states.get(state, state))
 
 class Options(object):
+    """ Clone Options. """
     def __init__(self):
         self.clone_running = False
         self.quiet = False
@@ -85,26 +87,26 @@ class Options(object):
         self.new_diskfile = []
 
 class VMPool(object):
+    """ Interface to KVM Pool manager. """
     def __init__(self, url_name):
+        """ Constructor. """
         self.url_name = url_name
         self.conn = cli.getConnection(url_name)
 
     def destroy(self, vm_name):
         """ Destroy VM.
+
         Shutdown the VM if necessary.
         """
-        logging.debug("%s vm_destroy" % vm_name)
+        logging.debug("%s vm_destroy", vm_name)
 
         vm_hndl = self.conn.lookupByName(vm_name)
-        logging.debug("%s vm_destroy VM state %s" % (vm_name,
-                                                     vm_state(vm_hndl)))
+        logging.debug("%s vm_destroy VM state %s", vm_name, vm_state(vm_hndl))
         vm_xml = vm_hndl.XMLDesc()
 
         root = ElementTree.fromstring(vm_xml)
         disk_source = root.find("./devices/disk/source")
         volume_in_use = str(disk_source.get("file"))
-        (_, vol_name) = os.path.split(volume_in_use)
-
 
         [state, _, _, _, _] = vm_hndl.info()
         if state != libvirt.VIR_DOMAIN_SHUTOFF:
@@ -133,7 +135,7 @@ class VMPool(object):
         cli.setupLogging("virt-clone", options.debug, options.quiet)
 
         if not User.current().has_priv(User.PRIV_CLONE, self.conn.getURI()):
-            fail(_("Must be privileged to clone Xen guests"))
+            cli.fail(_("Must be privileged to clone KVM guests"))
 
         design = clmgr.CloneDesign(conn=self.conn)
         design.clone_name = new_name

@@ -1,20 +1,15 @@
+"""
+Tests KVM API
+"""
 import unittest
-import libvirt
 import logging
+import libvirt
 from testpool.libexec import kvm
-from xml.etree import ElementTree as ET
 
-TEST_HOST="192.168.0.27"
-
-def request_cred(credentials, user_data):
-    for credential in credentials:
-        if credential[0] == libvirt.VIR_CRED_AUTHNAME:
-            credential[4] = "mhamilton"
-        elif credential[0] == libvirt.VIR_CRED_PASSPHRASE:
-            credential[4] = "password"
-    return 0
+TEST_HOST = "192.168.0.27"
 
 class Testsuite(unittest.TestCase):
+    """ tests various aspects of cloning a VM. """
 
     def test_clone(self):
         """ test clone """
@@ -22,8 +17,10 @@ class Testsuite(unittest.TestCase):
         fmt = "qemu+ssh://mhamilton@%s/system"
         connect = fmt % TEST_HOST
         hv1 = kvm.api.vmpool_get(connect)
+        self.assertTrue(hv1)
 
         hndl = libvirt.open(connect)
+        self.assertTrue(hndl)
 
         for item in range(3):
             vm_name = "pool.ubuntu1404.%d" % item
@@ -31,8 +28,6 @@ class Testsuite(unittest.TestCase):
                 hv1.destroy(vm_name)
             except libvirt.libvirtError:
                 continue
-            except Exception, arg:
-                logging.exception(arg)
 
         pool = [item for item in hv1.conn.listAllDomains()]
         pool = [item.name() for item in pool]
@@ -68,23 +63,16 @@ class Testsuite(unittest.TestCase):
             print "Active: Name: ", dom.name()
             print "Active: Info: ", dom.info()
 
-    def old_test_auth(self):
-        fmt = "qemu+tcp://%s/system"
-        cmd = fmt % TEST_HOST
-        auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE],
-                request_cred, None]
-        hndl = libvirt.openAuth(cmd, auth, 0)
-        self.assertTrue(hndl)
-        hndl.close()
-
     def test_destroy(self):
         """ test_destroy. """
 
         fmt = "qemu+ssh://mhamilton@%s/system"
         connect = fmt % TEST_HOST
         hv1 = kvm.api.vmpool_get(connect)
+        self.assertTrue(hv1)
 
         hndl = libvirt.open(connect)
+        self.assertTrue(hndl)
 
         try:
             vm_name = "pool.ubuntu1404.0"
@@ -98,12 +86,12 @@ class Testsuite(unittest.TestCase):
     def test_create_idempotent(self):
         """ test_create_idempotent. """
 
-
         fmt = "qemu+ssh://mhamilton@%s/system"
         connect = fmt % TEST_HOST
         hv1 = kvm.api.vmpool_get(connect)
 
         hndl = libvirt.open(connect)
+        self.assertTrue(hndl)
 
         vm_name = "pool.ubuntu1404.create"
         try:
@@ -133,12 +121,12 @@ class Testsuite(unittest.TestCase):
     def test_create_destroy(self):
         """ test_create_destroy. """
 
-
         fmt = "qemu+ssh://mhamilton@%s/system"
         connect = fmt % TEST_HOST
         hv1 = kvm.api.vmpool_get(connect)
 
         hndl = libvirt.open(connect)
+        self.assertTrue(hndl)
 
         vm_name = "pool.ubuntu1404.create_destroy"
         for _ in range(5):
