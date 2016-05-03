@@ -243,7 +243,6 @@ def main(conn=None):
     else:
         # start cloning
         meter = progress.TextMeter(fo=sys.stdout)
-        print "MARK: design", design
         clmgr.start_duplicate(design, meter)
 
     print_stdout("")

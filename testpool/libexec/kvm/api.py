@@ -46,14 +46,6 @@ def vm_state_to_str(dom):
     return '%s is %s,' % (dom.name(), STATES.get(state, state))
 
 
-class Options(object):
-    """ Clone Options. """
-    def __init__(self):
-        self.quiet = False
-        self.debug = False
-        self.new_diskfile = []
-
-
 class VMPool(object):
     """ Interface to KVM Pool manager. """
     def __init__(self, url_name):
@@ -95,11 +87,8 @@ class VMPool(object):
     def clone(self, orig_name, new_name):
         """ Clone KVM system. """
 
-        options = Options()
-
         cli.earlyLogging()
-
-        cli.setupLogging("virt-clone", options.debug, options.quiet)
+        cli.setupLogging("virt-clone", False, False)
 
         if not User.current().has_priv(User.PRIV_CLONE, self.conn.getURI()):
             cli.fail(("Must be privileged to clone KVM guests"))
