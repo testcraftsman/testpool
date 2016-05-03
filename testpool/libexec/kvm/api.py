@@ -5,11 +5,7 @@ import logging
 from xml.etree import ElementTree
 import libvirt
 import virtinst.CloneManager as clmgr
-import virtinst.cli as cli
 from virtinst.User import User
-
-
-cli.setupGettext()
 
 
 def get_clone_diskfile(design):
@@ -49,7 +45,7 @@ class VMPool(object):
     def __init__(self, url_name):
         """ Constructor. """
         self.url_name = url_name
-        self.conn = cli.getConnection(url_name)
+        self.conn = libvirt.open(url_name)
 
     def destroy(self, vm_name):
         """ Destroy VM.
@@ -85,11 +81,8 @@ class VMPool(object):
     def clone(self, orig_name, new_name):
         """ Clone KVM system. """
 
-        cli.earlyLogging()
-        cli.setupLogging("virt-clone", False, False)
-
         if not User.current().has_priv(User.PRIV_CLONE, self.conn.getURI()):
-            cli.fail(("Must be privileged to clone KVM guests"))
+            raise ValueError("user %s can not clone", User.current())
 
         design = clmgr.CloneDesign(conn=self.conn)
         design.clone_name = new_name
