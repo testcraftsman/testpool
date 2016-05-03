@@ -8,6 +8,7 @@ from testpool.libexec import kvm
 
 TEST_HOST = "192.168.0.27"
 
+
 class Testsuite(unittest.TestCase):
     """ tests various aspects of cloning a VM. """
 
@@ -39,8 +40,16 @@ class Testsuite(unittest.TestCase):
                 hv1.clone("template.ubuntu1404", vm_name)
                 hv1.start(vm_name)
 
+        for item in range(3):
+            vm_name = "pool.ubuntu1404.%d" % item
+            try:
+                hv1.destroy(vm_name)
+            except libvirt.libvirtError:
+                continue
+
     def test_info(self):
         """ test_info """
+
         fmt = "qemu+ssh://mhamilton@%s/system"
         cmd = fmt % TEST_HOST
         hndl = libvirt.open(cmd)
@@ -75,7 +84,7 @@ class Testsuite(unittest.TestCase):
         self.assertTrue(hndl)
 
         try:
-            vm_name = "pool.ubuntu1404.0"
+            vm_name = "pool.ubuntu1404.destroy"
             hv1.clone("template.ubuntu1404", vm_name)
             hv1.start(vm_name)
         except ValueError:

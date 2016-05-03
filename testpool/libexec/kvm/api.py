@@ -1,63 +1,34 @@
 """
 API for KVM hypervisors.
 """
-import sys
 import logging
+from xml.etree import ElementTree
 import libvirt
 import virtinst.CloneManager as clmgr
 import virtinst.cli as cli
 from virtinst.User import User
-import urlgrabber.progress as progress
-from xml.etree import ElementTree
 
 
 cli.setupGettext()
 
-def get_clone_diskfile(new_diskfiles, design, conn, preserve=False):
-    """ Define clone's disk file. """
-    if new_diskfiles is None:
-        new_diskfiles = [None]
 
-    conn = design.original_conn
+def get_clone_diskfile(design):
+    """ Define clone's disk file. """
 
     newidx = 0
     for origdev in design.original_devices:
-        if len(new_diskfiles) <= newidx:
-            # Extend the new/passed paths list with None if it's not
-            # long enough
-            new_diskfiles.append(None)
-        disk = new_diskfiles[newidx]
-
-        if disk is None:
-            disk = clmgr.generate_clone_disk_path(origdev, design)
-
+        disk = clmgr.generate_clone_disk_path(origdev, design)
+        logging.debug("cloning disk %s to %s", origdev, disk)
         if origdev is None:
             devpath = None
         else:
-            dev = check_disk(conn, disk, origdev, preserve)
-            devpath = dev.path
+            devpath = disk
 
         design.clone_devices = devpath
         newidx += 1
 
-def check_disk(conn, clone_path, orig_path, preserve):
-    """ Check disk. """
 
-    prompt_txt = (_("What would you like to use as the cloned disk "
-                    "(file path) for '%s'?") % orig_path)
-
-    return cli.disk_prompt(conn, clone_path, .00001, False,
-                           prompt_txt,
-                           warn_overwrite=not preserve,
-                           check_size=False,
-                           path_to_clone=orig_path)
-
-
-def get_preserve(preserve, design):
-    """ Get clone preserve. """
-    design.preserve = preserve
-
-states = {
+STATES = {
     libvirt.VIR_DOMAIN_NOSTATE: 'no state',
     libvirt.VIR_DOMAIN_RUNNING: 'running',
     libvirt.VIR_DOMAIN_BLOCKED: 'blocked on resource',
@@ -67,19 +38,21 @@ states = {
     libvirt.VIR_DOMAIN_CRASHED: 'crashed',
 }
 
+
 def vm_state_to_str(dom):
     """ Return string form of state. """
 
     state = dom.info()[0]
-    return '%s is %s,' % (dom.name(), states.get(state, state))
+    return '%s is %s,' % (dom.name(), STATES.get(state, state))
+
 
 class Options(object):
     """ Clone Options. """
     def __init__(self):
         self.quiet = False
         self.debug = False
-        self.preserve = True
         self.new_diskfile = []
+
 
 class VMPool(object):
     """ Interface to KVM Pool manager. """
@@ -119,8 +92,6 @@ class VMPool(object):
         vm_vol.wipe(0)
         vm_vol.delete(0)
 
-
-    ### Let's do it!
     def clone(self, orig_name, new_name):
         """ Clone KVM system. """
 
@@ -131,7 +102,7 @@ class VMPool(object):
         cli.setupLogging("virt-clone", options.debug, options.quiet)
 
         if not User.current().has_priv(User.PRIV_CLONE, self.conn.getURI()):
-            cli.fail(_("Must be privileged to clone KVM guests"))
+            cli.fail(("Must be privileged to clone KVM guests"))
 
         design = clmgr.CloneDesign(conn=self.conn)
         design.clone_name = new_name
@@ -140,15 +111,13 @@ class VMPool(object):
         design.clone_running = False
         design.replace = False
         design.clone_sparse = True
-
-        get_preserve(options.preserve, design)
+        design.preserve = True
 
         # This determines the devices that need to be cloned, so that
         # get_clone_diskfile knows how many new disk paths it needs
         design.setup_original()
 
-        get_clone_diskfile(options.new_diskfile, design, self.conn,
-                           not options.preserve)
+        get_clone_diskfile(design)
 
         # setup design object
         design.setup_clone()
