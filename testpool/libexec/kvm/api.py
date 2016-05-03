@@ -15,17 +15,15 @@ cli.setupGettext()
 def get_clone_diskfile(design):
     """ Define clone's disk file. """
 
-    newidx = 0
     for origdev in design.original_devices:
-        disk = clmgr.generate_clone_disk_path(origdev, design)
-        logging.debug("cloning disk %s to %s", origdev, disk)
         if origdev is None:
             devpath = None
         else:
+            disk = clmgr.generate_clone_disk_path(origdev, design)
             devpath = disk
+        logging.debug("cloning disk %s to %s", origdev, devpath)
 
         design.clone_devices = devpath
-        newidx += 1
 
 
 STATES = {
