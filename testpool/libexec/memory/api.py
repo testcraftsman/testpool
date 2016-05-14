@@ -10,9 +10,9 @@ from virtinst.User import User
 
 class VMPool(object):
     """ Interface to KVM Pool manager. """
-    def __init__(self, url_name):
+    def __init__(self, name):
         """ Constructor. """
-        self.url_name = url_name
+        self.name = name
 
     def type_get(self):
         """ Return the type of the interface. """

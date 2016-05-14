@@ -1,4 +1,5 @@
 import unittest
+from testpool.db.testpool import models
 """
    Algorithm for modifying database.
 """
