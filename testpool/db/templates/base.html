@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+ {% load i18n admin_static admin_list %}
+ <link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "admin/css/base.css" %}{% endblock %}" />
+ <link rel="stylesheet" type="text/css" href="{% static "css/base.css" %}" />
+ 
+</head>
+<body link="#FFFFFF" alink="#FFFFFF" vlink="#FFFFFF">
+<div id="content">{% block content %}{% endblock %}</div>
+</body>
+</html>

@@ -6,7 +6,6 @@ PYTHONPATH:=$(ROOT):$(ROOT)/testbed/db
 .PHONY: help
 help::
 	echo "pylint - run pylint on python files."
-	echo "pyflakes - run pyflakes on python files."
 	echo "pep8 - run pep8 on python files."
 
 .PHONY: subdirs $(SUBMODULES)

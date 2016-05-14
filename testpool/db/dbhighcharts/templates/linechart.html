@@ -1,0 +1,144 @@
+<div id="{{chart.get_html_id}}" style="width: {{chart.width}}px; height: {{chart.height}}px;"></div>
+<script>
+$(function () {
+  $('#{{ chart.get_html_id }}').highchart({
+
+    chart: {
+      type: "{{chart.get_chart_type}}",
+      {% if chart.get_options.chart.zoomType %}
+      zoomType: 'x',
+      {% endif %}
+    },
+
+    title : {
+      text: "{{ chart.get_options.title }}"
+    },
+
+    tooltip: {
+      {% if chart.get_options.tooltip.headerFormat %}
+        {% autoescape off %}
+        headerFormat: '{{chart.get_options.tooltip.headerFormat}}',
+        {% endautoescape %}
+      {% endif %}
+
+      {% if chart.get_options.tooltip.pointFormat %}
+        {% autoescape off %}
+        pointFormat: '{{chart.get_options.tooltip.pointFormat}}',
+        {% endautoescape %}
+      {% endif %}
+
+      {% if chart.get_options.tooltip.footerFormat %}
+        {% autoescape off %}
+        footerFormat: '{{chart.get_options.tooltip.footerFormat}}',
+        {% endautoescape %}
+      {% endif %}
+
+      valueSuffix: '{{chart.get_options.tooltip.valueSuffix }}',
+
+      {% if chart.get_options.tooltip.formatter %}
+        {% autoescape off %}
+        formatter: '{{chart.get_options.tooltip.formatter }}',
+        {% endautoescape %}
+      {% endif %}
+    },
+    xAxis: {
+      categories: {{chart.get_categories|safe}},
+      title:  { 
+        text: '{{ chart.get_x_axis_title }}'
+      },
+        
+      {% if chart.get_options.xAxis.type %}
+        type: '{{chart.get_options.xAxis.type}}'
+      {% endif %}
+
+      {% if chart.get_options.xAxis.tickInterval %}
+        tickInterval: '{{chart.get_options.xAxis.tickInterval }}'
+      {% endif %}
+
+      {% if chart.get_options.xAxis.labels %}
+        labels: {
+        {% if chart.get_options.xAxis.labels.format %}
+          format: '{{chart.get_options.xAxis.labels.foramt}}'
+        {% endif %}
+      }
+      {% endif %}
+    },
+
+    {% if chart.get_options.yAxis %}
+    yAxis: {
+      {% if chart.get_options.yAxis.title %}
+      title: {
+        {% if chart.get_options.yAxis.title.text %}
+          text: '{{chart.get_options.yAxis.title.text}}',
+        {% endif %}
+      },
+      {% endif %}
+
+      {% if chart.get_options.yAxis.title %}
+        startOnTick: '{{chart.get_options.yAxis.startOnTick}}',
+      {% endif %}
+
+      {% if chart.get_options.yAxis.min %}
+        min: '{{chart.get_options.yAxis.min}}',
+      {% endif %}
+
+      {% if chart.get_options.yAxis.max %}
+        max: '{{chart.get_options.yAxis.max}}',
+      {% endif %}
+
+      stackLabels: {
+        enabled: true,
+        style: {
+          fontWeight: 'bold',
+          color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+        }
+      }
+    },
+    {% endif %}
+
+    legend: {
+      layout: '{{chart.get_options.legend.layout | default: 'horizontal' }}',
+      align: '{{chart.get_options.legend.align | default: 'center' }}',
+      verticalAlign: '{{chart.get_options.legend.verticalAlign | default: 'bottom' }}',
+      borderWidth: '{{chart.get_options.legend.borderWidth | default:1 }}',
+    },
+
+    {% if chart.get_options.drilldown %}
+    drilldown:
+      {% autoescape off %}
+        {% chart.get_options.drilldown %}
+      {% endautoescape %}
+    ,
+    {% endif %}
+ 
+    plotOptions: {
+      line: {
+        marker: {
+          enabled: false
+        },
+      },
+
+      series: {
+        cursor: 'pointer',
+
+        point: {
+          events: {
+            click: function () {
+              location.href = this.options.url;
+            }
+          }
+        }
+      },
+
+      {% if chart.get_options.plotOptions.column %}
+      column: {
+        {% if chart.get_options.plotOptions.column.stacking %}
+        stacking: '{{chart.get_options.plotOptions.column.stacking}}'
+        {% endif %}
+      },
+      {% endif %}
+    },
+    series: {{chart.get_series|safe}},
+  });
+});
+</script>
