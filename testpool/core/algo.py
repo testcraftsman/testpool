@@ -3,6 +3,15 @@ import logging
 from testpool.db.testpool import models
 import testpool.core.api
 
+
+class NoResources(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+
+
 """
    Algorithm for modifying database.
 """
@@ -36,7 +45,33 @@ def setup(intf, hostname, profile_name, template_name, vm_max):
             logging.error("setup %s VM %s failed to start", profile1, vm1)
             intf.profile_mark_bad(profile_name)
 
-    profile1.delete()
-    hv1.delete()
+    return 0
+
+def pop(profile_name):
+    logging.info("pop VM from %s", profile_name)
+
+    profile1 = models.Profile.objects.get(name=profile_name)
+
+    try:
+        vm1 = models.VM.objects.filter(profile=profile1, status=models.VM.FREE)[0]
+        vm1.status=models.VM.RESERVED
+        vm1.save()
+    except IndexError:
+        raise NoResources("%s: all VMs taken" % profile_name)
+
+    return vm1
+
+def push(vm_id):
+
+    logging.info("push %d", vm_id)
+
+    vm1 = models.VM.objects.get(id=vm_id, status=models.VM.RELEASED)
+    vm1.save()
 
     return 0
+
+def reclaim():
+
+    for vm in models.VM.objects.filter(status=models.VM.RELEASED):
+        profile1 = models.Profile.objects.get_or_create(name=profile_name)
+        print "MARK:", vm.profile, profile1.hv1.product

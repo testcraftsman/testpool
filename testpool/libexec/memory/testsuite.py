@@ -18,6 +18,24 @@ class Testsuite(unittest.TestCase):
                                        "profile1", "template", 10)
         self.assertEqual(rtc, 0)
 
+    def test_reserve(self):
+        """ test clone """
+
+        import testpool.core.algo
+
+        rtc = testpool.core.algo.setup(api.VMPool("memory"), "localhost",
+                                       "profile1", "template", 10)
+        self.assertEqual(rtc, 0)
+
+        for count in range(10):
+            logging.debug("pop count %d", count)
+        
+            vm = testpool.core.algo.pop("profile1")
+            self.assertTrue(vm)
+
+        with self.assertRaises(testpool.core.algo.NoResources) as check:
+            testpool.core.algo.pop("profile1")
+
 if __name__ == "__main__":
     testpool.core.database.init()
     unittest.main()
