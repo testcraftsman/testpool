@@ -47,6 +47,11 @@ class VMPool(object):
         self.url_name = url_name
         self.conn = libvirt.open(url_name)
 
+    def state_get(self, vm_name):
+        """ Return the state of the VM. """
+        vm_hndl = self.conn.lookupByName(vm_name)
+        state = vm_hndl.info()[0]
+
     def destroy(self, vm_name):
         """ Destroy VM.
 
