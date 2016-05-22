@@ -11,16 +11,54 @@ class NoResources(Exception):
     def __str__(self):
         return repr(self.value)
 
+def onerror(name):
+    """ Show module that fails to load. """
+    LOGGER.error("importing module %s", name)
+    _, _, trback = sys.exc_info()
+    traceback.print_tb(trback)
+
+
+def intf_find():
+    """ Look for command intf. """
+
+    for package in testpool.settings.PLUGINS:
+        LOGGER.debug("loading commands %s", package)
+
+        package = importlib.import_module(package)
+        for _, module, ispkg in pkgutil.walk_packages(package.__path__,
+                                                      package.__name__ + ".",
+                                                      onerror=onerror):
+            ##
+            # only include commands from commands.py files.
+            if ispkg or not module.endswith("commands"):
+                continue
+            LOGGER.debug("  loading commands from %s", module)
+            module = importlib.import_module(module)
+            try:
+                module.add_subparser(subparser)
+            except AttributeError, arg:
+                ##
+                # This means that the module is missing the add method.
+                # All modules identified in settings to extend CLI
+                # must have an add method
+                LOGGER.error("adding subparser for %s.%s", package, module)
+                LOGGER.exception(arg)
+
+
+def main():
+    """ Entry point for parsing tbd arguments. """
+
 
 """
    Algorithm for modifying database.
 """
-def setup(intf, hostname, profile_name, template_name, vm_max):
+def setup(intf, profile_name, template_name, vm_max):
 
-    logging.info("setup %s %s %s %s", intf, hostname, profile_name,
-                 template_name)
+    logging.info("setup %s %s %s %s", intf, profile_name, template_name)
 
-    (hv1, gcr) = models.HV.objects.get_or_create(hostname=hostname,
+    ##
+    # \todo hostname should change to context
+    (hv1, gcr) = models.HV.objects.get_or_create(hostname=intf.context,
                                                  product=intf.type_get())
     logging.debug("setup HV %s %d", hv1, gcr)
     (profile1, gcr) = models.Profile.objects.get_or_create(

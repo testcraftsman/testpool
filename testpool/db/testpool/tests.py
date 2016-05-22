@@ -17,15 +17,12 @@
 """
   Create your tests here.
 """
-import time
-from django.utils import timezone
 from django.test import TestCase
 from .models import Profile
 from .models import Key
 from .models import KVP
 from .models import HV
 from .models import VM
-from .models import Profile
 
 
 class ModelTestCase(TestCase):
@@ -43,10 +40,9 @@ class ModelTestCase(TestCase):
 
         profile1 = Profile.objects.create(name="profile1", hv=hv1, vm_max=3,
                                           template_name="template.ubuntu1404")
-                                          
         for kvp in kvps:
             profile1.kvp_get_or_create(kvp)
-            
+
         self.assertEqual(profile1.kvp_value_get("key1"), "value1")
         self.assertEqual(profile1.kvp_value_get("key2"), "value2")
 
@@ -66,4 +62,3 @@ class ModelTestCase(TestCase):
                                     status=VM.FREE,
                                     expiration=10*60*60*10000000)
             self.assertTrue(vm1)
-

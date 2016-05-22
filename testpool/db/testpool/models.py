@@ -118,40 +118,21 @@ class VM(models.Model):
     @staticmethod
     def status_to_str(status, short=False):
         """ Return string form of the status code. """
-        if status == Test.RESERVED:
+
+        if status == VM.RESERVED:
             return "reserved"
-        elif status == Test.RELEASED:
+        elif status == VM.RELEASED:
             return "released"
-        elif status == Test.FREE:
+        elif status == VM.FREE:
             return "free"
 
     @staticmethod
     def status_map(status):
         """ Return status. """
         if status == "reserved":
-            return Test.RESERVeD
+            return VM.RESERVeD
         elif status == "released":
-            return Test.RELEASED
-
-
-    @staticmethod
-    def get_or_create(profile, name):
-        """ Get or create reserved VM. """
-
-        ##
-        # \todo should be pulled out.
-        (name, created) = TestName.objects.get_or_create(name=name)
-
-        ##
-        # Look for test.
-        vm1 = VM.objects.get(profile=profile, name=name)
-        test = Test.objects.create(testsuite=testsuite, name=name,
-                                   status=status)
-
-        for key in keys:
-            TestKVP.objects.create(test=test, testkey=key)
-
-        return (test, True)
+            return VM.RELEASED
 
 
 class ProfileKVP(models.Model):
@@ -181,7 +162,6 @@ class Profile(models.Model):
     def kvp_get_or_create(self, kvp):
         """ Add kvp to profile. """
         return self.profilekvp_set.get_or_create(kvp=kvp)
-
 
     def kvp_value_get(self, key, default=None):
         """ Return value given key. """

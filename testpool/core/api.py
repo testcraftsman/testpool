@@ -6,6 +6,9 @@ class VMPool(object):
     STATE_BAD_STATE = 3
     """ System exists but is not running. """
 
+    def __init__(self, context):
+        self.context = context
+
     def type_get(self):
         raise Unsupported("type_get unsupported")
 

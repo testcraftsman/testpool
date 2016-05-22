@@ -13,9 +13,10 @@ from virtinst.User import User
 class VMPool(testpool.core.api.VMPool):
     """ Interface to KVM Pool manager. """
 
-    def __init__(self, name):
+    def __init__(self, context):
         """ Constructor. """
-        self.name = name
+        VMPool.__init__(self, context)
+
         self.vms = set()
 
     def type_get(self):
