@@ -4,6 +4,13 @@ from testpool.db.testpool import models
 import testpool.core.api
 
 
+class ResourceReleased(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+
 class NoResources(Exception):
     def __init__(self, value):
         self.value = value
@@ -43,10 +50,6 @@ def intf_find():
                 # must have an add method
                 LOGGER.error("adding subparser for %s.%s", package, module)
                 LOGGER.exception(arg)
-
-
-def main():
-    """ Entry point for parsing tbd arguments. """
 
 
 """
@@ -91,7 +94,8 @@ def pop(profile_name):
     profile1 = models.Profile.objects.get(name=profile_name)
 
     try:
-        vm1 = models.VM.objects.filter(profile=profile1, status=models.VM.FREE)[0]
+        vm1 = models.VM.objects.filter(profile=profile1,
+                                       status=models.VM.FREE)[0]
         vm1.status=models.VM.RESERVED
         vm1.save()
     except IndexError:
@@ -103,13 +107,16 @@ def push(vm_id):
 
     logging.info("push %d", vm_id)
 
-    vm1 = models.VM.objects.get(id=vm_id, status=models.VM.RELEASED)
-    vm1.save()
+    try:
+        vm1 = models.VM.objects.get(id=vm_id, status=models.VM.RESERVED)
+        vm1.status = models.VM.RELEASED
+        vm1.save()
+        return 0
+    except models.VM.DoesNotExist:
+        raise ResourceReleased(vm_id)
 
-    return 0
 
 def reclaim():
 
     for vm in models.VM.objects.filter(status=models.VM.RELEASED):
         profile1 = models.Profile.objects.get_or_create(name=profile_name)
-        print "MARK:", vm.profile, profile1.hv1.product

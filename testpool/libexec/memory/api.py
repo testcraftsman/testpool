@@ -15,7 +15,7 @@ class VMPool(testpool.core.api.VMPool):
 
     def __init__(self, context):
         """ Constructor. """
-        VMPool.__init__(self, context)
+        testpool.core.api.VMPool.__init__(self, context)
 
         self.vms = set()
 
