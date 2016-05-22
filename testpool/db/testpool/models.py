@@ -17,7 +17,6 @@
 """
    Test schema for tracking tests and their results.
 """
-from django.utils import timezone
 from django.db import models
 
 
@@ -116,7 +115,7 @@ class VM(models.Model):
         return "%s" % self.name
 
     @staticmethod
-    def status_to_str(status, short=False):
+    def status_to_str(status):
         """ Return string form of the status code. """
 
         if status == VM.RESERVED:
@@ -145,6 +144,7 @@ class ProfileKVP(models.Model):
         return "%s %s" % (str(self.testsuite.context), str(self.kvp))
 
 
+# pylint: disable=C0103
 class Profile(models.Model):
     """ A Testsuite holds a set of tests. """
 
