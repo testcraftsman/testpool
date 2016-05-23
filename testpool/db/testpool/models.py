@@ -87,7 +87,7 @@ class KVP(models.Model):
 
     @staticmethod
     def filter(contains):
-        """ Filter testsuite against a single string. """
+        """ Filter against a single string. """
 
         if not contains:
             return KVP.objects.all()
@@ -141,7 +141,7 @@ class ProfileKVP(models.Model):
 
     def __str__(self):
         """ User representation. """
-        return "%s %s" % (str(self.testsuite.context), str(self.kvp))
+        return "%s %s" % (str(self.profile.context), str(self.kvp))
 
 
 # pylint: disable=C0103
@@ -173,12 +173,12 @@ class Profile(models.Model):
 
 
 class HV(models.Model):
-    """ A test plan consists of a set of testsuites, tests.
-    A test plan governs which testsuites should be run.
-    """
+    """ Hypervisor. """
+
+    ## /todo Change this to cnct_context
     hostname = models.CharField(max_length=128, unique=True)
     product = models.CharField(max_length=128, unique=True)
 
     def __str__(self):
         """ User representation. """
-        return "%s.%s" % (self.product, self.name)
+        return "%s.%s" % (self.product, self.hostname)

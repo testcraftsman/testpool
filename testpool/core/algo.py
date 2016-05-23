@@ -57,23 +57,22 @@ def intf_find():
 """
 def setup(intf, profile_name, template_name, vm_max):
 
-    logging.info("setup %s %s %s %s", intf, profile_name, template_name)
+    logging.info("setup %s %s", profile_name, template_name)
 
     ##
     # \todo hostname should change to context
     (hv1, gcr) = models.HV.objects.get_or_create(hostname=intf.context,
                                                  product=intf.type_get())
-    logging.debug("setup HV %s %d", hv1, gcr)
+    logging.info("setup HV %s %d", hv1, gcr)
     (profile1, gcr) = models.Profile.objects.get_or_create(
         hv=hv1, name=profile_name, template_name=template_name, vm_max=vm_max)
     logging.debug("setup Profile %s %d", profile1, gcr)
 
     for count in range(vm_max):
         vm_name = template_name + ".%d" % count
-        logging.debug("setup %s VM %s", profile1, vm_name)
+        logging.info("setup %s VM %s", profile1, vm_name)
         (vm1, gcr) = models.VM.objects.get_or_create(profile=profile1,
-                                                     name=vm_name,
-                                                     status=models.VM.FREE)
+                                                     name=vm_name)
         vm_state = intf.vm_state_get(vm_name)
         logging.debug("setup %s VM %s state %d", profile1, vm1, vm_state)
         if vm_state != testpool.core.api.VMPool.STATE_NONE:
@@ -84,7 +83,15 @@ def setup(intf, profile_name, template_name, vm_max):
         logging.debug("setup %s VM cloned %s %d", profile1, vm1, vm_state)
         if vm_state != testpool.core.api.VMPool.STATE_RUNNING:
             logging.error("setup %s VM %s failed to start", profile1, vm1)
-            intf.profile_mark_bad(profile_name)
+            (kvp, _) = models.KVP.get_or_create("state", "bad")
+            vm1.profile.kvp_get_or_create(kvp)
+            vm1.status = models.VM.RELEASED
+        else:
+            (kvp, _) = models.KVP.get_or_create("state", "bad")
+            vm1.profile.kvp_get_or_create(kvp)
+            vm1.status = models.VM.FREE
+            logging.info("%s: vm %s is free", vm1.profile.name, vm1.name)
+        vm1.save()
 
     return 0
 
@@ -98,10 +105,11 @@ def pop(profile_name):
                                        status=models.VM.FREE)[0]
         vm1.status=models.VM.RESERVED
         vm1.save()
-    except IndexError:
+    except Exception:
         raise NoResources("%s: all VMs taken" % profile_name)
 
     return vm1
+
 
 def push(vm_id):
 
@@ -115,8 +123,6 @@ def push(vm_id):
     except models.VM.DoesNotExist:
         raise ResourceReleased(vm_id)
 
+def reclaim(intf, profile_name, vm):
+    logging.debug("reclaiming %s", vm.name)
 
-def reclaim():
-
-    for vm in models.VM.objects.filter(status=models.VM.RELEASED):
-        profile1 = models.Profile.objects.get_or_create(name=profile_name)

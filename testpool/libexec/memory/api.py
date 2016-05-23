@@ -55,9 +55,6 @@ class VMPool(testpool.core.api.VMPool):
         else:
             return testpool.core.api.VMPool.STATE_NONE
 
-    def profile_mark_bad(self, profile_name):
-        raise ValueError("profile %s should never fail", profile_name)
-
 
 def vmpool_get(url_name):
     """ Return a handle to the KVM API. """

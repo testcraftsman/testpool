@@ -1,0 +1,9 @@
+BEGIN;
+DROP TABLE "testpool_hv";
+DROP TABLE "testpool_profile";
+DROP TABLE "testpool_profilekvp";
+DROP TABLE "testpool_vm";
+DROP TABLE "testpool_kvp";
+DROP TABLE "testpool_key";
+
+COMMIT;

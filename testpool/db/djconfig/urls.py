@@ -19,13 +19,8 @@ from django.views.generic import RedirectView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = patterns("",
-    url(r'^testbed/admin/', include(admin.site.urls)),
+    url(r'^testpool/admin/', include(admin.site.urls)),
     ##
-    # Currently product view is the default entry point into our website.
-    url(r'^testbed/$',
-	RedirectView.as_view(permanent=False, url="/testbed/product")),
-    url(r'^testbed/product/', include("product.urls")),
-    url(r'^testbed/branch/', include("branch.urls")),
 )
 
 urlpatterns += staticfiles_urlpatterns()
