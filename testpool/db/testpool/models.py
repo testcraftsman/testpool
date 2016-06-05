@@ -141,7 +141,7 @@ class ProfileKVP(models.Model):
 
     def __str__(self):
         """ User representation. """
-        return "%s %s" % (str(self.profile.context), str(self.kvp))
+        return "%s %s" % (str(self.profile), str(self.kvp))
 
 
 # pylint: disable=C0103
@@ -175,7 +175,6 @@ class Profile(models.Model):
 class HV(models.Model):
     """ Hypervisor. """
 
-    ## /todo Change this to cnct_context
     hostname = models.CharField(max_length=128, unique=True)
     product = models.CharField(max_length=128, unique=True)
 

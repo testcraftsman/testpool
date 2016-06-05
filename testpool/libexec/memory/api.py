@@ -15,8 +15,8 @@ class VMPool(testpool.core.api.VMPool):
 
     def __init__(self, context):
         """ Constructor. """
-        testpool.core.api.VMPool.__init__(self, context)
 
+        testpool.core.api.VMPool.__init__(self, context)
         self.vms = set()
 
     def type_get(self):
@@ -27,7 +27,6 @@ class VMPool(testpool.core.api.VMPool):
         """ Destroy VM. """
         logging.debug("memory destroy %s", vm_name)
         self.vms.remove(vm_name)
-
         return 0
 
     def clone(self, orig_name, new_name):
@@ -58,5 +57,4 @@ class VMPool(testpool.core.api.VMPool):
 
 def vmpool_get(url_name):
     """ Return a handle to the KVM API. """
-
     return VMPool(url_name)

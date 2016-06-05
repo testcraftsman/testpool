@@ -123,6 +123,11 @@ def push(vm_id):
     except models.VM.DoesNotExist:
         raise ResourceReleased(vm_id)
 
-def reclaim(intf, profile_name, vm):
-    logging.debug("reclaiming %s", vm.name)
+def reclaim(intf, vm):
+    """ Reclaim a VM and rebuild it. """
 
+    logging.debug("reclaiming %s", vm.name)
+    vm_pool = intf.vmpool_get(vm.profile.name)
+
+    vm_pool.destroy(vm.name)
+    vm_pool.clone(vm.profile.template_name, vm.name)

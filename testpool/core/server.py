@@ -1,4 +1,6 @@
+import logging
 import testpool.core.algo
+from testpool.db.testpool import models
 
 def reclaim(api_exts):
     """ Reclaim any VMs released. """
@@ -9,6 +11,6 @@ def reclaim(api_exts):
         logging.debug("loading %s %s", vm.profile.hv.product,
                       vm.profile.hv.hostname)
         api_ext = api_exts[vm.profile.hv.product]
+        print "MARK: api", api_ext
         api_ext.vmpool_get(vm.profile.hv.hostname)
         testpool.core.algo.reclaim(api_ext, vm)
-
