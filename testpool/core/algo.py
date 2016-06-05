@@ -96,6 +96,7 @@ def setup(intf, profile_name, template_name, vm_max):
     return 0
 
 def pop(profile_name):
+
     logging.info("pop VM from %s", profile_name)
 
     profile1 = models.Profile.objects.get(name=profile_name)
@@ -123,11 +124,10 @@ def push(vm_id):
     except models.VM.DoesNotExist:
         raise ResourceReleased(vm_id)
 
-def reclaim(intf, vm):
+def reclaim(vm_pool, vm):
     """ Reclaim a VM and rebuild it. """
 
     logging.debug("reclaiming %s", vm.name)
-    vm_pool = intf.vmpool_get(vm.profile.name)
 
     vm_pool.destroy(vm.name)
     vm_pool.clone(vm.profile.template_name, vm.name)

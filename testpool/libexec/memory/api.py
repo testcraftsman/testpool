@@ -25,7 +25,9 @@ class VMPool(testpool.core.api.VMPool):
 
     def destroy(self, vm_name):
         """ Destroy VM. """
+
         logging.debug("memory destroy %s", vm_name)
+        print "MARK: VMS", self.vms
         self.vms.remove(vm_name)
         return 0
 
@@ -35,6 +37,7 @@ class VMPool(testpool.core.api.VMPool):
         logging.debug("memory clone %s %s", orig_name, new_name)
         self.vms.add(orig_name)
         self.vms.add(new_name)
+        print "MARK: clone ", orig_name, new_name
 
         return 0
 

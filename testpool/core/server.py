@@ -12,5 +12,6 @@ def reclaim(api_exts):
                       vm.profile.hv.hostname)
         api_ext = api_exts[vm.profile.hv.product]
         print "MARK: api", api_ext
-        api_ext.vmpool_get(vm.profile.hv.hostname)
-        testpool.core.algo.reclaim(api_ext, vm)
+        vm_pool = api_ext.vmpool_get(vm.profile.hv.hostname)
+
+        testpool.core.algo.reclaim(vm_pool, vm)
