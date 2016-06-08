@@ -95,7 +95,7 @@ def setup(intf, profile_name, template_name, vm_max):
 
     return 0
 
-def pop(profile_name):
+def pop(vmpool, profile_name):
 
     logging.info("pop VM from %s", profile_name)
 
@@ -106,6 +106,7 @@ def pop(profile_name):
                                        status=models.VM.FREE)[0]
         vm1.status=models.VM.RESERVED
         vm1.save()
+        vmpool.pop(profile_name, vm1.name)
     except Exception:
         raise NoResources("%s: all VMs taken" % profile_name)
 
@@ -120,9 +121,12 @@ def push(vm_id):
         vm1 = models.VM.objects.get(id=vm_id, status=models.VM.RESERVED)
         vm1.status = models.VM.RELEASED
         vm1.save()
+        vmpool.push(profile_name, vm1.name)
+
         return 0
     except models.VM.DoesNotExist:
         raise ResourceReleased(vm_id)
+
 
 def reclaim(vm_pool, vm):
     """ Reclaim a VM and rebuild it. """

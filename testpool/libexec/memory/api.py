@@ -1,13 +1,58 @@
 """
 API for KVM hypervisors.
 """
-
+import os
 import logging
+import yaml
+import unittest
 from xml.etree import ElementTree
 import libvirt
 import virtinst.CloneManager as clmgr
 import testpool.core.api
 from virtinst.User import User
+
+from contextlib import contextmanager
+
+
+@contextmanager
+def db_ctx(context):
+    """ Return VM list. """
+
+    store_path = "/tmp/testpool/memory"
+
+    try:
+        os.makedirs(store_path)
+    except OSError:
+        pass
+
+    store_path = os.path.join(store_path, context + ".yml")
+
+    ##
+    # Check to see if the context creates a sub directory.
+    (store_dir, _) = os.path.split(store_path)
+
+    try:
+        os.makedirs(store_dir)
+    except OSError:
+        pass
+    ##
+
+    if os.path.exists(store_path):
+        vms = []
+        with open(store_path, "r") as stream:
+            try:
+                vms = yaml.safe_load(stream)
+                if not vms:
+                    vms = set()
+            except yaml.YAMLError:
+                vms = set()
+    else:
+        vms = set()
+
+    yield vms
+
+    with open(store_path, "w") as stream:
+        stream.write(yaml.dump(vms, default_flow_style=True))
 
 
 class VMPool(testpool.core.api.VMPool):
@@ -15,9 +60,7 @@ class VMPool(testpool.core.api.VMPool):
 
     def __init__(self, context):
         """ Constructor. """
-
         testpool.core.api.VMPool.__init__(self, context)
-        self.vms = set()
 
     def type_get(self):
         """ Return the type of the interface. """
@@ -27,37 +70,61 @@ class VMPool(testpool.core.api.VMPool):
         """ Destroy VM. """
 
         logging.debug("memory destroy %s", vm_name)
-        print "MARK: VMS", self.vms
-        self.vms.remove(vm_name)
+        with db_ctx(self.context) as vms:
+            vms.remove(vm_name)
         return 0
 
     def clone(self, orig_name, new_name):
         """ Clone KVM system. """
 
         logging.debug("memory clone %s %s", orig_name, new_name)
-        self.vms.add(orig_name)
-        self.vms.add(new_name)
-        print "MARK: clone ", orig_name, new_name
+        with db_ctx(self.context) as vms:
+            vms.add(orig_name)
+            vms.add(new_name)
 
         return 0
 
     def start(self, vm_name):
         """ Start VM. """
 
-        if vm_name in self.vms:
-            return testpool.core.api.VMPool.STATE_RUNNING
-        else:
-            return testpool.core.api.VMPool.STATE_BAD_STATE
+        with db_ctx(self.context) as vms:
+            if vm_name in self.vms:
+                return testpool.core.api.VMPool.STATE_RUNNING
+            else:
+                return testpool.core.api.VMPool.STATE_BAD_STATE
 
     def vm_state_get(self, vm_name):
         """ Start VM. """
 
-        if vm_name in self.vms:
-            return testpool.core.api.VMPool.STATE_RUNNING
-        else:
-            return testpool.core.api.VMPool.STATE_NONE
+        with db_ctx(self.context) as vms:
+            if vm_name in self.vms:
+                return testpool.core.api.VMPool.STATE_RUNNING
+            else:
+                return testpool.core.api.VMPool.STATE_NONE
 
 
 def vmpool_get(url_name):
     """ Return a handle to the KVM API. """
     return VMPool(url_name)
+
+
+class Testsuite(unittest.TestCase):
+    def test_db_ctx(self):
+        """ test_db_ctx. """
+        store_path = "/tmp/testpool/memory"
+        context = "testsuite/test_db_ctx"
+
+        with db_ctx(context) as vms:
+            vms.add("vm1")
+            vms.add("vm2")
+
+        with db_ctx(context) as vms:
+            self.assertTrue("vm1" in vms)
+            self.assertTrue("vm2" in vms)
+            self.assertEqual(len(vms), 2)
+
+        store_path = os.path.join(store_path, context + ".yml")
+        self.assertTrue(os.path.exists(store_path))
+
+if __name__ == "__main__":
+    unittest.main()

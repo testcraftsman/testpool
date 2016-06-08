@@ -8,6 +8,7 @@ def reclaim(api_exts):
     logging.info("reclaiming used VMs.")
 
     for vm in models.VM.objects.filter(status=models.VM.RELEASED):
+        print "MARK: vm", vm.name
         logging.debug("loading %s %s", vm.profile.hv.product,
                       vm.profile.hv.hostname)
         api_ext = api_exts[vm.profile.hv.product]

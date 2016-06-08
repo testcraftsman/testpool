@@ -63,16 +63,18 @@ class Testsuite(unittest.TestCase):
         import testpool.core.algo
         import testpool.core.server
 
-        rtc = testpool.core.algo.setup(api.VMPool("memory"), "test.profile1",
-                                       "template", 10)
+        vmpool = api.vmpool_get("memory")
+        self.assertTrue(vmpool)
+
+        rtc = testpool.core.algo.setup(vmpool, "test.profile1", "template", 10)
         self.assertEqual(rtc, 0)
 
-        vm = testpool.core.algo.pop("test.profile1")
+        vm = testpool.core.algo.pop(vmpool, "test.profile1")
         self.assertTrue(vm)
 
-        testpool.core.algo.push(vm.id)
+        testpool.core.algo.push(vmpool, vm.id)
         with self.assertRaises(testpool.core.algo.ResourceReleased) as check:
-            testpool.core.algo.push(vm.id)
+            testpool.core.algo.push(vmpool, vm.id)
 
         api_exts = testpool.core.ext.ext_list()
         testpool.core.server.reclaim(api_exts)
