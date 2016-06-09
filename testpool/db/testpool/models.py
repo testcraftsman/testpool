@@ -1,6 +1,6 @@
 # (c) 2015 Mark Hamilton, <mark.lee.hamilton@gmail.com>
 #
-# This file is part of testbed
+# This file is part of testpool
 #
 # Testbed is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -144,12 +144,23 @@ class ProfileKVP(models.Model):
         return "%s %s" % (str(self.profile), str(self.kvp))
 
 
+class HV(models.Model):
+    """ Hypervisor. """
+
+    hostname = models.CharField(max_length=128, unique=True)
+    product = models.CharField(max_length=128, unique=True)
+
+    def __str__(self):
+        """ User representation. """
+        return "%s.%s" % (self.product, self.hostname)
+
+
 # pylint: disable=C0103
 class Profile(models.Model):
     """ A Testsuite holds a set of tests. """
 
     name = models.CharField(max_length=128, unique=True)
-    hv = models.ForeignKey("HV")
+    hv = models.ForeignKey(HV)
     template_name = models.CharField(max_length=128)
     kvps = models.ManyToManyField(KVP, through="ProfileKVP")
     vm_max = models.IntegerField(default=1)
@@ -170,14 +181,3 @@ class Profile(models.Model):
             return kvp.kvp.value
         except ProfileKVP.DoesNotExist:
             return default
-
-
-class HV(models.Model):
-    """ Hypervisor. """
-
-    hostname = models.CharField(max_length=128, unique=True)
-    product = models.CharField(max_length=128, unique=True)
-
-    def __str__(self):
-        """ User representation. """
-        return "%s.%s" % (self.product, self.hostname)

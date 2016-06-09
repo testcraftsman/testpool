@@ -14,18 +14,21 @@ from virtinst.User import User
 from contextlib import contextmanager
 
 
+__STORE_PATH__ = "/tmp/testpool/memory"
+
+
 @contextmanager
 def db_ctx(context):
     """ Return VM list. """
 
-    store_path = "/tmp/testpool/memory"
+    store_path = __STORE_PATH__
 
     try:
         os.makedirs(store_path)
     except OSError:
         pass
 
-    store_path = os.path.join(store_path, context + ".yml")
+    store_path = os.path.join(store_path, context)
 
     ##
     # Check to see if the context creates a sub directory.
@@ -51,6 +54,8 @@ def db_ctx(context):
 
     yield vms
 
+    ##
+    # Now store the vms content into the file.
     with open(store_path, "w") as stream:
         stream.write(yaml.dump(vms, default_flow_style=True))
 
@@ -123,7 +128,7 @@ class Testsuite(unittest.TestCase):
             self.assertTrue("vm2" in vms)
             self.assertEqual(len(vms), 2)
 
-        store_path = os.path.join(store_path, context + ".yml")
+        store_path = os.path.join(store_path, context)
         self.assertTrue(os.path.exists(store_path))
 
 if __name__ == "__main__":
