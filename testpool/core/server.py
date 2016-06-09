@@ -1,7 +1,7 @@
 import logging
+import unittest
 import testpool.core.algo
 from testpool.db.testpool import models
-from django.test import TestCase
 
 FOREVER = None
 
@@ -43,7 +43,7 @@ def main(count=FOREVER):
         if count != FOREVER:
             count -= 1
 
-class ModelTestCase(TestCase):
+class ModelTestCase(unittest.TestCase):
     """ Test model output. """
 
     def test_setup(self):

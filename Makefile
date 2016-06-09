@@ -3,8 +3,6 @@ include defs.mk
 test::
 	make -C testpool test
 
-debug_mark::
-
 check::
 
 .PHONY:
@@ -16,3 +14,6 @@ install: build
 
 uninstall:
 	sudo pip uninstall testpool
+
+test::
+	py.test -v testpool

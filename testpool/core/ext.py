@@ -44,7 +44,8 @@ class Testsuite(unittest.TestCase):
 
         api_exts = ext_list()
         self.assertTrue(api_exts)
-        self.assertTrue("memory" in api_exts)
+	print "MARK: ", api_exts
+        self.assertTrue("fake" in api_exts)
 
 if __name__ == "__main__":
     unittest.main()
