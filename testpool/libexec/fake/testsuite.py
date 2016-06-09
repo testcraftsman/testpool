@@ -14,6 +14,7 @@ class Testsuite(unittest.TestCase):
 
     def test_setup(self):
         """ test clone """
+
         import testpool.core.algo
 
         rtc = testpool.core.algo.setup(api.VMPool("memory"), "test.profile1",

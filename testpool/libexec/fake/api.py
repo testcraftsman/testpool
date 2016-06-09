@@ -93,7 +93,7 @@ class VMPool(testpool.core.api.VMPool):
         """ Start VM. """
 
         with db_ctx(self.context) as vms:
-            if vm_name in self.vms:
+            if vm_name in vms:
                 return testpool.core.api.VMPool.STATE_RUNNING
             else:
                 return testpool.core.api.VMPool.STATE_BAD_STATE
@@ -102,7 +102,7 @@ class VMPool(testpool.core.api.VMPool):
         """ Start VM. """
 
         with db_ctx(self.context) as vms:
-            if vm_name in self.vms:
+            if vm_name in vms:
                 return testpool.core.api.VMPool.STATE_RUNNING
             else:
                 return testpool.core.api.VMPool.STATE_NONE
