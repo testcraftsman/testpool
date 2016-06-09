@@ -22,7 +22,7 @@ import logging
 # Assume the django database is in the same directory as this file.
 # If not then change dbsite.
 dbsite=os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-logging.debug("testbed database directory %s ", dbsite)
+logging.debug("testpool database directory %s ", dbsite)
 sys.path.append(dbsite)
 
 from django.core.wsgi import get_wsgi_application

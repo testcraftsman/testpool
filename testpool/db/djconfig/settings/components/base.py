@@ -93,7 +93,7 @@ DATABASES = {
 #        'USER': '{{USER}}',
 #        'PASSWORD': '{{PASSWORD}}',
 #        'HOST': '{{HOST}}',
-#        'NAME': 'testbed',
+#        'NAME': 'testpool',
 #        'init_command': 'Set storage_engine=INNODB',
 #    },
 }
