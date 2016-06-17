@@ -2,11 +2,8 @@
    Algorithm for modifying database.
 """
 import sys
-import unittest
 import logging
-import pkgutil
 import traceback
-import importlib
 from testpooldb import models
 import testpool.core.api
 
@@ -142,17 +139,17 @@ def push(vm_pool, vm_id):
         vm1 = models.VM.objects.get(id=vm_id, status=models.VM.RESERVED)
         vm1.status = models.VM.RELEASED
         vm1.save()
-        vm_pool.push(profile_name, vm1.name)
+        vm_pool.push(vm1.profile.name, vm1.name)
 
         return 0
     except models.VM.DoesNotExist:
         raise ResourceReleased(vm_id)
 
 
-def reclaim(vm_pool, vm):
+def reclaim(vm_pool, vmh):
     """ Reclaim a VM and rebuild it. """
 
-    logging.debug("reclaiming %s", vm.name)
+    logging.debug("reclaiming %s", vmh.name)
 
-    vm_pool.destroy(vm.name)
-    vm_pool.clone(vm.profile.template_name, vm.name)
+    vm_pool.destroy(vmh.name)
+    vm_pool.clone(vmh.profile.template_name, vmh.name)

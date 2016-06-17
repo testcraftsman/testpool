@@ -1,7 +1,7 @@
 """
 Code that handles extensions.
 """
-
+import sys
 import unittest
 import logging
 import importlib
@@ -26,7 +26,7 @@ def ext_list():
         logging.debug("loading api extension %s", package)
         package = importlib.import_module(package)
 
-        for pkgs, module, ispkg in pkgutil.walk_packages(
+        for _, module, ispkg in pkgutil.walk_packages(
                 package.__path__, package.__name__ + ".", onerror=onerror):
             if module.endswith("api") and not ispkg:
                 logging.debug("loaded extension %s", module)
@@ -40,6 +40,7 @@ def ext_list():
 
 
 class Testsuite(unittest.TestCase):
+    """ Test ext interface. """
     def test_list(self):
         """ test_list. """
 
