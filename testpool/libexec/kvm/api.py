@@ -51,6 +51,7 @@ class VMPool(object):
         """ Return the state of the VM. """
         vm_hndl = self.conn.lookupByName(vm_name)
         state = vm_hndl.info()[0]
+        return state
 
     def destroy(self, vm_name):
         """ Destroy VM.

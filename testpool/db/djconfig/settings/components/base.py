@@ -38,7 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.core.management',
     'pure_pagination',
-    'testpool',
+    'testpooldb',
 )
 
 #TEMPLATE_LOADERS = (

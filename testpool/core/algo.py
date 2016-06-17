@@ -1,61 +1,79 @@
+"""
+   Algorithm for modifying database.
+"""
+import sys
 import unittest
 import logging
-from testpool.db.testpool import models
+import pkgutil
+import traceback
+import importlib
+from testpooldb import models
 import testpool.core.api
 
 
 class ResourceReleased(Exception):
+    """ Resource already relased. """
+
     def __init__(self, value):
+        """ Name of resource. """
+        Exception.__init__(self)
         self.value = value
 
     def __str__(self):
+        """ Return the name of the resource. """
         return repr(self.value)
+
 
 class NoResources(Exception):
+    """ Resource does not exist. """
+
     def __init__(self, value):
+        """ Name of resource. """
+        Exception.__init__(self)
         self.value = value
 
     def __str__(self):
+        """ Return the name of the resource. """
         return repr(self.value)
+
 
 def onerror(name):
     """ Show module that fails to load. """
-    LOGGER.error("importing module %s", name)
+
+    logging.error("importing module %s", name)
     _, _, trback = sys.exc_info()
     traceback.print_tb(trback)
 
 
-def intf_find():
-    """ Look for command intf. """
+# def intf_find():
+#    """ Look for command intf. """
+#
+#    for package in testpool.settings.PLUGINS:
+#        logging.debug("loading commands %s", package)
+#
+#        package = importlib.import_module(package)
+#        for _, module, ispkg in pkgutil.walk_packages(package.__path__,
+#                                                      package.__name__ + ".",
+#                                                      onerror=onerror):
+#            ##
+#            # only include commands from commands.py files.
+#            if ispkg or not module.endswith("commands"):
+#                continue
+#            logging.debug("  loading commands from %s", module)
+#            module = importlib.import_module(module)
+#            try:
+#                module.add_subparser(subparser)
+#            except AttributeError, arg:
+#                ##
+#                # This means that the module is missing the add method.
+#                # All modules identified in settings to extend CLI
+#                # must have an add method
+#                logging.error("adding subparser for %s.%s", package, module)
+#                logging.exception(arg)
 
-    for package in testpool.settings.PLUGINS:
-        LOGGER.debug("loading commands %s", package)
 
-        package = importlib.import_module(package)
-        for _, module, ispkg in pkgutil.walk_packages(package.__path__,
-                                                      package.__name__ + ".",
-                                                      onerror=onerror):
-            ##
-            # only include commands from commands.py files.
-            if ispkg or not module.endswith("commands"):
-                continue
-            LOGGER.debug("  loading commands from %s", module)
-            module = importlib.import_module(module)
-            try:
-                module.add_subparser(subparser)
-            except AttributeError, arg:
-                ##
-                # This means that the module is missing the add method.
-                # All modules identified in settings to extend CLI
-                # must have an add method
-                LOGGER.error("adding subparser for %s.%s", package, module)
-                LOGGER.exception(arg)
-
-
-"""
-   Algorithm for modifying database.
-"""
 def setup(intf, profile_name, template_name, vm_max):
+    """ Setup hypervisor. """
 
     logging.info("setup %s %s", profile_name, template_name)
 
@@ -77,7 +95,7 @@ def setup(intf, profile_name, template_name, vm_max):
         logging.debug("setup %s VM %s state %d", profile1, vm1, vm_state)
         if vm_state != testpool.core.api.VMPool.STATE_NONE:
             intf.destroy(vm_name)
-            
+
         intf.clone(template_name, vm_name)
         vm_state = intf.start(vm_name)
         logging.debug("setup %s VM cloned %s %d", profile1, vm1, vm_state)
@@ -95,7 +113,9 @@ def setup(intf, profile_name, template_name, vm_max):
 
     return 0
 
-def pop(vmpool, profile_name):
+
+def pop(vm_pool, profile_name):
+    """ Pop one VM from the VMPool. """
 
     logging.info("pop VM from %s", profile_name)
 
@@ -104,16 +124,17 @@ def pop(vmpool, profile_name):
     try:
         vm1 = models.VM.objects.filter(profile=profile1,
                                        status=models.VM.FREE)[0]
-        vm1.status=models.VM.RESERVED
+        vm1.status = models.VM.RESERVED
         vm1.save()
-        vmpool.pop(profile_name, vm1.name)
+        vm_pool.pop(profile_name, vm1.name)
     except Exception:
         raise NoResources("%s: all VMs taken" % profile_name)
 
     return vm1
 
 
-def push(vm_id):
+def push(vm_pool, vm_id):
+    """ Push one VM by id. """
 
     logging.info("push %d", vm_id)
 
@@ -121,7 +142,7 @@ def push(vm_id):
         vm1 = models.VM.objects.get(id=vm_id, status=models.VM.RESERVED)
         vm1.status = models.VM.RELEASED
         vm1.save()
-        vmpool.push(profile_name, vm1.name)
+        vm_pool.push(profile_name, vm1.name)
 
         return 0
     except models.VM.DoesNotExist:

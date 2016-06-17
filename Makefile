@@ -16,4 +16,4 @@ uninstall:
 	sudo pip uninstall testpool
 
 test::
-	py.test -v testpool
+	py.test -v testpool/*.py testpool/core testpool/libexec/fake

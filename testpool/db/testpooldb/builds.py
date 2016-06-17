@@ -2,7 +2,7 @@
 Common database api for builds.
 """
 import logging
-from testpool import models
+from testpooldb import models
 
 CONTEXT = "build.default"
 

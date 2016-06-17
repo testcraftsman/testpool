@@ -3,15 +3,10 @@ API for KVM hypervisors.
 """
 import os
 import logging
-import yaml
 import unittest
-from xml.etree import ElementTree
-import libvirt
-import virtinst.CloneManager as clmgr
-import testpool.core.api
-from virtinst.User import User
-
 from contextlib import contextmanager
+import yaml
+import testpool.core.api
 
 
 __STORE_PATH__ = "/tmp/testpool/memory"
@@ -41,7 +36,7 @@ def db_ctx(context):
     ##
 
     if os.path.exists(store_path):
-        vms = []
+        vms = set()
         with open(store_path, "r") as stream:
             try:
                 vms = yaml.safe_load(stream)
@@ -114,6 +109,7 @@ def vmpool_get(url_name):
 
 
 class Testsuite(unittest.TestCase):
+    """ Test api. """
     def test_db_ctx(self):
         """ test_db_ctx. """
         store_path = "/tmp/testpool/memory"

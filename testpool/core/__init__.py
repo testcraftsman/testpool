@@ -1,1 +1,4 @@
-__all__ = ["db", "ext"]
+"""
+Core content.
+"""
+__all__ = ["database", "ext"]

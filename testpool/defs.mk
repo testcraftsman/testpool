@@ -1,1 +1,1 @@
-PYTHON_FILES:=libexec
+PYTHON_FILES:=libexec core

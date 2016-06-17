@@ -1,30 +1,36 @@
+""" Test pool Server. """
 import logging
 import unittest
+import time
+import testpool.core.ext
 import testpool.core.algo
-from testpool.db.testpool import models
+from testpooldb import models
 
 FOREVER = None
+
 
 def reclaim(api_exts):
     """ Reclaim any VMs released. """
 
-    for vm in models.VM.objects.filter(status=models.VM.RELEASED):
-        logging.info("loading %s %s", vm.profile.hv.product,
-                     vm.profile.hv.hostname)
-        api_ext = api_exts[vm.profile.hv.product]
-        vm_pool = api_ext.vmpool_get(vm.profile.hv.hostname)
-        testpool.core.algo.reclaim(vm_pool, vm)
+    for vm1 in models.VM.objects.filter(status=models.VM.RELEASED):
+        logging.info("loading %s %s", vm1.profile.hv.product,
+                     vm1.profile.hv.hostname)
+        api_ext = api_exts[vm1.profile.hv.product]
+        vm_pool = api_ext.vmpool_get(vm1.profile.hv.hostname)
+        testpool.core.algo.reclaim(vm_pool, vm1)
+
 
 def setup(api_exts):
     """ Run the setup of each hypervisor. """
 
     logging.info("testpool setup")
-    for vmpool in models.Profile.objects.all():
-        logging.info("setup %s %s %s %s", vmpool, profile.name,
-                     profile.template_name, profile.vm_max)
-        rtc = testpool.core.algo.setup(vmpool, profile.name,
-                                       profile.template_name,
-                                       profile.vm_max)
+    for profile in models.Profile.objects.all():
+        logging.info("setup %s %s %s", profile.name, profile.template_name,
+                     profile.vm_max)
+        api_ext = api_exts[profile.hv.product]
+        testpool.core.algo.setup(api_ext, profile.name, profile.template_name,
+                                 profile.vm_max)
+
 
 def main(count=FOREVER):
     """ Main entry point for server. """
@@ -43,9 +49,13 @@ def main(count=FOREVER):
         if count != FOREVER:
             count -= 1
 
+    return 0
+
+
 class ModelTestCase(unittest.TestCase):
     """ Test model output. """
 
     def test_setup(self):
         """ test_setup. """
-        print "MARK: 1"
+
+        self.assertEqual(main(1), 0)

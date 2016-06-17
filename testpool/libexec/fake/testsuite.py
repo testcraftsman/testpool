@@ -3,10 +3,10 @@ Tests KVM API
 """
 import unittest
 import logging
-import libvirt
 import testpool.core.database
 import testpool.core.ext
-import api
+import testpool.core.algo
+from testpool.libexec.fake import api
 
 
 class Testsuite(unittest.TestCase):
@@ -15,8 +15,6 @@ class Testsuite(unittest.TestCase):
     def test_setup(self):
         """ test clone """
 
-        import testpool.core.algo
-
         rtc = testpool.core.algo.setup(api.VMPool("memory"), "test.profile1",
                                        "test.template", 10)
         self.assertEqual(rtc, 0)
@@ -24,45 +22,40 @@ class Testsuite(unittest.TestCase):
     def test_pop(self):
         """ test_pop Popping resources. """
 
-        import testpool.core.algo
-
-        rtc = testpool.core.algo.setup(api.VMPool("memory"), "test.profile1",
+        vmpool = api.VMPool("memory")
+        rtc = testpool.core.algo.setup(vmpool, "test.profile1",
                                        "test.template", 10)
         self.assertEqual(rtc, 0)
 
         for count in range(10):
             logging.debug("pop count %d", count)
-            vm = testpool.core.algo.pop("test.profile1")
-            self.assertTrue(vm)
+            vm1 = testpool.core.algo.pop(vmpool, "test.profile1")
+            self.assertTrue(vm1)
 
-        with self.assertRaises(testpool.core.algo.NoResources) as check:
-            testpool.core.algo.pop("test.profile1")
+        with self.assertRaises(testpool.core.algo.NoResources):
+            testpool.core.algo.pop(vmpool, "test.profile1")
 
     def test_push(self):
         """ test_push"""
 
         profile_name = "test.profile1"
-        import testpool.core.algo
 
-        rtc = testpool.core.algo.setup(api.VMPool("memory"), profile_name,
-                                       "template", 10)
+        vmpool = api.VMPool("memory")
+        rtc = testpool.core.algo.setup(vmpool, profile_name, "template", 10)
         self.assertEqual(rtc, 0)
 
         for count in range(10):
             logging.debug("pop count %d", count)
 
-            vm = testpool.core.algo.pop(profile_name)
-            self.assertTrue(vm)
-            testpool.core.algo.push(vm.id)
+            vm1 = testpool.core.algo.pop(vmpool, profile_name)
+            self.assertTrue(vm1)
+            testpool.core.algo.push(vmpool, vm1.id)
 
-        with self.assertRaises(testpool.core.algo.NoResources) as check:
-            testpool.core.algo.pop(profile_name)
+        with self.assertRaises(testpool.core.algo.NoResources):
+            testpool.core.algo.pop(vmpool, profile_name)
 
     def test_push_too_many(self):
         """ test_push_too_many"""
-
-        import testpool.core.algo
-        import testpool.core.server
 
         vmpool = api.vmpool_get("memory")
         self.assertTrue(vmpool)
@@ -70,12 +63,12 @@ class Testsuite(unittest.TestCase):
         rtc = testpool.core.algo.setup(vmpool, "test.profile1", "template", 10)
         self.assertEqual(rtc, 0)
 
-        vm = testpool.core.algo.pop(vmpool, "test.profile1")
-        self.assertTrue(vm)
+        vm1 = testpool.core.algo.pop(vmpool, "test.profile1")
+        self.assertTrue(vm1)
 
-        testpool.core.algo.push(vmpool, vm.id)
-        with self.assertRaises(testpool.core.algo.ResourceReleased) as check:
-            testpool.core.algo.push(vmpool, vm.id)
+        testpool.core.algo.push(vmpool, vm1.id)
+        with self.assertRaises(testpool.core.algo.ResourceReleased):
+            testpool.core.algo.push(vmpool, vm1.id)
 
         api_exts = testpool.core.ext.ext_list()
         testpool.core.server.reclaim(api_exts)

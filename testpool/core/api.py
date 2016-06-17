@@ -1,4 +1,9 @@
+""" VM Pool API. """
+
+
 class VMPool(object):
+    """ VM Pool API. """
+
     STATE_RUNNING = 1
     """ The VM is running. """
     STATE_NONE = 2
@@ -10,16 +15,17 @@ class VMPool(object):
         self.context = context
 
     def type_get(self):
-        raise Unsupported("type_get unsupported")
+        """ Return the pool type. """
+        raise NotImplementedError("type_get unsupported")
 
     def clone(self, orig_name, new_name):
-        raise Unsupported("clone unsupported")
+        """ Clone orig_name to new_name. """
+        raise NotImplementedError("clone unsupported")
 
     def start(self, vm_name):
-        raise Unsupported("start unsupported")
-    
-    def vm_state_get(self, vm_name):
-        raise Unsupported("state_get unsupported")
+        """ Start vm_name VM. """
+        raise NotImplementedError("start unsupported")
 
-    def profile_mark_bad(self, profile_name):
-        raise Unsupported("profile_mark_bad %s unsupported" % vm_name)
+    def vm_state_get(self, vm_name):
+        """ Return the current vm_name. """
+        raise NotImplementedError("state_get unsupported")

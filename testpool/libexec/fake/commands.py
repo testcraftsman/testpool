@@ -18,7 +18,7 @@
 CLI for testsuites.
 """
 import logging
-# from . import api
+from . import api
 
 CONTEXT = "default"
 
@@ -28,17 +28,6 @@ def do_add_testsuite(args):
 
     logging.info("adding testsuite %s", args.name)
     api.add_testsuite(args.testplan, args.context, args.name, args.build, [])
-
-
-def do_list_testsuite(args):
-    """ List testsuites based on search criteria. """
-
-    from testdb import models
-    logging.info("listing testsuites")
-    context = models.Context.objects.get(name=args.context)
-    testsuites = models.Testsuite.filter(context, args.filter, keys=[])
-    for testsuite in testsuites:
-        print testsuite
 
 
 def add_subparser(subparser):
@@ -60,14 +49,6 @@ def add_subparser(subparser):
     parser.add_argument("name", type=str, help="Name of the testsuite.")
     parser.add_argument("build", type=str,
                         help="Build associated with the testsuite.")
-
-    ##
-    # List
-    parser = subparser.add_parser("list",
-                                  description="List all of the testsuites.",
-                                  help="List testsuite.")
-    parser.add_argument("--filter", type=str, help="Filter testsuites")
-    parser.set_defaults(func=do_list_testsuite)
 
     ##
     # CLI for adding testsuite keys
