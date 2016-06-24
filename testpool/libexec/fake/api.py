@@ -42,13 +42,12 @@ def db_ctx(context):
                 vms = yaml.safe_load(stream)
                 if not vms:
                     vms = set()
-            except yaml.YAMLError:
+            except yaml.YAMLError, arg:
                 vms = set()
     else:
         vms = set()
 
     yield vms
-
     ##
     # Now store the vms content into the file.
     with open(store_path, "w") as stream:
@@ -69,13 +68,19 @@ class VMPool(testpool.core.api.VMPool):
     def destroy(self, vm_name):
         """ Destroy VM. """
 
+        vm_name = str(vm_name)
+
         logging.debug("memory destroy %s", vm_name)
         with db_ctx(self.context) as vms:
-            vms.remove(vm_name)
+            if vm_name in vms:
+                vms.remove(vm_name)
         return 0
 
     def clone(self, orig_name, new_name):
         """ Clone KVM system. """
+
+        orig_name = str(orig_name)
+        new_name = str(new_name)
 
         logging.debug("memory clone %s %s", orig_name, new_name)
         with db_ctx(self.context) as vms:
@@ -86,6 +91,7 @@ class VMPool(testpool.core.api.VMPool):
 
     def start(self, vm_name):
         """ Start VM. """
+        logging.debug("memory start %s", vm_name)
 
         with db_ctx(self.context) as vms:
             if vm_name in vms:
@@ -95,6 +101,7 @@ class VMPool(testpool.core.api.VMPool):
 
     def vm_state_get(self, vm_name):
         """ Start VM. """
+        logging.debug("memory vm_state_get %s", vm_name)
 
         with db_ctx(self.context) as vms:
             if vm_name in vms:

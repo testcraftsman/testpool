@@ -42,57 +42,31 @@ def onerror(name):
     traceback.print_tb(trback)
 
 
-# def intf_find():
-#    """ Look for command intf. """
-#
-#    for package in testpool.settings.PLUGINS:
-#        logging.debug("loading commands %s", package)
-#
-#        package = importlib.import_module(package)
-#        for _, module, ispkg in pkgutil.walk_packages(package.__path__,
-#                                                      package.__name__ + ".",
-#                                                      onerror=onerror):
-#            ##
-#            # only include commands from commands.py files.
-#            if ispkg or not module.endswith("commands"):
-#                continue
-#            logging.debug("  loading commands from %s", module)
-#            module = importlib.import_module(module)
-#            try:
-#                module.add_subparser(subparser)
-#            except AttributeError, arg:
-#                ##
-#                # This means that the module is missing the add method.
-#                # All modules identified in settings to extend CLI
-#                # must have an add method
-#                logging.error("adding subparser for %s.%s", package, module)
-#                logging.exception(arg)
-
-
-def setup(intf, profile):
+def setup(ext, profile):
     """ Setup hypervisor. """
 
-    logging.info("algo.setup %s %s", profile_name, template_name)
+    logging.info("algo.setup %s %s", profile.name, profile.template_name)
 
-    vmpool = intf.vmpool_get(profile.name)
+    vmpool = ext.vmpool_get(profile.hv.hostname)
 
-    logging.info("setup HV %s %d", profile.hv)
+    logging.info("setup HV %s", profile.hv)
 
     for count in range(profile.vm_max):
-        vm_name = template_name + ".%d" % count
-        logging.info("setup %s VM %s", profile1, vm_name)
-        (vm1, gcr) = models.VM.objects.get_or_create(profile=profile1,
+        vm_name = profile.template_name + ".%d" % count
+        (vm1, gcr) = models.VM.objects.get_or_create(profile=profile,
                                                      name=vm_name)
-        vm_state = intf.vm_state_get(vm_name)
-        logging.debug("setup %s VM %s state %d", profile1, vm1, vm_state)
+        vm_state = vmpool.vm_state_get(vm_name)
+        logging.debug("setup %s VM %s state %d", profile.name, vm1, vm_state)
         if vm_state != testpool.core.api.VMPool.STATE_NONE:
-            intf.destroy(vm_name)
+            vmpool.destroy(vm_name)
 
-        intf.clone(template_name, vm_name)
-        vm_state = intf.start(vm_name)
-        logging.debug("setup %s VM cloned %s %d", profile1, vm1, vm_state)
+        vmpool.clone(profile.template_name, vm_name)
+        vm_state = vmpool.start(vm_name)
+        vm_state_str = testpool.core.api.VMPool.STATE_STRING[vm_state]
+        logging.debug("setup %s VM cloned %s %s", profile.name, vm1,
+                      vm_state_str)
         if vm_state != testpool.core.api.VMPool.STATE_RUNNING:
-            logging.error("setup %s VM %s failed to start", profile1, vm1)
+            logging.error("setup %s VM %s failed to start", profile.name, vm1)
             (kvp, _) = models.KVP.get_or_create("state", "bad")
             vm1.profile.kvp_get_or_create(kvp)
             vm1.status = models.VM.RELEASED
@@ -100,16 +74,17 @@ def setup(intf, profile):
             (kvp, _) = models.KVP.get_or_create("state", "bad")
             vm1.profile.kvp_get_or_create(kvp)
             vm1.status = models.VM.FREE
-            logging.info("%s: vm %s is free", vm1.profile.name, vm1.name)
+            logging.info("%s: vm %s is available", profile.name, vm1.name)
         vm1.save()
 
     return 0
 
 
-def pop(vm_pool, profile_name):
+def pop(ext, profile_name):
     """ Pop one VM from the VMPool. """
 
-    logging.info("pop VM from %s", profile_name)
+    logging.info("algo.pop VM from %s", profile_name)
+    vmpool = ext.vmpool_get(profile.hv.name)
 
     profile1 = models.Profile.objects.get(name=profile_name)
 
@@ -118,33 +93,37 @@ def pop(vm_pool, profile_name):
                                        status=models.VM.FREE)[0]
         vm1.status = models.VM.RESERVED
         vm1.save()
-        vm_pool.pop(profile_name, vm1.name)
+        vmpool.pop(profile_name, vm1.name)
     except Exception:
         raise NoResources("%s: all VMs taken" % profile_name)
 
     return vm1
 
 
-def push(vm_pool, vm_id):
+def push(ext, vm_id):
     """ Push one VM by id. """
 
     logging.info("push %d", vm_id)
+
+    vmpool = ext.vmpool_get(profile.hv.hostname)
 
     try:
         vm1 = models.VM.objects.get(id=vm_id, status=models.VM.RESERVED)
         vm1.status = models.VM.RELEASED
         vm1.save()
-        vm_pool.push(vm1.profile.name, vm1.name)
+        vmpool.push(vm1.profile.name, vm1.name)
 
         return 0
     except models.VM.DoesNotExist:
         raise ResourceReleased(vm_id)
 
 
-def reclaim(vm_pool, vmh):
+def reclaim(ext, vmh):
     """ Reclaim a VM and rebuild it. """
 
     logging.debug("reclaiming %s", vmh.name)
 
-    vm_pool.destroy(vmh.name)
-    vm_pool.clone(vmh.profile.template_name, vmh.name)
+    vmpool = ext.vmpool_get(vmh.profile.hv.hostname)
+
+    vmpool.destroy(vmh.name)
+    vmpool.clone(vmh.profile.template_name, vmh.name)

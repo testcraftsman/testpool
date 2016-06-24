@@ -11,6 +11,12 @@ class VMPool(object):
     STATE_BAD_STATE = 3
     """ System exists but is not running. """
 
+    STATE_STRING = {
+        STATE_RUNNING: "running",
+        STATE_NONE: "none",
+        STATE_BAD_STATE: "badstate"
+        }
+
     def __init__(self, context):
         self.context = context
 
