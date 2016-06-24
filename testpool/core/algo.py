@@ -69,21 +69,16 @@ def onerror(name):
 #                logging.exception(arg)
 
 
-def setup(intf, profile_name, template_name, vm_max):
+def setup(intf, profile):
     """ Setup hypervisor. """
 
-    logging.info("setup %s %s", profile_name, template_name)
+    logging.info("algo.setup %s %s", profile_name, template_name)
 
-    ##
-    # \todo hostname should change to context
-    (hv1, gcr) = models.HV.objects.get_or_create(hostname=intf.context,
-                                                 product=intf.type_get())
-    logging.info("setup HV %s %d", hv1, gcr)
-    (profile1, gcr) = models.Profile.objects.get_or_create(
-        hv=hv1, name=profile_name, template_name=template_name, vm_max=vm_max)
-    logging.debug("setup Profile %s %d", profile1, gcr)
+    vmpool = intf.vmpool_get(profile.name)
 
-    for count in range(vm_max):
+    logging.info("setup HV %s %d", profile.hv)
+
+    for count in range(profile.vm_max):
         vm_name = template_name + ".%d" % count
         logging.info("setup %s VM %s", profile1, vm_name)
         (vm1, gcr) = models.VM.objects.get_or_create(profile=profile1,
