@@ -86,6 +86,5 @@ class Testsuite(unittest.TestCase):
         testpool.core.server.reclaim(api_exts)
 
 if __name__ == "__main__":
-    testpool.core.database.init()
     logging.basicConfig(level=logging.INFO)
     unittest.main()

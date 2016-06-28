@@ -39,7 +39,7 @@ pep8:: $(addsuffix .pep8,$(PYTHON_FILES)) subdirs
 python27:: $(addsuffix .python27,$(PYTHON_FILES))
 
 .PHONY: test
-test::
+test:: subdirs
 
 .PHONY: debug_mark
 debug_mark:: 
