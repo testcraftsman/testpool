@@ -42,53 +42,23 @@ def onerror(name):
     traceback.print_tb(trback)
 
 
-def setup(ext, profile):
-    """ Setup hypervisor. """
+def adapt(vmpool, profile):
+    """ Adapt the pool to the profile size. """
 
-    logging.info("algo.setup %s %s", profile.name, profile.template_name)
+    vm_list = vmpool.vm_list()
 
-    vmpool = ext.vmpool_get(profile.hv.hostname)
-
-    logging.info("setup HV %s %d VMS", profile.hv, profile.vm_max)
-
-    for count in range(profile.vm_max):
-        vm_name = profile.template_name + ".%d" % count
-        (vm1, _) = models.VM.objects.get_or_create(profile=profile,
-                                                   name=vm_name)
-        vm_state = vmpool.vm_state_get(vm_name)
-        logging.debug("setup %s VM %s state %d", profile.name, vm1, vm_state)
-        if vm_state != testpool.core.api.VMPool.STATE_NONE:
-            vmpool.destroy(vm_name)
-
-        vmpool.clone(profile.template_name, vm_name)
-        vm_state = vmpool.start(vm_name)
-        vm_state_str = testpool.core.api.VMPool.STATE_STRING[vm_state]
-        logging.debug("setup %s VM cloned %s %s", profile.name, vm1,
-                      vm_state_str)
-        if vm_state != testpool.core.api.VMPool.STATE_RUNNING:
-            logging.error("setup %s VM %s failed to start", profile.name, vm1)
-            (kvp, _) = models.KVP.get_or_create("state", "bad")
-            vm1.profile.kvp_get_or_create(kvp)
-            vm1.status = models.VM.RELEASED
-        else:
-            (kvp, _) = models.KVP.get_or_create("state", "bad")
-            vm1.profile.kvp_get_or_create(kvp)
-            vm1.status = models.VM.FREE
-            logging.info("%s: vm %s is available", profile.name, vm1.name)
-        vm1.save()
     ##
     # Now remove any extract VMs because the maximum VMs was reduced.
     # The first number used is 0.
-    for vm_name in vmpool.vm_list():
-        try:
-            number = vm_name.split(".")[-1]
-            number = int(number)
-        except ValueError:
-            continue
-
-        if number >= profile.vm_max:
-            logging.error("setup %s reducing pool %s destroyed",
-                          profile.name, vm_name)
+    vm_current = len(vm_list)
+    ##
+    if vm_current == profile.vm_max:
+        return 0
+    elif vm_current > profile.vm_max:
+        for vm_number in range(profile.vm_max, vm_current):
+            vm_name = profile.template_name + ".%d" % vm_number
+            logging.debug("setup %s reducing pool %s destroyed", profile.name,
+                          vm_name)
             vmpool.destroy(vm_name)
 
             try:
@@ -96,9 +66,47 @@ def setup(ext, profile):
                 vm1.delete()
             except models.VM.DoesNotExist:
                 pass
-    ##
+    else:
+        for count in range(profile.vm_max):
+            vm_name = profile.template_name + ".%d" % count
+            (vm1, _) = models.VM.objects.get_or_create(profile=profile,
+                                                       name=vm_name)
+            vm_state = vmpool.vm_state_get(vm_name)
+            if vm_state == testpool.core.api.VMPool.STATE_NONE:
+                logging.debug("%s expanding pool VM with %s ", profile.name,
+                              vm_name)
+                vmpool.clone(profile.template_name, vm_name)
+                vm_state = vmpool.start(vm_name)
 
-    return 0
+                if vm_state != testpool.core.api.VMPool.STATE_RUNNING:
+                    logging.error("%s VM clone %s failed", profile.name,
+                                  vm_name)
+                    (kvp, _) = models.KVP.get_or_create("state", "bad")
+                    vm1.profile.kvp_get_or_create(kvp)
+                    vm1.status = models.VM.RELEASED
+                else:
+                    logging.debug("%s VM cloned %s", profile.name, vm_name)
+                    (kvp, _) = models.KVP.get_or_create("state", "bad")
+                    vm1.profile.kvp_get_or_create(kvp)
+                    vm1.status = models.VM.FREE
+            vm1.save()
+
+
+def remove(vmpool, profile):
+    """ Remove all VMs from the host. """
+
+    for count in range(profile.vm_max):
+        vm_name = profile.template_name + ".%d" % count
+        try:
+            vm1 = models.VM.objects.get(profile=profile, name=vm_name)
+            vm1.delete()
+        except models.VM.DoesNotExist:
+            pass
+
+        vm_state = vmpool.vm_state_get(vm_name)
+        if vm_state != testpool.core.api.VMPool.STATE_NONE:
+            logging.debug("%s removing VM %s", profile.name, vm_name)
+            vmpool.destroy(vm_name)
 
 
 def pop(vmpool, profile_name):
@@ -133,12 +141,10 @@ def push(vmpool, vm_id):
         raise ResourceReleased(vm_id)
 
 
-def reclaim(ext, vmh):
+def reclaim(vmpool, vmh):
     """ Reclaim a VM and rebuild it. """
 
     logging.debug("reclaiming %s", vmh.name)
-
-    vmpool = ext.vmpool_get(vmh.profile.hv.hostname)
 
     vmpool.destroy(vmh.name)
     vmpool.clone(vmh.profile.template_name, vmh.name)

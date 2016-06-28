@@ -9,6 +9,15 @@ from testpooldb import models
 FOREVER = None
 
 
+def adapt(exts):
+    """ Check to see if the pools should change. """
+
+    for profile in models.Profile.objects.all():
+        ext = exts[profile.hv.product]
+        vmpool = ext.vmpool_get(profile.hv.hostname)
+        testpool.core.algo.adapt(vmpool, profile)
+
+
 def reclaim(exts):
     """ Reclaim any VMs released. """
 
@@ -18,7 +27,9 @@ def reclaim(exts):
         logging.info("loading %s %s", vm1.profile.hv.product,
                      vm1.profile.hv.hostname)
         ext = exts[vm1.profile.hv.product]
-        testpool.core.algo.reclaim(ext, vm1)
+        vmpool = ext.vmpool_get(vm1.profile.hv.hostname)
+
+        testpool.core.algo.reclaim(vmpool, vm1)
     logging.info("testpool reclaim ended")
 
 
@@ -30,7 +41,11 @@ def setup(exts):
         logging.info("setup %s %s %s", profile.name, profile.template_name,
                      profile.vm_max)
         ext = exts[profile.hv.product]
-        testpool.core.algo.setup(ext, profile)
+        vmpool = ext.vmpool_get(profile.hv.hostname)
+        logging.info("algo.setup %s %s", profile.name, profile.template_name)
+        logging.info("algo.setup HV %s %d VMs", profile.hv, profile.vm_max)
+
+        testpool.core.algo.remove(vmpool, profile)
     logging.info("testpool setup ended")
 
 
@@ -38,7 +53,6 @@ def main(count=FOREVER, sleep_time=60):
     """ Main entry point for server. """
 
     logging.info("testpool server started")
-
     if count != FOREVER and count < 0:
         raise ValueError("count should be a positive number or FOREVER")
 
@@ -49,8 +63,10 @@ def main(count=FOREVER, sleep_time=60):
     setup(exts)
 
     while count == FOREVER or count > 0:
-        testpool.core.server.reclaim(exts)
-        time.sleep(sleep_time)
+        adapt(exts)
+        reclaim(exts)
+        if sleep_time > 0:
+            time.sleep(sleep_time)
 
         if count != FOREVER:
             count -= 1
@@ -72,9 +88,28 @@ class ModelTestCase(unittest.TestCase):
         models.Profile.objects.update_or_create(name="fake.profile.1",
                                                 hv=hv1, defaults=defaults)
 
-        logging1 = logging.getLogger("django.db.backends")
-        logging1.setLevel(logging.WARNING)
+        self.assertEqual(main(1, 0), 0)
 
-        logging1 = logging.getLogger(None)
-        logging1.setLevel(logging.DEBUG)
-        self.assertEqual(main(1, 1), 0)
+    def test_reclaim_vms(self):
+        """ test_reclaim_vms. """
+
+        product = "fake"
+
+        (hv1, _) = models.HV.objects.get_or_create(hostname="localhost",
+                                                   product=product)
+        defaults = {"vm_max": 10, "template_name": "fake.template"}
+        (profile1, _) = models.Profile.objects.update_or_create(
+            name="fake.profile.2", hv=hv1, defaults=defaults)
+
+        self.assertEqual(main(1, 0), 0)
+
+        ##
+        # Now shrink the pool to two
+        profile1.vm_max = 2
+        profile1.save()
+
+        exts = testpool.core.ext.ext_list()
+        adapt(exts)
+
+        vmpool = exts[product].vmpool_get("localhost")
+        self.assertEqual(len(vmpool.vm_list()), 2)
