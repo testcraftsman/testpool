@@ -7,6 +7,7 @@ import testpool.core.database
 import testpool.core.ext
 import testpool.core.algo
 from testpool.libexec.fake import api
+from testpooldb import models
 
 
 class Testsuite(unittest.TestCase):
@@ -15,16 +16,20 @@ class Testsuite(unittest.TestCase):
     def test_setup(self):
         """ test clone """
 
-        rtc = testpool.core.algo.setup(api.VMPool("memory"), "test.profile1",
-                                       "test.template", 10)
+        profile1 = models.VM.objects.create(name="test.profile1",
+                                            template_name="test.template",
+                                            vm_max=10)
+        rtc = testpool.core.algo.setup(api.VMPool("memory"), profile1)
         self.assertEqual(rtc, 0)
 
     def test_pop(self):
         """ test_pop Popping resources. """
 
+        profile1 = models.VM.objects.create(name="test.profile1",
+                                            template_name="test.template",
+                                            vm_max=10)
         vmpool = api.VMPool("memory")
-        rtc = testpool.core.algo.setup(vmpool, "test.profile1",
-                                       "test.template", 10)
+        rtc = testpool.core.algo.setup(vmpool, profile1)
         self.assertEqual(rtc, 0)
 
         for count in range(10):
@@ -39,9 +44,12 @@ class Testsuite(unittest.TestCase):
         """ test_push"""
 
         profile_name = "test.profile1"
+        profile1 = models.VM.objects.create(name="test.profile1",
+                                            template_name="test.template",
+                                            vm_max=10)
 
         vmpool = api.VMPool("memory")
-        rtc = testpool.core.algo.setup(vmpool, profile_name, "template", 10)
+        rtc = testpool.core.algo.setup(vmpool, profile1)
         self.assertEqual(rtc, 0)
 
         for count in range(10):
@@ -57,10 +65,14 @@ class Testsuite(unittest.TestCase):
     def test_push_too_many(self):
         """ test_push_too_many"""
 
+        profile1 = models.VM.objects.create(name="test.profile1",
+                                            template_name="test.template",
+                                            vm_max=10)
+
         vmpool = api.vmpool_get("memory")
         self.assertTrue(vmpool)
 
-        rtc = testpool.core.algo.setup(vmpool, "test.profile1", "template", 10)
+        rtc = testpool.core.algo.setup(vmpool, profile1)
         self.assertEqual(rtc, 0)
 
         vm1 = testpool.core.algo.pop(vmpool, "test.profile1")

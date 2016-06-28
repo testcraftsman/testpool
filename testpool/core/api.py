@@ -35,3 +35,7 @@ class VMPool(object):
     def vm_state_get(self, vm_name):
         """ Return the current vm_name. """
         raise NotImplementedError("state_get unsupported")
+
+    def vm_list(self):
+        """ Return the list of VMs. """
+        raise NotImplementedError("state_get unsupported")

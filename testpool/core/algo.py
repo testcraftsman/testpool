@@ -49,12 +49,12 @@ def setup(ext, profile):
 
     vmpool = ext.vmpool_get(profile.hv.hostname)
 
-    logging.info("setup HV %s", profile.hv)
+    logging.info("setup HV %s %d VMS", profile.hv, profile.vm_max)
 
     for count in range(profile.vm_max):
         vm_name = profile.template_name + ".%d" % count
-        (vm1, gcr) = models.VM.objects.get_or_create(profile=profile,
-                                                     name=vm_name)
+        (vm1, _) = models.VM.objects.get_or_create(profile=profile,
+                                                   name=vm_name)
         vm_state = vmpool.vm_state_get(vm_name)
         logging.debug("setup %s VM %s state %d", profile.name, vm1, vm_state)
         if vm_state != testpool.core.api.VMPool.STATE_NONE:
@@ -76,16 +76,35 @@ def setup(ext, profile):
             vm1.status = models.VM.FREE
             logging.info("%s: vm %s is available", profile.name, vm1.name)
         vm1.save()
+    ##
+    # Now remove any extract VMs because the maximum VMs was reduced.
+    # The first number used is 0.
+    for vm_name in vmpool.vm_list():
+        try:
+            number = vm_name.split(".")[-1]
+            number = int(number)
+        except ValueError:
+            continue
+
+        if number >= profile.vm_max:
+            logging.error("setup %s reducing pool %s destroyed",
+                          profile.name, vm_name)
+            vmpool.destroy(vm_name)
+
+            try:
+                vm1 = models.VM.objects.get(profile=profile, name=vm_name)
+                vm1.delete()
+            except models.VM.DoesNotExist:
+                pass
+    ##
 
     return 0
 
 
-def pop(ext, profile_name):
+def pop(vmpool, profile_name):
     """ Pop one VM from the VMPool. """
 
     logging.info("algo.pop VM from %s", profile_name)
-    vmpool = ext.vmpool_get(profile.hv.name)
-
     profile1 = models.Profile.objects.get(name=profile_name)
 
     try:
@@ -100,19 +119,15 @@ def pop(ext, profile_name):
     return vm1
 
 
-def push(ext, vm_id):
+def push(vmpool, vm_id):
     """ Push one VM by id. """
 
     logging.info("push %d", vm_id)
-
-    vmpool = ext.vmpool_get(profile.hv.hostname)
-
     try:
         vm1 = models.VM.objects.get(id=vm_id, status=models.VM.RESERVED)
         vm1.status = models.VM.RELEASED
         vm1.save()
         vmpool.push(vm1.profile.name, vm1.name)
-
         return 0
     except models.VM.DoesNotExist:
         raise ResourceReleased(vm_id)

@@ -12,6 +12,25 @@ import testpool.core.api
 __STORE_PATH__ = "/tmp/testpool/memory"
 
 
+def db_vm_read(context):
+    """ Read the current database of VMS. """
+
+    store_path = os.path.join(__STORE_PATH__, context)
+    if os.path.exists(store_path):
+        vms = set()
+        with open(store_path, "r") as stream:
+            try:
+                vms = yaml.safe_load(stream)
+                if not vms:
+                    vms = set()
+            except yaml.YAMLError:
+                vms = set()
+    else:
+        vms = set()
+
+    return vms
+
+
 @contextmanager
 def db_ctx(context):
     """ Return VM list. """
@@ -34,18 +53,7 @@ def db_ctx(context):
     except OSError:
         pass
     ##
-
-    if os.path.exists(store_path):
-        vms = set()
-        with open(store_path, "r") as stream:
-            try:
-                vms = yaml.safe_load(stream)
-                if not vms:
-                    vms = set()
-            except yaml.YAMLError, arg:
-                vms = set()
-    else:
-        vms = set()
+    vms = db_vm_read(context)
 
     yield vms
     ##
@@ -84,7 +92,6 @@ class VMPool(testpool.core.api.VMPool):
 
         logging.debug("memory clone %s %s", orig_name, new_name)
         with db_ctx(self.context) as vms:
-            vms.add(orig_name)
             vms.add(new_name)
 
         return 0
@@ -108,6 +115,13 @@ class VMPool(testpool.core.api.VMPool):
                 return testpool.core.api.VMPool.STATE_RUNNING
             else:
                 return testpool.core.api.VMPool.STATE_NONE
+
+    def vm_list(self):
+        """ Start VM. """
+
+        logging.debug("memory vm_list")
+
+        return list(db_vm_read(self.context))
 
 
 def vmpool_get(url_name):

@@ -3,4 +3,4 @@ include defs.mk
 include $(ROOT)/defs.mk
 
 test::
-	py.test -v core/*.py
+	export PYTHONPATH=$(PYTHONPATH);py.test -v libexec core

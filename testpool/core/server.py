@@ -68,9 +68,9 @@ class ModelTestCase(unittest.TestCase):
         (hv1, _) = models.HV.objects.get_or_create(hostname="localhost",
                                                    product="fake")
 
-        defaults={"vm_max": 1, "template_name": "fake.template"}
-        (profile1, _) = models.Profile.objects.update_or_create(
-            name="fake.profile.1", hv=hv1, defaults=defaults)
+        defaults = {"vm_max": 1, "template_name": "fake.template"}
+        models.Profile.objects.update_or_create(name="fake.profile.1",
+                                                hv=hv1, defaults=defaults)
 
         logging1 = logging.getLogger("django.db.backends")
         logging1.setLevel(logging.WARNING)
