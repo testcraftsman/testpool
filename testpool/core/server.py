@@ -90,8 +90,8 @@ class ModelTestCase(unittest.TestCase):
 
         self.assertEqual(main(1, 0), 0)
 
-    def test_reclaim_vms(self):
-        """ test_reclaim_vms. """
+    def test_shrink(self):
+        """ test_shrink. """
 
         product = "fake"
 
@@ -113,3 +113,27 @@ class ModelTestCase(unittest.TestCase):
 
         vmpool = exts[product].vmpool_get("localhost")
         self.assertEqual(len(vmpool.vm_list()), 2)
+
+    def test_expand(self):
+        """ test_expand. """
+
+        product = "fake"
+
+        (hv1, _) = models.HV.objects.get_or_create(hostname="localhost",
+                                                   product=product)
+        defaults = {"vm_max": 3, "template_name": "fake.template"}
+        (profile1, _) = models.Profile.objects.update_or_create(
+            name="fake.profile.2", hv=hv1, defaults=defaults)
+
+        self.assertEqual(main(1, 0), 0)
+
+        ##
+        # Now shrink the pool to two
+        profile1.vm_max = 12
+        profile1.save()
+
+        exts = testpool.core.ext.ext_list()
+        adapt(exts)
+
+        vmpool = exts[product].vmpool_get("localhost")
+        self.assertEqual(len(vmpool.vm_list()), 12)
