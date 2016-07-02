@@ -24,6 +24,8 @@ import pkgutil
 import argparse
 import traceback
 import testpool.settings
+from testpool.core import profile
+from testpool.core import vm
 
 
 def logger_create():
@@ -50,12 +52,6 @@ def args_process(args):
     elif args.verbose > 1:
         LOGGER.setLevel(level=logging.DEBUG)
         LOGGER.info("verbosity level set to DEBUG")
-
-    if args.database:
-        ##
-        # Database has been set.
-        import testdb.router
-        testdb.router.DefaultRouter.set_db(args.database)
 
     LOGGER.debug(args)
     args.func(args)
@@ -85,6 +81,12 @@ def extensions_find(arg_parser):
     subparser = arg_parser.add_subparsers(
         title="subcommands", description="Valid subcommands",
         help="Each subcommands supports --help for additional information.")
+
+    ##
+    # Add common commands.
+    profile.add_subparser(subparser)
+    vm.add_subparser(subparser)
+    ##
 
     for package in testpool.settings.PLUGINS:
         LOGGER.debug("loading commands %s", package)

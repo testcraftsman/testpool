@@ -4,6 +4,7 @@ import unittest
 import time
 import testpool.core.ext
 import testpool.core.algo
+from testpool.core import profile
 from testpooldb import models
 
 FOREVER = None
@@ -12,10 +13,10 @@ FOREVER = None
 def adapt(exts):
     """ Check to see if the pools should change. """
 
-    for profile in models.Profile.objects.all():
-        ext = exts[profile.hv.product]
-        vmpool = ext.vmpool_get(profile.hv.hostname)
-        testpool.core.algo.adapt(vmpool, profile)
+    for profile1 in models.Profile.objects.all():
+        ext = exts[profile1.hv.product]
+        vmpool = ext.vmpool_get(profile1.hv.hostname)
+        testpool.core.algo.adapt(vmpool, profile1)
 
 
 def reclaim(exts):
@@ -37,15 +38,15 @@ def setup(exts):
     """ Run the setup of each hypervisor. """
 
     logging.info("testpool setup started")
-    for profile in models.Profile.objects.all():
-        logging.info("setup %s %s %s", profile.name, profile.template_name,
-                     profile.vm_max)
-        ext = exts[profile.hv.product]
-        vmpool = ext.vmpool_get(profile.hv.hostname)
-        logging.info("algo.setup %s %s", profile.name, profile.template_name)
-        logging.info("algo.setup HV %s %d VMs", profile.hv, profile.vm_max)
+    for profile1 in models.Profile.objects.all():
+        logging.info("setup %s %s %s", profile1.name, profile1.template_name,
+                     profile1.vm_max)
+        ext = exts[profile1.hv.product]
+        vmpool = ext.vmpool_get(profile1.hv.hostname)
+        logging.info("algo.setup %s %s", profile1.name, profile1.template_name)
+        logging.info("algo.setup HV %s %d VMs", profile1.hv, profile1.vm_max)
 
-        testpool.core.algo.remove(vmpool, profile)
+        testpool.core.algo.remove(vmpool, profile1)
     logging.info("testpool setup ended")
 
 
@@ -85,10 +86,14 @@ class ModelTestCase(unittest.TestCase):
                                                    product="fake")
 
         defaults = {"vm_max": 1, "template_name": "fake.template"}
-        models.Profile.objects.update_or_create(name="fake.profile.1",
-                                                hv=hv1, defaults=defaults)
+        (profile1, _) = models.Profile.objects.update_or_create(
+            name="fake.profile.1", hv=hv1, defaults=defaults)
 
         self.assertEqual(main(1, 0), 0)
+        profile1.delete()
+
+    def tearDown(self):
+        profile.profile_remove("localhost", "fake", "fake.profile.1")
 
     def test_shrink(self):
         """ test_shrink. """
@@ -102,13 +107,15 @@ class ModelTestCase(unittest.TestCase):
             name="fake.profile.2", hv=hv1, defaults=defaults)
 
         self.assertEqual(main(1, 0), 0)
+        exts = testpool.core.ext.ext_list()
+
+        vmpool = exts[product].vmpool_get("localhost")
 
         ##
         # Now shrink the pool to two
         profile1.vm_max = 2
         profile1.save()
 
-        exts = testpool.core.ext.ext_list()
         adapt(exts)
 
         vmpool = exts[product].vmpool_get("localhost")
@@ -137,3 +144,7 @@ class ModelTestCase(unittest.TestCase):
 
         vmpool = exts[product].vmpool_get("localhost")
         self.assertEqual(len(vmpool.vm_list()), 12)
+
+
+if __name__ == "__main__":
+    unittest.main()

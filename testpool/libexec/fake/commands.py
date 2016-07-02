@@ -15,51 +15,50 @@
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
 """
-CLI for testsuites.
+Fake profiles used for development.
+
+This profile pretends to manage a pool of VMs which are merely pretend
+VMS which do not exist.
 """
 import logging
-from . import api
+import profile
 
 CONTEXT = "default"
 
 
-def do_add_testsuite(args):
-    """ Add a testsuite to the database. """
+def do_fake_add(args):
+    """ Add or modify an fake profile.
+    If the fake profile exists, calling this again will change the
+    maximum number of VMS and the template name.
+    """
 
-    logging.info("adding testsuite %s", args.name)
-    api.add_testsuite(args.testplan, args.context, args.name, args.build, [])
+    logging.info("fake adding profile%s", args.profile)
+    profile.add("localhost", "fake", args.profile, args.max,
+                args.template_name)
 
 
 def add_subparser(subparser):
     """ Create testsuite CLI commands. """
 
-    parser = subparser.add_parser("testsuite", help=__doc__)
-    parser.add_argument("--testplan", default=None,
-                        help="identifies specific testplan.")
-    parser.add_argument("--context", default=CONTEXT, type=str,
-                        help="Testsuite context.")
-    subparser = parser.add_subparsers()
+    parser = subparser.add_parser("fake",
+                                  help="Commands to manage fake profiles",
+                                  description=__doc__)
+    rootparser = parser.add_subparsers()
 
     ##
     # Add
-    parser = subparser.add_parser("add",
-                                  description="Add a testsuite",
-                                  help="Add a testsuite.")
-    parser.set_defaults(func=do_add_testsuite)
-    parser.add_argument("name", type=str, help="Name of the testsuite.")
-    parser.add_argument("build", type=str,
-                        help="Build associated with the testsuite.")
-
+    parser = rootparser.add_parser("profile",
+                                   description="profile commands",
+                                   help="Add a testsuite.")
+    rootparser = parser.add_subparsers()
+    parser = rootparser.add_parser("add",
+                                   description="Add a profile",
+                                   help="Add a testsuite.")
+    parser.set_defaults(func=do_fake_add)
+    parser.add_argument("profile", type=str, help="Name of the fake profile.")
+    parser.add_argument("template-name", type=str,
+                        help="Number of VM to manage.")
+    parser.add_argument("max", type=int, help="Number of VM to manage.")
     ##
-    # CLI for adding testsuite keys
-    # Keys are how testsuites are organized and searched in the database.
-    parser = subparser.add_parser("key",
-                                  help="APIs for manipulating testsuite keys")
-    subparser = parser.add_subparsers()
-    parser = subparser.add_parser("add",
-                                  description="Add a testsuite key",
-                                  help="Add a testsuite key.")
 
-    ##
-    # List
     return subparser

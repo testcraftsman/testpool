@@ -51,11 +51,12 @@ def adapt(vmpool, profile):
     # Now remove any extract VMs because the maximum VMs was reduced.
     # The first number used is 0.
     vm_current = len(vm_list)
+
     ##
     if vm_current == profile.vm_max:
         return 0
     elif vm_current > profile.vm_max:
-        for vm_number in range(profile.vm_max, vm_current):
+        for vm_number in range(profile.vm_max, vm_current+1):
             vm_name = profile.template_name + ".%d" % vm_number
             logging.debug("setup %s reducing pool %s destroyed", profile.name,
                           vm_name)
