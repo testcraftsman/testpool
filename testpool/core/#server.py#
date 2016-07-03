@@ -14,8 +14,8 @@ def argparser():
 
     arg_parser = common.argparser()
     arg_parser.add_argument('--count', type=int, default=FOREVER)
-    arg_parser.add_argument('--sleep-time', type=int, default=60,
-                            description="Time between checking for changes.")
+    arg_parser.add_argument('--sleep-time',
+                            description="how long to wait between checking for changes.",
 
     def main(count=FOREVER, sleep_time=60):
 

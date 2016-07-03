@@ -24,34 +24,18 @@ import pkgutil
 import argparse
 import traceback
 import testpool.settings
+from testpool.core import logger
 from testpool.core import profile
 from testpool.core import vm
 
 
-def logger_create():
-    """ Create logger for tbd application. """
-    console = logging.StreamHandler()
-    formatter = logging.Formatter(testpool.settings.FMT)
-    console.setFormatter(formatter)
-    logger = logging.getLogger("")
-    logger.addHandler(console)
-    logger.setLevel(logging.WARNING)
-
-    return logger
-
-
-LOGGER = logger_create()
+LOGGER = logger.create()
 
 
 def args_process(args):
     """ Process any generic parameters. """
 
-    if args.verbose == 1:
-        LOGGER.setLevel(level=logging.INFO)
-        LOGGER.info("verbosity level set to INFO")
-    elif args.verbose > 1:
-        LOGGER.setLevel(level=logging.DEBUG)
-        LOGGER.info("verbosity level set to DEBUG")
+    logger.args_process(LOGGER, args)
 
     LOGGER.debug(args)
     args.func(args)
@@ -71,6 +55,7 @@ def argparser():
 def onerror(name):
     """ Show module that fails to load. """
     LOGGER.error("importing module %s", name)
+
     _, _, trback = sys.exc_info()
     traceback.print_tb(trback)
 
