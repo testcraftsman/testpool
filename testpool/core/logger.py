@@ -1,5 +1,9 @@
+"""
+Handles logging.
+"""
 import logging
 import testpool.settings
+
 
 def create():
     """ Create logger for tbd application. """
@@ -11,6 +15,7 @@ def create():
     logger.setLevel(logging.WARNING)
 
     return logger
+
 
 def args_process(logger, args):
     """ Process any generic parameters. """

@@ -4,20 +4,22 @@ import unittest
 import time
 import testpool.core.ext
 import testpool.core.algo
+from testpool.core import commands
 from testpool.core import profile
 from testpooldb import models
 
 FOREVER = None
 
+
 def argparser():
     """Create server arg parser. """
 
-    arg_parser = common.argparser()
-    arg_parser.add_argument('--count', type=int, default=FOREVER)
-    arg_parser.add_argument('--sleep-time', type=int, default=60,
-                            description="Time between checking for changes.")
+    parser = commands.argparser()
+    parser.add_argument('--count', type=int, default=FOREVER)
+    parser.add_argument('--sleep-time', type=int, default=60,
+                        help="Time between checking for changes.")
 
-    def main(count=FOREVER, sleep_time=60):
+    return parser
 
 
 def adapt(exts):
@@ -60,8 +62,10 @@ def setup(exts):
     logging.info("testpool setup ended")
 
 
-def main(count=FOREVER, sleep_time=60):
+def main(args):
     """ Main entry point for server. """
+
+    count = args.count
 
     logging.info("testpool server started")
     if count != FOREVER and count < 0:
@@ -76,8 +80,8 @@ def main(count=FOREVER, sleep_time=60):
     while count == FOREVER or count > 0:
         adapt(exts)
         reclaim(exts)
-        if sleep_time > 0:
-            time.sleep(sleep_time)
+        if args.sleep_time > 0:
+            time.sleep(args.sleep_time)
 
         if count != FOREVER:
             count -= 1
@@ -89,6 +93,16 @@ def main(count=FOREVER, sleep_time=60):
 class ModelTestCase(unittest.TestCase):
     """ Test model output. """
 
+    @staticmethod
+    def fake_args():
+        """ Return fake args to pass to main. """
+        parser = argparser()
+        args = parser.parse_args()
+        args.count = 1
+        args.sleep_time = 0
+
+        return args
+
     def test_setup(self):
         """ test_setup. """
 
@@ -99,7 +113,8 @@ class ModelTestCase(unittest.TestCase):
         (profile1, _) = models.Profile.objects.update_or_create(
             name="fake.profile.1", hv=hv1, defaults=defaults)
 
-        self.assertEqual(main(1, 0), 0)
+        args = ModelTestCase.fake_args()
+        self.assertEqual(main(args), 0)
         profile1.delete()
 
     def tearDown(self):
@@ -116,7 +131,8 @@ class ModelTestCase(unittest.TestCase):
         (profile1, _) = models.Profile.objects.update_or_create(
             name="fake.profile.2", hv=hv1, defaults=defaults)
 
-        self.assertEqual(main(1, 0), 0)
+        args = ModelTestCase.fake_args()
+        self.assertEqual(main(args), 0)
         exts = testpool.core.ext.ext_list()
 
         vmpool = exts[product].vmpool_get("localhost")
@@ -142,7 +158,8 @@ class ModelTestCase(unittest.TestCase):
         (profile1, _) = models.Profile.objects.update_or_create(
             name="fake.profile.2", hv=hv1, defaults=defaults)
 
-        self.assertEqual(main(1, 0), 0)
+        args = ModelTestCase.fake_args()
+        self.assertEqual(main(args), 0)
 
         ##
         # Now shrink the pool to two

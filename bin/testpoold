@@ -11,12 +11,8 @@ def parse():
     """ main entry point. """
     from testpool.core import server
 
-    arg_parser = common.argparser()
-    arg_parser = server.argparser(arg_parser)
-
+    arg_parser = server.argparser()
     args = arg_parser.parse_args()
-    logger.args_process(LOGGER, args)
-
     server.main(args)
 
 
@@ -49,7 +45,7 @@ if __name__ == "__main__":
         from testpool.core import database
 
         database.init()
-        args = parse()
+        sys.exit(main())
 
     except Exception, arg:
         logging.exception(arg)

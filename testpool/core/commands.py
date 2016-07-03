@@ -18,7 +18,6 @@
 Contains functionality common to extensions.
 """
 import sys
-import logging
 import importlib
 import pkgutil
 import argparse
