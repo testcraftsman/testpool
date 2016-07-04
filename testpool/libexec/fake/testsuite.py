@@ -44,11 +44,11 @@ class Testsuite(unittest.TestCase):
 
         for count in range(10):
             logging.debug("pop count %d", count)
-            vm1 = testpool.core.algo.pop("test.profile1")
+            vm1 = testpool.core.algo.pop("localhost", "fake", "test.profile1")
             self.assertTrue(vm1)
 
         with self.assertRaises(testpool.core.algo.NoResources):
-            testpool.core.algo.pop("test.profile1")
+            testpool.core.algo.pop("localhost", "fake", "test.profile1")
 
     def test_push(self):
         """ test_push"""
@@ -69,15 +69,17 @@ class Testsuite(unittest.TestCase):
         for count in range(10):
             logging.debug("pop count %d", count)
 
-            vm1 = testpool.core.algo.pop(profile_name)
+            vm1 = testpool.core.algo.pop("localhost", "fake", profile_name)
             self.assertTrue(vm1)
             testpool.core.algo.push(vm1.id)
 
         with self.assertRaises(testpool.core.algo.NoResources):
-            testpool.core.algo.pop(profile_name)
+            testpool.core.algo.pop("localhost", "fake", profile_name)
 
     def test_push_too_many(self):
         """ test_push_too_many"""
+
+        profile_name = "test.profile1"
 
         (hv1, _) = models.HV.objects.get_or_create(hostname="localhost",
                                                    product="fake")
@@ -85,13 +87,13 @@ class Testsuite(unittest.TestCase):
             name="test.profile1", hv=hv1, template_name="test.template",
             vm_max=10)
 
-        vmpool = api.vmpool_get("localhost")
+        vmpool = api.vmpool_get("localhost", profile_name)
         self.assertTrue(vmpool)
         testpool.core.algo.remove(vmpool, profile1)
         rtc = testpool.core.algo.adapt(vmpool, profile1)
         self.assertEqual(rtc, 10)
 
-        vm1 = testpool.core.algo.pop("test.profile1")
+        vm1 = testpool.core.algo.pop("localhost", "fake", profile_name)
         self.assertTrue(vm1)
 
         testpool.core.algo.push(vm1.id)

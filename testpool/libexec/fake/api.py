@@ -9,7 +9,7 @@ import yaml
 import testpool.core.api
 
 
-__STORE_PATH__ = "/tmp/testpool/memory"
+__STORE_PATH__ = "/tmp/testpool/fake"
 
 
 def db_vm_read(context):
@@ -71,14 +71,14 @@ class VMPool(testpool.core.api.VMPool):
 
     def type_get(self):
         """ Return the type of the interface. """
-        return "memory"
+        return "fake"
 
     def destroy(self, vm_name):
         """ Destroy VM. """
 
         vm_name = str(vm_name)
 
-        logging.debug("memory destroy %s", vm_name)
+        logging.debug("fake destroy %s", vm_name)
         with db_ctx(self.context) as vms:
             if vm_name in vms:
                 vms.remove(vm_name)
@@ -90,7 +90,7 @@ class VMPool(testpool.core.api.VMPool):
         orig_name = str(orig_name)
         new_name = str(new_name)
 
-        logging.debug("memory clone %s %s", orig_name, new_name)
+        logging.debug("fake clone %s %s", orig_name, new_name)
         with db_ctx(self.context) as vms:
             vms.add(new_name)
 
@@ -98,7 +98,7 @@ class VMPool(testpool.core.api.VMPool):
 
     def start(self, vm_name):
         """ Start VM. """
-        logging.debug("memory start %s", vm_name)
+        logging.debug("fake start %s", vm_name)
 
         with db_ctx(self.context) as vms:
             if vm_name in vms:
@@ -108,7 +108,7 @@ class VMPool(testpool.core.api.VMPool):
 
     def vm_state_get(self, vm_name):
         """ Start VM. """
-        logging.debug("memory vm_state_get %s", vm_name)
+        logging.debug("fake vm_state_get %s", vm_name)
 
         with db_ctx(self.context) as vms:
             if vm_name in vms:
@@ -119,21 +119,22 @@ class VMPool(testpool.core.api.VMPool):
     def vm_list(self):
         """ Start VM. """
 
-        logging.debug("memory vm_list")
+        logging.debug("fake vm_list")
 
         return list(db_vm_read(self.context))
 
 
-def vmpool_get(url_name):
+def vmpool_get(url_name, profile):
     """ Return a handle to the KVM API. """
-    return VMPool(url_name)
+    context = "%s/%s" % (url_name, profile)
+    return VMPool(context)
 
 
 class Testsuite(unittest.TestCase):
     """ Test api. """
     def test_db_ctx(self):
         """ test_db_ctx. """
-        store_path = "/tmp/testpool/memory"
+        store_path = "/tmp/testpool/fake"
         context = "testsuite/test_db_ctx"
 
         with db_ctx(context) as vms:

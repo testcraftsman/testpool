@@ -27,7 +27,7 @@ def adapt(exts):
 
     for profile1 in models.Profile.objects.all():
         ext = exts[profile1.hv.product]
-        vmpool = ext.vmpool_get(profile1.hv.hostname)
+        vmpool = ext.vmpool_get(profile1.hv.hostname, profile1.name)
         testpool.core.algo.adapt(vmpool, profile1)
 
 
@@ -40,7 +40,7 @@ def reclaim(exts):
         logging.info("loading %s %s", vm1.profile.hv.product,
                      vm1.profile.hv.hostname)
         ext = exts[vm1.profile.hv.product]
-        vmpool = ext.vmpool_get(vm1.profile.hv.hostname)
+        vmpool = ext.vmpool_get(vm1.profile.hv.hostname, vm1.profile.name)
 
         testpool.core.algo.reclaim(vmpool, vm1)
     logging.info("testpool reclaim ended")
@@ -54,7 +54,7 @@ def setup(exts):
         logging.info("setup %s %s %s", profile1.name, profile1.template_name,
                      profile1.vm_max)
         ext = exts[profile1.hv.product]
-        vmpool = ext.vmpool_get(profile1.hv.hostname)
+        vmpool = ext.vmpool_get(profile1.hv.hostname, profile1.name)
         logging.info("algo.setup %s %s", profile1.name, profile1.template_name)
         logging.info("algo.setup HV %s %d VMs", profile1.hv, profile1.vm_max)
 
@@ -127,8 +127,10 @@ class ModelTestCase(unittest.TestCase):
         """ test_shrink. """
 
         product = "fake"
+        profile_name = "fake.profile.2"
+        hostname = "localhost"
 
-        (hv1, _) = models.HV.objects.get_or_create(hostname="localhost",
+        (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
                                                    product=product)
         defaults = {"vm_max": 10, "template_name": "fake.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
@@ -138,7 +140,7 @@ class ModelTestCase(unittest.TestCase):
         self.assertEqual(main(args), 0)
         exts = testpool.core.ext.ext_list()
 
-        vmpool = exts[product].vmpool_get("localhost")
+        vmpool = exts[product].vmpool_get(hostname, profile_name)
 
         ##
         # Now shrink the pool to two
@@ -147,19 +149,21 @@ class ModelTestCase(unittest.TestCase):
 
         adapt(exts)
 
-        vmpool = exts[product].vmpool_get("localhost")
+        vmpool = exts[product].vmpool_get(hostname, profile_name)
         self.assertEqual(len(vmpool.vm_list()), 2)
 
     def test_expand(self):
         """ test_expand. """
 
         product = "fake"
+        hostname = "localhost"
+        profile_name = "fake.profile.3"
 
-        (hv1, _) = models.HV.objects.get_or_create(hostname="localhost",
+        (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
                                                    product=product)
         defaults = {"vm_max": 3, "template_name": "fake.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name="fake.profile.2", hv=hv1, defaults=defaults)
+            name=profile_name, hv=hv1, defaults=defaults)
 
         args = ModelTestCase.fake_args()
         self.assertEqual(main(args), 0)
@@ -172,5 +176,5 @@ class ModelTestCase(unittest.TestCase):
         exts = testpool.core.ext.ext_list()
         adapt(exts)
 
-        vmpool = exts[product].vmpool_get("localhost")
+        vmpool = exts[product].vmpool_get(hostname, profile_name)
         self.assertEqual(len(vmpool.vm_list()), 12)
