@@ -43,7 +43,12 @@ def onerror(name):
 
 
 def adapt(vmpool, profile):
-    """ Adapt the pool to the profile size. """
+    """ Adapt the pool to the profile size.
+    @return Returns the number of changes. Positive number indicates the
+            number of VMs created.
+    """
+
+    changes = 0
 
     vm_list = vmpool.vm_list()
 
@@ -54,9 +59,10 @@ def adapt(vmpool, profile):
 
     ##
     if vm_current == profile.vm_max:
-        return 0
+        return changes
     elif vm_current > profile.vm_max:
         for vm_number in range(profile.vm_max, vm_current+1):
+            changes -= 1
             vm_name = profile.template_name + ".%d" % vm_number
             logging.debug("setup %s reducing pool %s destroyed", profile.name,
                           vm_name)
@@ -68,7 +74,10 @@ def adapt(vmpool, profile):
             except models.VM.DoesNotExist:
                 pass
     else:
+        ##
+        # there are not enough VMs. Add more.
         for count in range(profile.vm_max):
+            changes += 1
             vm_name = profile.template_name + ".%d" % count
             (vm1, _) = models.VM.objects.get_or_create(profile=profile,
                                                        name=vm_name)
@@ -91,6 +100,8 @@ def adapt(vmpool, profile):
                     vm1.profile.kvp_get_or_create(kvp)
                     vm1.status = models.VM.FREE
             vm1.save()
+        ##
+    return changes
 
 
 def remove(vmpool, profile):
@@ -110,25 +121,24 @@ def remove(vmpool, profile):
             vmpool.destroy(vm_name)
 
 
-def pop(vmpool, profile_name):
+def pop(profile_name):
     """ Pop one VM from the VMPool. """
 
     logging.info("algo.pop VM from %s", profile_name)
     profile1 = models.Profile.objects.get(name=profile_name)
 
-    try:
-        vm1 = models.VM.objects.filter(profile=profile1,
-                                       status=models.VM.FREE)[0]
-        vm1.status = models.VM.RESERVED
-        vm1.save()
-        vmpool.pop(profile_name, vm1.name)
-    except Exception:
+    vms = models.VM.objects.filter(profile=profile1, status=models.VM.FREE)
+    if vms.count() == 0:
         raise NoResources("%s: all VMs taken" % profile_name)
+
+    vm1 = vms[0]
+    vm1.status = models.VM.RESERVED
+    vm1.save()
 
     return vm1
 
 
-def push(vmpool, vm_id):
+def push(vm_id):
     """ Push one VM by id. """
 
     logging.info("push %d", vm_id)
@@ -136,7 +146,6 @@ def push(vmpool, vm_id):
         vm1 = models.VM.objects.get(id=vm_id, status=models.VM.RESERVED)
         vm1.status = models.VM.RELEASED
         vm1.save()
-        vmpool.push(vm1.profile.name, vm1.name)
         return 0
     except models.VM.DoesNotExist:
         raise ResourceReleased(vm_id)
@@ -149,3 +158,4 @@ def reclaim(vmpool, vmh):
 
     vmpool.destroy(vmh.name)
     vmpool.clone(vmh.profile.template_name, vmh.name)
+    vmpool.start(vmh.name)

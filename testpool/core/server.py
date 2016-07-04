@@ -14,7 +14,7 @@ FOREVER = None
 def argparser():
     """Create server arg parser. """
 
-    parser = commands.argparser()
+    parser = commands.argparser("testpool")
     parser.add_argument('--count', type=int, default=FOREVER)
     parser.add_argument('--sleep-time', type=int, default=60,
                         help="Time between checking for changes.")
@@ -90,18 +90,21 @@ def main(args):
     return 0
 
 
+# pylint: disable=R0903
+class FakeArgs(object):
+    """ Used in testing to pass values to server.main. """
+    def __init__(self):
+        self.count = 1
+        self.sleep_time = 0
+
+
 class ModelTestCase(unittest.TestCase):
     """ Test model output. """
 
     @staticmethod
     def fake_args():
         """ Return fake args to pass to main. """
-        parser = argparser()
-        args = parser.parse_args()
-        args.count = 1
-        args.sleep_time = 0
-
-        return args
+        return FakeArgs()
 
     def test_setup(self):
         """ test_setup. """
@@ -171,7 +174,3 @@ class ModelTestCase(unittest.TestCase):
 
         vmpool = exts[product].vmpool_get("localhost")
         self.assertEqual(len(vmpool.vm_list()), 12)
-
-
-if __name__ == "__main__":
-    unittest.main()

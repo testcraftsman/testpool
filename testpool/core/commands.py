@@ -40,10 +40,10 @@ def args_process(args):
     args.func(args)
 
 
-def argparser():
+def argparser(progname):
     """ Create top level argument parser. """
 
-    arg_parser = argparse.ArgumentParser(prog="tbd")
+    arg_parser = argparse.ArgumentParser(prog=progname)
     arg_parser.add_argument('--version', action="version",
                             version=testpool.__version__)
     arg_parser.add_argument('--verbose', '-v', required=False, action="count",
@@ -98,6 +98,6 @@ def extensions_find(arg_parser):
 
 def main():
     """ Entry point for parsing tbd arguments. """
-    arg_parser = argparser()
+    arg_parser = argparser("tpl")
     extensions_find(arg_parser)
     return arg_parser
