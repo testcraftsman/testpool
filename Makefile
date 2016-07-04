@@ -1,8 +1,5 @@
 include defs.mk
 
-test::
-	make -C testpool test
-
 check::
 
 .PHONY:
