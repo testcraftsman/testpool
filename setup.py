@@ -1,7 +1,7 @@
 import os
 from setuptools import setup
 
-from testbed import __version__, __author__
+from testpool import __version__, __author__
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
     README = readme.read()
@@ -29,27 +29,25 @@ def walkdir(dirname):
 
 ##
 # strip http
-STATIC_FILES = [(os.path.split("testbed" + item[4:])[0], [item])
+STATIC_FILES = [(os.path.split("testpool" + item[4:])[0], [item])
                  for item in walkdir("http/static")]
 
 setup(
-    name='testbed',
+    name='testpool',
     version=__version__,
-    packages=['testbed'],
-    scripts=["bin/tbd", "bin/tbd-manage"],
+    packages=['testpool'],
+    scripts=["bin/tpl", "bin/testpooldaemon"],
     include_package_data=True,
     license='GPLv3',
     description='Comprehensive web-based test tracking software.',
     long_description=README,
-    url='https://github.com/markleehamilton/testbed',
+    url='https://github.com/testbed/testpool.git',
     author=__author__,
     author_email='mark.lee.hamilton@gmail.com',
     install_requires=REQUIREMENTS.split("\n"),
     data_files=[
-        ("testbed/etc", []),
-        ("testbed/examples/etc", ["examples/etc/mysql.cnf"]),
-        ("testbed/cgi-bin", ["http/cgi-bin/wsgi.py"]),
-        ("testbed/apache2/sites-available", ["http/apache2/sites-available/testbed.conf"]),
+        ("testpool/etc", []),
+        ("testpool/etc", ["/etc/mysql.cnf"]),
     ] + STATIC_FILES,
     classifiers=[
         'Development Status :: 1 - Pre-Alphe',
@@ -61,8 +59,5 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
-        'Topic :: Internet :: WWW/HTTP',
-        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
-        'Topic :: Utilities',
     ],
 )
