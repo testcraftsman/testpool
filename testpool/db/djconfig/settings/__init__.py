@@ -1,8 +1,9 @@
 from split_settings.tools import optional, include
 
+print "MARK: include"
+
 include(
     'components/base.py',
-    'components/pagination.py',
     optional('components/global.py'),
 
     ##

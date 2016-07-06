@@ -1,6 +1,10 @@
 
 sqllite_path = os.path.join("/var", "tmp", 'db.sqlite3')
 
+RUNSERVER_DEFAULT_PORT = "7000"
+
+print "MARK: local called"
+
 ##
 # Defines default SQL database
 DEFAULT = {

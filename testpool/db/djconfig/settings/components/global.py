@@ -4,19 +4,22 @@ import logging
 # Provides location of plain text file that defines the mysql connection
 # information. The existance of the mysql configuration file implies that
 # it will become default database.
-MYSQL_CNF="/usr/local/testpool/etc/mysql.cnf"
+CONF="/etc/testpool/testpool.conf"
 WSGI_APPLICATION = 'cgi-bin.wsgi.application'
 
-if os.path.exists(MYSQL_CNF):
-    logging.debug("loading mysql %s" % MYSQL_CNF)
+sqllite_path = os.path.join("/var", "tmp", 'testpooldb.sqlite3')
+
+
+if os.path.exists(CONF):
+    DEFAULT_PORT = "8001"
+    logging.debug("loading %s" % CONF)
     DEBUG = False
     DATABASES["global"] = {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'testpool',
-        'init_command': 'Set storage_engine=INNODB',
-        'OPTIONS': {
-            'read_default_file': MYSQL_CNF
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        ##
+        # This must point to the sqllite database built from
+        # python ./manage.py init
+        'NAME': sqllite_path,
     }
     DATABASES["default"] = DATABASES["global"]
 

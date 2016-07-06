@@ -7,7 +7,7 @@ import sys
 import logging
 
 
-def parse():
+def main():
     """ main entry point. """
     from testpool.core import server
 

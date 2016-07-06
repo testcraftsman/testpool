@@ -3,10 +3,9 @@ include README.md
 include CHANGES.rst
 include requirements.txt
 include bin/tpl bin/tpl.py
-include bin/tbd-manage bin/tbdmanage.py
-include examples/etc/mysql.cnf
-include http/cgi-bin/wsgi.py
-include http/apache2/sites-available/testbed.conf
+include bin/testpooldaemon bin/testpooldaemon.py
+include etc/testpool/testpool.conf
+include etc/init/testpooldb.conf
 recursive-include http/static *.txt *.css *.png *.js
 recursive-include docs *.rst
-recursive-include testbed *.py *.html *.css
+recursive-include testpool *.py *.html *.css *.conf
