@@ -7,10 +7,10 @@ build: MANIFEST.in ./setup.py
 	python ./setup.py build sdist bdist_wheel
 
 install: build
-	sudo pip install --upgrade dist/testpool-*.tar.gz
+	sudo -H pip install --upgrade dist/testpool-*.tar.gz
 
 uninstall:
-	sudo pip uninstall testpool
+	sudo -H pip uninstall testpool
 
 clean::
 	python ./setup.py clean

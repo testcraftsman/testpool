@@ -1,0 +1,204 @@
+python ./setup.py build sdist bdist_wheel
+running build
+running build_py
+running egg_info
+writing requirements to testpool.egg-info/requires.txt
+writing testpool.egg-info/PKG-INFO
+writing top-level names to testpool.egg-info/top_level.txt
+writing dependency_links to testpool.egg-info/dependency_links.txt
+reading manifest file 'testpool.egg-info/SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+writing manifest file 'testpool.egg-info/SOURCES.txt'
+running build_scripts
+running sdist
+running check
+creating testpool-0.1.1
+creating testpool-0.1.1/bin
+creating testpool-0.1.1/etc
+creating testpool-0.1.1/etc/init
+creating testpool-0.1.1/etc/testpool
+creating testpool-0.1.1/testpool
+creating testpool-0.1.1/testpool.egg-info
+creating testpool-0.1.1/testpool/core
+creating testpool-0.1.1/testpool/db
+creating testpool-0.1.1/testpool/db/cgi-bin
+creating testpool-0.1.1/testpool/db/djconfig
+creating testpool-0.1.1/testpool/db/djconfig/settings
+creating testpool-0.1.1/testpool/db/djconfig/settings/components
+creating testpool-0.1.1/testpool/db/templates
+creating testpool-0.1.1/testpool/db/testpooldb
+creating testpool-0.1.1/testpool/db/testpooldb/migrations
+creating testpool-0.1.1/testpool/libexec
+creating testpool-0.1.1/testpool/libexec/fake
+creating testpool-0.1.1/testpool/libexec/kvm
+making hard links in testpool-0.1.1...
+hard linking CHANGES.rst -> testpool-0.1.1
+hard linking LICENSE -> testpool-0.1.1
+hard linking MANIFEST.in -> testpool-0.1.1
+hard linking README.md -> testpool-0.1.1
+hard linking requirements.txt -> testpool-0.1.1
+hard linking setup.py -> testpool-0.1.1
+hard linking bin/testpooldaemon -> testpool-0.1.1/bin
+hard linking bin/testpooldaemon.py -> testpool-0.1.1/bin
+hard linking bin/testpooldb -> testpool-0.1.1/bin
+hard linking bin/testpooldb.py -> testpool-0.1.1/bin
+hard linking bin/tpl -> testpool-0.1.1/bin
+hard linking bin/tpl.py -> testpool-0.1.1/bin
+hard linking etc/init/testpooldb.conf -> testpool-0.1.1/etc/init
+hard linking etc/testpool/testpool.conf -> testpool-0.1.1/etc/testpool
+hard linking testpool/__init__.py -> testpool-0.1.1/testpool
+hard linking testpool/conftest.py -> testpool-0.1.1/testpool
+hard linking testpool/settings.py -> testpool-0.1.1/testpool
+hard linking testpool.egg-info/PKG-INFO -> testpool-0.1.1/testpool.egg-info
+hard linking testpool.egg-info/SOURCES.txt -> testpool-0.1.1/testpool.egg-info
+hard linking testpool.egg-info/dependency_links.txt -> testpool-0.1.1/testpool.egg-info
+hard linking testpool.egg-info/requires.txt -> testpool-0.1.1/testpool.egg-info
+hard linking testpool.egg-info/top_level.txt -> testpool-0.1.1/testpool.egg-info
+hard linking testpool/core/__init__.py -> testpool-0.1.1/testpool/core
+hard linking testpool/core/algo.py -> testpool-0.1.1/testpool/core
+hard linking testpool/core/api.py -> testpool-0.1.1/testpool/core
+hard linking testpool/core/commands.py -> testpool-0.1.1/testpool/core
+hard linking testpool/core/database.py -> testpool-0.1.1/testpool/core
+hard linking testpool/core/ext.py -> testpool-0.1.1/testpool/core
+hard linking testpool/core/logger.py -> testpool-0.1.1/testpool/core
+hard linking testpool/core/profile.py -> testpool-0.1.1/testpool/core
+hard linking testpool/core/server.py -> testpool-0.1.1/testpool/core
+hard linking testpool/core/vm.py -> testpool-0.1.1/testpool/core
+hard linking testpool/db/manage.py -> testpool-0.1.1/testpool/db
+hard linking testpool/db/cgi-bin/__init__.py -> testpool-0.1.1/testpool/db/cgi-bin
+hard linking testpool/db/cgi-bin/wsgi.py -> testpool-0.1.1/testpool/db/cgi-bin
+hard linking testpool/db/djconfig/__init__.py -> testpool-0.1.1/testpool/db/djconfig
+hard linking testpool/db/djconfig/local.py -> testpool-0.1.1/testpool/db/djconfig
+hard linking testpool/db/djconfig/urls.py -> testpool-0.1.1/testpool/db/djconfig
+hard linking testpool/db/djconfig/settings/__init__.py -> testpool-0.1.1/testpool/db/djconfig/settings
+hard linking testpool/db/djconfig/settings/components/__init__.py -> testpool-0.1.1/testpool/db/djconfig/settings/components
+hard linking testpool/db/djconfig/settings/components/base.py -> testpool-0.1.1/testpool/db/djconfig/settings/components
+hard linking testpool/db/djconfig/settings/components/global.py -> testpool-0.1.1/testpool/db/djconfig/settings/components
+hard linking testpool/db/djconfig/settings/components/local.py -> testpool-0.1.1/testpool/db/djconfig/settings/components
+hard linking testpool/db/djconfig/settings/components/pagination.py -> testpool-0.1.1/testpool/db/djconfig/settings/components
+hard linking testpool/db/templates/base.html -> testpool-0.1.1/testpool/db/templates
+hard linking testpool/db/testpooldb/__init__.py -> testpool-0.1.1/testpool/db/testpooldb
+hard linking testpool/db/testpooldb/admin.py -> testpool-0.1.1/testpool/db/testpooldb
+hard linking testpool/db/testpooldb/builds.py -> testpool-0.1.1/testpool/db/testpooldb
+hard linking testpool/db/testpooldb/models.py -> testpool-0.1.1/testpool/db/testpooldb
+hard linking testpool/db/testpooldb/router.py -> testpool-0.1.1/testpool/db/testpooldb
+hard linking testpool/db/testpooldb/tests.py -> testpool-0.1.1/testpool/db/testpooldb
+hard linking testpool/db/testpooldb/views.py -> testpool-0.1.1/testpool/db/testpooldb
+hard linking testpool/db/testpooldb/migrations/0001_initial.py -> testpool-0.1.1/testpool/db/testpooldb/migrations
+hard linking testpool/db/testpooldb/migrations/__init__.py -> testpool-0.1.1/testpool/db/testpooldb/migrations
+hard linking testpool/libexec/__init__.py -> testpool-0.1.1/testpool/libexec
+hard linking testpool/libexec/fake/__init__.py -> testpool-0.1.1/testpool/libexec/fake
+hard linking testpool/libexec/fake/api.py -> testpool-0.1.1/testpool/libexec/fake
+hard linking testpool/libexec/fake/commands.py -> testpool-0.1.1/testpool/libexec/fake
+hard linking testpool/libexec/fake/testsuite.py -> testpool-0.1.1/testpool/libexec/fake
+hard linking testpool/libexec/kvm/__init__.py -> testpool-0.1.1/testpool/libexec/kvm
+hard linking testpool/libexec/kvm/api.py -> testpool-0.1.1/testpool/libexec/kvm
+hard linking testpool/libexec/kvm/testsuite.py -> testpool-0.1.1/testpool/libexec/kvm
+Writing testpool-0.1.1/setup.cfg
+Creating tar archive
+removing 'testpool-0.1.1' (and everything under it)
+running bdist_wheel
+installing to build/bdist.linux-x86_64/wheel
+running install
+running install_lib
+creating build/bdist.linux-x86_64/wheel
+creating build/bdist.linux-x86_64/wheel/testpool
+creating build/bdist.linux-x86_64/wheel/testpool/core
+copying build/lib.linux-x86_64-2.7/testpool/core/profile.py -> build/bdist.linux-x86_64/wheel/testpool/core
+copying build/lib.linux-x86_64-2.7/testpool/core/api.py -> build/bdist.linux-x86_64/wheel/testpool/core
+copying build/lib.linux-x86_64-2.7/testpool/core/server.py -> build/bdist.linux-x86_64/wheel/testpool/core
+copying build/lib.linux-x86_64-2.7/testpool/core/database.py -> build/bdist.linux-x86_64/wheel/testpool/core
+copying build/lib.linux-x86_64-2.7/testpool/core/logger.py -> build/bdist.linux-x86_64/wheel/testpool/core
+copying build/lib.linux-x86_64-2.7/testpool/core/algo.py -> build/bdist.linux-x86_64/wheel/testpool/core
+copying build/lib.linux-x86_64-2.7/testpool/core/commands.py -> build/bdist.linux-x86_64/wheel/testpool/core
+copying build/lib.linux-x86_64-2.7/testpool/core/vm.py -> build/bdist.linux-x86_64/wheel/testpool/core
+copying build/lib.linux-x86_64-2.7/testpool/core/ext.py -> build/bdist.linux-x86_64/wheel/testpool/core
+copying build/lib.linux-x86_64-2.7/testpool/core/__init__.py -> build/bdist.linux-x86_64/wheel/testpool/core
+creating build/bdist.linux-x86_64/wheel/testpool/db
+copying build/lib.linux-x86_64-2.7/testpool/db/manage.py -> build/bdist.linux-x86_64/wheel/testpool/db
+creating build/bdist.linux-x86_64/wheel/testpool/db/cgi-bin
+copying build/lib.linux-x86_64-2.7/testpool/db/cgi-bin/wsgi.py -> build/bdist.linux-x86_64/wheel/testpool/db/cgi-bin
+copying build/lib.linux-x86_64-2.7/testpool/db/cgi-bin/__init__.py -> build/bdist.linux-x86_64/wheel/testpool/db/cgi-bin
+creating build/bdist.linux-x86_64/wheel/testpool/db/testpooldb
+copying build/lib.linux-x86_64-2.7/testpool/db/testpooldb/admin.py -> build/bdist.linux-x86_64/wheel/testpool/db/testpooldb
+copying build/lib.linux-x86_64-2.7/testpool/db/testpooldb/views.py -> build/bdist.linux-x86_64/wheel/testpool/db/testpooldb
+copying build/lib.linux-x86_64-2.7/testpool/db/testpooldb/router.py -> build/bdist.linux-x86_64/wheel/testpool/db/testpooldb
+creating build/bdist.linux-x86_64/wheel/testpool/db/testpooldb/migrations
+copying build/lib.linux-x86_64-2.7/testpool/db/testpooldb/migrations/__init__.py -> build/bdist.linux-x86_64/wheel/testpool/db/testpooldb/migrations
+copying build/lib.linux-x86_64-2.7/testpool/db/testpooldb/migrations/0001_initial.py -> build/bdist.linux-x86_64/wheel/testpool/db/testpooldb/migrations
+copying build/lib.linux-x86_64-2.7/testpool/db/testpooldb/tests.py -> build/bdist.linux-x86_64/wheel/testpool/db/testpooldb
+copying build/lib.linux-x86_64-2.7/testpool/db/testpooldb/builds.py -> build/bdist.linux-x86_64/wheel/testpool/db/testpooldb
+copying build/lib.linux-x86_64-2.7/testpool/db/testpooldb/__init__.py -> build/bdist.linux-x86_64/wheel/testpool/db/testpooldb
+copying build/lib.linux-x86_64-2.7/testpool/db/testpooldb/models.py -> build/bdist.linux-x86_64/wheel/testpool/db/testpooldb
+creating build/bdist.linux-x86_64/wheel/testpool/db/templates
+copying build/lib.linux-x86_64-2.7/testpool/db/templates/base.html -> build/bdist.linux-x86_64/wheel/testpool/db/templates
+creating build/bdist.linux-x86_64/wheel/testpool/db/djconfig
+copying build/lib.linux-x86_64-2.7/testpool/db/djconfig/local.py -> build/bdist.linux-x86_64/wheel/testpool/db/djconfig
+creating build/bdist.linux-x86_64/wheel/testpool/db/djconfig/settings
+creating build/bdist.linux-x86_64/wheel/testpool/db/djconfig/settings/components
+copying build/lib.linux-x86_64-2.7/testpool/db/djconfig/settings/components/global.py -> build/bdist.linux-x86_64/wheel/testpool/db/djconfig/settings/components
+copying build/lib.linux-x86_64-2.7/testpool/db/djconfig/settings/components/local.py -> build/bdist.linux-x86_64/wheel/testpool/db/djconfig/settings/components
+copying build/lib.linux-x86_64-2.7/testpool/db/djconfig/settings/components/pagination.py -> build/bdist.linux-x86_64/wheel/testpool/db/djconfig/settings/components
+copying build/lib.linux-x86_64-2.7/testpool/db/djconfig/settings/components/base.py -> build/bdist.linux-x86_64/wheel/testpool/db/djconfig/settings/components
+copying build/lib.linux-x86_64-2.7/testpool/db/djconfig/settings/components/__init__.py -> build/bdist.linux-x86_64/wheel/testpool/db/djconfig/settings/components
+copying build/lib.linux-x86_64-2.7/testpool/db/djconfig/settings/__init__.py -> build/bdist.linux-x86_64/wheel/testpool/db/djconfig/settings
+copying build/lib.linux-x86_64-2.7/testpool/db/djconfig/urls.py -> build/bdist.linux-x86_64/wheel/testpool/db/djconfig
+copying build/lib.linux-x86_64-2.7/testpool/db/djconfig/__init__.py -> build/bdist.linux-x86_64/wheel/testpool/db/djconfig
+creating build/bdist.linux-x86_64/wheel/testpool/libexec
+creating build/bdist.linux-x86_64/wheel/testpool/libexec/kvm
+copying build/lib.linux-x86_64-2.7/testpool/libexec/kvm/api.py -> build/bdist.linux-x86_64/wheel/testpool/libexec/kvm
+copying build/lib.linux-x86_64-2.7/testpool/libexec/kvm/testsuite.py -> build/bdist.linux-x86_64/wheel/testpool/libexec/kvm
+copying build/lib.linux-x86_64-2.7/testpool/libexec/kvm/__init__.py -> build/bdist.linux-x86_64/wheel/testpool/libexec/kvm
+creating build/bdist.linux-x86_64/wheel/testpool/libexec/fake
+copying build/lib.linux-x86_64-2.7/testpool/libexec/fake/api.py -> build/bdist.linux-x86_64/wheel/testpool/libexec/fake
+copying build/lib.linux-x86_64-2.7/testpool/libexec/fake/commands.py -> build/bdist.linux-x86_64/wheel/testpool/libexec/fake
+copying build/lib.linux-x86_64-2.7/testpool/libexec/fake/testsuite.py -> build/bdist.linux-x86_64/wheel/testpool/libexec/fake
+copying build/lib.linux-x86_64-2.7/testpool/libexec/fake/__init__.py -> build/bdist.linux-x86_64/wheel/testpool/libexec/fake
+copying build/lib.linux-x86_64-2.7/testpool/libexec/__init__.py -> build/bdist.linux-x86_64/wheel/testpool/libexec
+copying build/lib.linux-x86_64-2.7/testpool/conftest.py -> build/bdist.linux-x86_64/wheel/testpool
+copying build/lib.linux-x86_64-2.7/testpool/__init__.py -> build/bdist.linux-x86_64/wheel/testpool
+copying build/lib.linux-x86_64-2.7/testpool/settings.py -> build/bdist.linux-x86_64/wheel/testpool
+running install_data
+creating build/bdist.linux-x86_64/wheel/testpool-0.1.1.data
+creating build/bdist.linux-x86_64/wheel/testpool-0.1.1.data/data
+creating build/bdist.linux-x86_64/wheel/etc
+creating build/bdist.linux-x86_64/wheel/etc/testpool
+copying etc/testpool/testpool.conf -> build/bdist.linux-x86_64/wheel/etc/testpool/
+creating build/bdist.linux-x86_64/wheel/etc/init
+copying etc/init/testpooldb.conf -> build/bdist.linux-x86_64/wheel/etc/init/
+running install_egg_info
+Copying testpool.egg-info to build/bdist.linux-x86_64/wheel/testpool-0.1.1-py2.7.egg-info
+running install_scripts
+running build_scripts
+creating build/bdist.linux-x86_64/wheel/testpool-0.1.1.data/scripts
+copying build/scripts-2.7/tpl -> build/bdist.linux-x86_64/wheel/testpool-0.1.1.data/scripts
+copying build/scripts-2.7/testpooldaemon -> build/bdist.linux-x86_64/wheel/testpool-0.1.1.data/scripts
+copying build/scripts-2.7/testpooldb -> build/bdist.linux-x86_64/wheel/testpool-0.1.1.data/scripts
+changing mode of build/bdist.linux-x86_64/wheel/testpool-0.1.1.data/scripts/tpl to 775
+changing mode of build/bdist.linux-x86_64/wheel/testpool-0.1.1.data/scripts/testpooldaemon to 775
+changing mode of build/bdist.linux-x86_64/wheel/testpool-0.1.1.data/scripts/testpooldb to 775
+creating build/bdist.linux-x86_64/wheel/testpool-0.1.1.dist-info/WHEEL
+sudo -H pip install --upgrade dist/testpool-*.tar.gz
+Processing ./dist/testpool-0.1.1.tar.gz
+Requirement already up-to-date: pep8==1.6.2 in /usr/local/lib/python2.7/dist-packages (from testpool==0.1.1)
+Requirement already up-to-date: pylint==1.5.4 in /usr/local/lib/python2.7/dist-packages (from testpool==0.1.1)
+Requirement already up-to-date: pytest==2.8.3 in /usr/local/lib/python2.7/dist-packages (from testpool==0.1.1)
+Requirement already up-to-date: Django==1.8.4 in /usr/local/lib/python2.7/dist-packages (from testpool==0.1.1)
+Requirement already up-to-date: django-split-settings==0.1.3 in /usr/local/lib/python2.7/dist-packages (from testpool==0.1.1)
+Requirement already up-to-date: pytz==2015.7 in /usr/local/lib/python2.7/dist-packages (from testpool==0.1.1)
+Requirement already up-to-date: colorama in /usr/local/lib/python2.7/dist-packages (from pylint==1.5.4->testpool==0.1.1)
+Requirement already up-to-date: six in /usr/local/lib/python2.7/dist-packages (from pylint==1.5.4->testpool==0.1.1)
+Requirement already up-to-date: astroid<1.5.0,>=1.4.1 in /usr/local/lib/python2.7/dist-packages (from pylint==1.5.4->testpool==0.1.1)
+Requirement already up-to-date: py>=1.4.29 in /usr/local/lib/python2.7/dist-packages (from pytest==2.8.3->testpool==0.1.1)
+Requirement already up-to-date: lazy-object-proxy in /usr/local/lib/python2.7/dist-packages (from astroid<1.5.0,>=1.4.1->pylint==1.5.4->testpool==0.1.1)
+Requirement already up-to-date: wrapt in /usr/local/lib/python2.7/dist-packages (from astroid<1.5.0,>=1.4.1->pylint==1.5.4->testpool==0.1.1)
+Building wheels for collected packages: testpool
+  Running setup.py bdist_wheel for testpool: started
+  Running setup.py bdist_wheel for testpool: finished with status 'done'
+  Stored in directory: /root/.cache/pip/wheels/b8/10/17/aecc881e9193aa89e9727ceddc0d2811a6d90478c93f09060e
+Successfully built testpool
+Installing collected packages: testpool
+  Found existing installation: testpool 0.1.1
+    Uninstalling testpool-0.1.1:
+      Successfully uninstalled testpool-0.1.1
+Successfully installed testpool-0.1.1

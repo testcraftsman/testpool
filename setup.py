@@ -1,5 +1,6 @@
+from distutils.core import setup
+from distutils.command.install import install
 import os
-from setuptools import setup
 
 from testpool import __version__, __author__
 
@@ -32,6 +33,21 @@ def walkdir(dirname):
 STATIC_FILES = [(os.path.split("testpool" + item[4:])[0], [item])
                  for item in walkdir("http/static")]
 
+def _migrate(dir):
+    from subprocess import call
+    print "MARK: install_lib", dir
+    os.system("echo mark > /tmp/log")
+    call([sys.executable, "manage.py", "migrate"], cwd=os.path.join(dir, packagename))
+
+##
+# Run manage.py migrate
+class PostInstallCommand(install):
+    def run(self):
+	install.run(self)
+	self.execute(_migrate, (self.install_lib,),
+                     msg="Running post install task")
+
+
 setup(
     name='testpool',
     version=__version__,
@@ -51,13 +67,9 @@ setup(
     ],
     classifiers=[
         'Development Status :: 1 - Pre-Alphe',
-        'Environment :: Web Environment',
-        'Framework :: Testbed',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Managers',
-        'Intended Audience :: Information Technology',
-        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-        'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
     ],
+    cmdclasss={
+        'install': PostInstallCommand,
+    },
 )

@@ -4,6 +4,7 @@ include CHANGES.rst
 include requirements.txt
 include bin/tpl bin/tpl.py
 include bin/testpooldaemon bin/testpooldaemon.py
+include bin/testpooldb bin/testpooldb.py
 include etc/testpool/testpool.conf
 include etc/init/testpooldb.conf
 recursive-include http/static *.txt *.css *.png *.js

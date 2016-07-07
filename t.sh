@@ -1,5 +1,4 @@
 #!/bin/sh
 export PYTHONPATH=/home/mark/ws/testpool
-#python ./testpool/libexec/kvm/testsuite.py
-#cd testpool/db;make test
-cd testpool/libexec/memory;python ./testsuite.py
+py.test testpool/libexec/fake/testsuite.py
+#py.test testpool/libexec/fake/testsuite.py -k test_pop
