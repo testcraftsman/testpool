@@ -7,6 +7,4 @@ include bin/testpooldaemon bin/testpooldaemon.py
 include bin/testpooldb bin/testpooldb.py
 include etc/testpool/testpool.conf
 include etc/init/testpooldb.conf
-recursive-include http/static *.txt *.css *.png *.js
-recursive-include docs *.rst
-recursive-include testpool *.py *.html *.css *.conf
+recursive-include testpool *.py *.html 

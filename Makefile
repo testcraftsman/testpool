@@ -4,10 +4,10 @@ check::
 
 .PHONY:
 build: MANIFEST.in ./setup.py 
-	python ./setup.py build sdist bdist_wheel
+	python ./setup.py -q build sdist bdist_wheel
 
-install: build
-	sudo -H pip install --upgrade dist/testpool-*.tar.gz
+install:
+	sudo -H pip install --log dist/pip.log --upgrade dist/testpool-*.tar.gz
 
 uninstall:
 	sudo -H pip uninstall testpool
