@@ -1,12 +1,15 @@
+##
+# \todo figure out how to post content to the log
+import logging
 import os
+from subprocess import call
 from setuptools import setup, find_packages
 from setuptools.command.install import install
+
 from testpool import __version__, __author__
 
-from distutils.dist import Distribution
-def custom_has_scripts(self):
-    return True
-Distribution.has_scripts = custom_has_scripts
+
+TESTPOOLDB_SERVICE = "/etc/init/testpooldb.conf"
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
     README = readme.read()
@@ -19,22 +22,47 @@ with open(fpath) as hdl:
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-def _migrate(dir):
-    from subprocess import call
-    print "MARK: install_lib", dir
-    #os.system("echo mark > /tmp/log")
+#def _migrate(dir):
     #call([sys.executable, "manage.py", "migrate"], cwd=os.path.join(dir, packagename))
+
+def _stop_service(dir):
+    """ pre installation operations.
+
+        Stop any running installation. 
+    """
+    from subprocess import call
+
+    ##
+    # Check to see if there is an existing database service running
+    # and if so stop it.
+    rtc = call(["service", "testpooldb", "status"])
+    if rtc == 0:  # Service is running.
+        rtc = call(["service", "testpooldb","stop"])
+        if rtc == 0:
+            logging.debug("failed to stop testpooldb")
+    ##
+        
 
 ##
 # Run manage.py migrate
 class post_install(install):
+    """ Run content after main installation. """
     def run(self):
-        print "MARK: my own install"
+
+        logging.info("info log")
+        logging.debug("debug log")
+        logging.info("installation lib %s", self.install_lib)
+
+        print "MARK: my own install", self.install_lib
+        if os.path.exists(TESTPOOLDB_SERVICE):
+            self.execute(_stop_service, (self.install_lib,),
+                         msg="stopping testpool services")
+
         #self.execute(_migrate, (self.install_lib,),
         #             msg="Running post install task")
         install.run(self)
         print "MARK: my post install"
-	os.system("echo mark >> /tmp/log")
+
 
 setup_args = {
     "name": 'testpool',
@@ -49,7 +77,7 @@ setup_args = {
     "author_email": 'mark.lee.hamilton@gmail.com',
     "install_requires": REQUIREMENTS.split("\n"),
     "data_files": [
-        ("/etc/testpool/", ["etc/testpool/testpool.conf"]),
+        ("testpool/etc", ["etc/testpool/testpool.conf"]),
         ("/etc/init/", ["etc/init/testpooldb.conf"]),
     ],
     "classifiers": [

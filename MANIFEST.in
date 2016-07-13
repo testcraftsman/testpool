@@ -1,10 +1,12 @@
 include LICENSE
+include README
 include README.md
 include CHANGES.rst
 include requirements.txt
-include bin/tpl bin/tpl.py
-include bin/testpooldaemon bin/testpooldaemon.py
-include bin/testpooldb bin/testpooldb.py
+recursive-include testpool *.py
+recursive-include bin *.py
+include bin/tpl
+include bin/testpooldaemon
+include bin/testpooldb
 include etc/testpool/testpool.conf
 include etc/init/testpooldb.conf
-recursive-include testpool *.py *.html 
