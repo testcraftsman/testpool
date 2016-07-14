@@ -12,8 +12,8 @@ build: MANIFEST.in ./setup.py
 	python ./setup.py -q build sdist bdist_wheel
 
 install:
-	sudo -H pip install --log pip.log --no-deps --upgrade dist/testpool-*.tar.gz
-	python setup.py install --root $(DESTDIR) $(COMPILE)
+	#sudo -H pip install --log pip.log --no-deps --upgrade dist/testpool-*.tar.gz
+	python setup.py install --root $(DESTDIR) 
 
 uninstall:
 	sudo -H pip uninstall testpool
@@ -32,7 +32,7 @@ help::
 	@echo "make clean - Get rid of scratch and byte files"
 
 source:
-	python setup.py sdist $(COMPILE)
+	python setup.py sdist
 
 buildrpm:
 	python setup.py bdist_rpm --post-install=rpm/postinstall \
@@ -41,7 +41,7 @@ buildrpm:
 builddeb:
 	# build the source package in the parent directory
         # then rename it to project_version.orig.tar.gz
-	python setup.py sdist $(COMPILE) --dist-dir=../
+	python setup.py sdist --dist-dir=../
 	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	# build the package
 	dpkg-buildpackage -i -I -rfakeroot

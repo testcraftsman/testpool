@@ -84,6 +84,6 @@ setup_args = {
         'Development Status :: 1 - Pre-Alphe',
         'Programming Language :: Python :: 2.7',
     ],
-    "cmdclass": {'install': post_install},
+    #"cmdclass": {'install': post_install},
 }
 setup(**setup_args)
