@@ -1,8 +1,9 @@
 # $Id: Makefile,v 1.6 2008/10/29 01:01:35 ghantoos Exp $
 include defs.mk
 
+PYTHON=`which python`
 DESTDIR=/
-BUILDIR=$(CURDIR)/debian/myprojectname
+BUILDIR=$(CURDIR)/debian/testpool
 PROJECT=testpool
 
 check::
@@ -22,6 +23,8 @@ clean::
 	python ./setup.py clean
 	rm -rf dist build MANIFEST
 	find . -name '*.pyc' -delete
+	make -C debian $@
+	rm -rf ../testpool_0.0.1* deb_dist
 
 
 help::
@@ -36,12 +39,15 @@ source:
 
 buildrpm:
 	python setup.py bdist_rpm --post-install=rpm/postinstall \
-               --pre-uninstall=rpm/preuninstall
+                                  --pre-uninstall=rpm/preuninstall
 
 builddeb:
 	# build the source package in the parent directory
         # then rename it to project_version.orig.tar.gz
-	python setup.py sdist --dist-dir=../
-	rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
+	python setup.py sdist
+	python setup.py --command-packages=stdeb.command bdist_deb
+
+	#python setup.py sdist --dist-dir=../
+	#rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
 	# build the package
-	dpkg-buildpackage -i -I -rfakeroot
+	#dpkg-buildpackage -i -I -rfakeroot

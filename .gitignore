@@ -10,3 +10,5 @@ dist
 http/static
 #*.py#
 *.log
+*.tar.gz
+deb_dist

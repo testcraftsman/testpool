@@ -2,6 +2,7 @@
 # \todo figure out how to post content to the log
 import logging
 import os
+import pkgutil
 from subprocess import call
 from setuptools import setup, find_packages
 from setuptools.command.install import install
@@ -67,7 +68,8 @@ class post_install(install):
 setup_args = {
     "name": 'testpool',
     "version":__version__,
-    "packages": ['testpool'],
+    "packages": find_packages(),
+    "include_package_data": True,
     "scripts": ["bin/tpl", "bin/testpooldaemon", "bin/testpooldb"],
     "license": 'GPLv3',
     "description": 'Manage and recycle pools of VMs.',
@@ -75,7 +77,7 @@ setup_args = {
     "url": 'https://github.com/testbed/testpool.git',
     "author": __author__,
     "author_email": 'mark.lee.hamilton@gmail.com',
-    "install_requires": REQUIREMENTS.split("\n"),
+    #"install_requires": REQUIREMENTS.split("\n"),
     "data_files": [
         ("testpool/etc", ["etc/testpool/testpool.conf"]),
         ("/etc/init/", ["etc/init/testpooldb.conf"]),
