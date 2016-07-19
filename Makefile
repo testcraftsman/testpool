@@ -8,9 +8,6 @@ PROJECT=testpool
 
 check::
 
-.PHONY:
-build: MANIFEST.in ./setup.py 
-	python ./setup.py -q build sdist bdist_wheel
 
 install:
 	#sudo -H pip install --log pip.log --no-deps --upgrade dist/testpool-*.tar.gz
@@ -41,13 +38,9 @@ buildrpm:
 	python setup.py bdist_rpm --post-install=rpm/postinstall \
                                   --pre-uninstall=rpm/preuninstall
 
-builddeb:
+.PHONY: deb.build
+deb.build: MANIFEST.in ./setup.py 
 	# build the source package in the parent directory
         # then rename it to project_version.orig.tar.gz
-	python setup.py sdist
+	#python setup.py sdist
 	python setup.py --command-packages=stdeb.command bdist_deb
-
-	#python setup.py sdist --dist-dir=../
-	#rename -f 's/$(PROJECT)-(.*)\.tar\.gz/$(PROJECT)_$$1\.orig\.tar\.gz/' ../*
-	# build the package
-	#dpkg-buildpackage -i -I -rfakeroot
