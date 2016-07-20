@@ -10,3 +10,4 @@ include bin/testpooldaemon
 include bin/testpooldb
 include etc/testpool/testpool.conf
 include etc/init/testpooldb.conf
+include debian/python-testpool.postinst

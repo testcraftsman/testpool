@@ -19,7 +19,6 @@ clean::
 	python ./setup.py clean
 	rm -rf dist build MANIFEST
 	find . -name '*.pyc' -delete
-	make -C debian $@
 	rm -rf ../testpool_* testpool-* deb_dist
 
 
@@ -31,7 +30,7 @@ help::
 	@echo "make clean - Get rid of scratch and byte files"
 
 source:
-	python setup.py sdist
+	python setup.py --command-packages=stdeb.command sdist_dsc
 
 .PHONY: rpm.build
 rpm.buil:
