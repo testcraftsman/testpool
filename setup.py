@@ -54,7 +54,6 @@ class post_install(install):
         logging.debug("debug log")
         logging.info("installation lib %s", self.install_lib)
 
-        print "MARK: my own install", self.install_lib
         if os.path.exists(TESTPOOLDB_SERVICE):
             self.execute(_stop_service, (self.install_lib,),
                          msg="stopping testpool services")
@@ -62,7 +61,6 @@ class post_install(install):
         #self.execute(_migrate, (self.install_lib,),
         #             msg="Running post install task")
         install.run(self)
-        print "MARK: my post install"
 
 
 setup_args = {

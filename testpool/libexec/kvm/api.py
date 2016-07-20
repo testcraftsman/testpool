@@ -2,10 +2,18 @@
 API for KVM hypervisors.
 """
 import logging
-from xml.etree import ElementTree
-import libvirt
-import virtinst.CloneManager as clmgr
-from virtinst.User import User
+##
+# Because KVM support is bunbled with testpool, we do not want to
+# fail if the intent is to not use it.
+try:
+    from xml.etree import ElementTree
+    import libvirt
+    SUPPORTED = True
+    import virtinst.CloneManager as clmgr
+    from virtinst.User import User
+except ImportError:
+    SUPPORTED = False
+##
 
 
 def get_clone_diskfile(design):
@@ -22,19 +30,17 @@ def get_clone_diskfile(design):
         design.clone_devices = devpath
 
 
-STATES = {
-    libvirt.VIR_DOMAIN_NOSTATE: 'no state',
-    libvirt.VIR_DOMAIN_RUNNING: 'running',
-    libvirt.VIR_DOMAIN_BLOCKED: 'blocked on resource',
-    libvirt.VIR_DOMAIN_PAUSED: 'paused by user',
-    libvirt.VIR_DOMAIN_SHUTDOWN: 'being shut down',
-    libvirt.VIR_DOMAIN_SHUTOFF: 'shut off',
-    libvirt.VIR_DOMAIN_CRASHED: 'crashed',
-}
-
-
 def vm_state_to_str(dom):
     """ Return string form of state. """
+    STATES = {
+        libvirt.VIR_DOMAIN_NOSTATE: 'no state',
+        libvirt.VIR_DOMAIN_RUNNING: 'running',
+        libvirt.VIR_DOMAIN_BLOCKED: 'blocked on resource',
+        libvirt.VIR_DOMAIN_PAUSED: 'paused by user',
+        libvirt.VIR_DOMAIN_SHUTDOWN: 'being shut down',
+        libvirt.VIR_DOMAIN_SHUTOFF: 'shut off',
+        libvirt.VIR_DOMAIN_CRASHED: 'crashed',
+    }
 
     state = dom.info()[0]
     return '%s is %s,' % (dom.name(), STATES.get(state, state))
@@ -121,4 +127,6 @@ class VMPool(object):
 
 def vmpool_get(url_name):
     """ Return a handle to the KVM API. """
+    if not SUPPORTED:
+        raise NotImplementedError("KVM missing required packages")
     return VMPool(url_name)

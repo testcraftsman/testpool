@@ -5,13 +5,12 @@ PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/testpool
 PROJECT=testpool
+export VERSION:=`python -c "import testpool; print testpool.__version__"`
 
-check::
+info::
+	@echo "version ${VERSION}"
 
 
-install:
-	#sudo -H pip install --log pip.log --no-deps --upgrade dist/testpool-*.tar.gz
-	python setup.py install --root $(DESTDIR) 
 
 uninstall:
 	sudo -H pip uninstall testpool
@@ -21,7 +20,7 @@ clean::
 	rm -rf dist build MANIFEST
 	find . -name '*.pyc' -delete
 	make -C debian $@
-	rm -rf ../testpool_0.0.1* deb_dist
+	rm -rf ../testpool_* testpool-* deb_dist
 
 
 help::
@@ -34,13 +33,14 @@ help::
 source:
 	python setup.py sdist
 
-buildrpm:
+.PHONY: rpm.build
+rpm.buil:
 	python setup.py bdist_rpm --post-install=rpm/postinstall \
                                   --pre-uninstall=rpm/preuninstall
 
 .PHONY: deb.build
 deb.build: MANIFEST.in ./setup.py 
-	# build the source package in the parent directory
-        # then rename it to project_version.orig.tar.gz
-	#python setup.py sdist
 	python setup.py --command-packages=stdeb.command bdist_deb
+
+install:
+	sudo dpkg --install deb_dist/python-testpool_$(VERSION)-1_all.deb
