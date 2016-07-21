@@ -3,3 +3,6 @@ Description=testpooldb
 
 [Service]
 ExecStart=/usr/bin/testpooldb runserver
+
+[Install]
+WantedBy=multi-target.target

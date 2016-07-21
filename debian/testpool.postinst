@@ -1,5 +1,5 @@
 #!/bin/bash
 
-
-echo "Hello world"
-touch /tmp/testpool
+systemctl deamon-reload
+systemctl enable testpooldb.service
+systemctl start testpooldb.service
