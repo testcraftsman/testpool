@@ -26,42 +26,20 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 #def _migrate(dir):
     #call([sys.executable, "manage.py", "migrate"], cwd=os.path.join(dir, packagename))
 
-def _stop_service(dir):
-    """ pre installation operations.
-
-        Stop any running installation. 
-    """
-    from subprocess import call
-
-    ##
-    # Check to see if there is an existing database service running
-    # and if so stop it.
-    rtc = call(["service", "testpooldb", "status"])
-    if rtc == 0:  # Service is running.
-        rtc = call(["service", "testpooldb","stop"])
-        if rtc == 0:
-            logging.debug("failed to stop testpooldb")
-    ##
-        
-
 ##
 # Run manage.py migrate
-class post_install(install):
+class install_service(install):
     """ Run content after main installation. """
     def run(self):
+        install.run(self)
 
         logging.info("info log")
         logging.debug("debug log")
         logging.info("installation lib %s", self.install_lib)
 
-        if os.path.exists(TESTPOOLDB_SERVICE):
-            self.execute(_stop_service, (self.install_lib,),
-                         msg="stopping testpool services")
-
-        #self.execute(_migrate, (self.install_lib,),
-        #             msg="Running post install task")
-        install.run(self)
-
+        current_dir_path = os.path.dirname(os.path.realpath(__file__))
+        create_service_script_path = os.path.join(current_dir_path, 'testpool', 'install_scripts', 'create_service.sh')
+        #subprocess.check_output([create_service_script_path])
 
 setup_args = {
     "name": 'testpool',
@@ -78,12 +56,12 @@ setup_args = {
     #"install_requires": REQUIREMENTS.split("\n"),
     "data_files": [
         ("testpool/etc", ["etc/testpool/testpool.conf"]),
-        ("/etc/init/", ["etc/init/testpooldb.conf"]),
+        ("testpool/systemd/", ["systemd/lib/systemd/system/testpooldb.service"]),
     ],
     "classifiers": [
         'Development Status :: 1 - Pre-Alphe',
         'Programming Language :: Python :: 2.7',
     ],
-    #"cmdclass": {'install': post_install},
+    #"cmdclass": {'install': install_service},
 }
 setup(**setup_args)

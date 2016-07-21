@@ -1,5 +1,0 @@
-#!/bin/bash
-
-systemctl deamon-reload
-systemctl enable testpooldb.service
-systemctl start testpooldb.service

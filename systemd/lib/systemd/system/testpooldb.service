@@ -2,7 +2,9 @@
 Description=testpooldb
 
 [Service]
+Type=simple
 ExecStart=/usr/bin/testpooldb runserver
+Restart=always
 
 [Install]
 WantedBy=multi-target.target
