@@ -1,0 +1,5 @@
+[Unit]
+Description=testpooldb
+
+[Service]
+ExecStart=/usr/bin/testpooldb runserver
