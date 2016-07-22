@@ -2,9 +2,24 @@
 # Pre removal script
 ##
 #!/bin/bash
+set -e
 
 echo "info: python-testpool.postinst $*"
-env
+
+##
+# Normally this is generated automatically when prerm is automatically
+# generated. However service needs to be stopped.
+# Automatically added by dh_python2:
+if which pyclean >/dev/null 2>&1; then
+	pyclean -p python-testpool 
+else
+	dpkg -L python-testpool | grep \.py$ | while read file
+	do
+		rm -f "${file}"[co] >/dev/null
+  	done
+fi
+##
+
 init_system=`dpkg -S /sbin/init`
 
 if [ "$init_system" = "systemd-sysv: /sbin/init" ]; then
