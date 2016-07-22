@@ -5,7 +5,7 @@ include CHANGES.rst
 include requirements.txt
 recursive-include testpool *.py
 recursive-include bin *.py
-recursive-include systemd *.service
+recursive-include scripts *.service
 include bin/tpl
 include bin/testpooldaemon
 include bin/testpooldb

@@ -23,9 +23,6 @@ with open(fpath) as hdl:
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-#def _migrate(dir):
-    #call([sys.executable, "manage.py", "migrate"], cwd=os.path.join(dir, packagename))
-
 ##
 # Run manage.py migrate
 class install_service(install):
@@ -56,7 +53,7 @@ setup_args = {
     #"install_requires": REQUIREMENTS.split("\n"),
     "data_files": [
         ("testpool/etc", ["etc/testpool/testpool.conf"]),
-        ("testpool/systemd/", ["systemd/lib/systemd/system/testpooldb.service"]),
+        ("testpool/systemd/", ["scripts/systemd/testpooldb.service"]),
     ],
     "classifiers": [
         'Development Status :: 1 - Pre-Alphe',

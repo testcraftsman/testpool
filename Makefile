@@ -19,7 +19,7 @@ clean::
 	python ./setup.py clean
 	rm -rf dist build MANIFEST
 	find . -name '*.pyc' -delete
-	rm -rf ../testpool_* testpool-* deb_dist
+	rm -rf ../testpool_* testpool-* deb_dist testpool.egg-info
 
 
 help::

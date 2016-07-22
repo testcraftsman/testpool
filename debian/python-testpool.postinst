@@ -1,12 +1,18 @@
 #!/bin/bash
+
 echo "info: python-testpool.postinst"
 init_system=`dpkg -S /sbin/init`
-echo "info: init system $init_system"
-##
-# Install on systemd. 
-# setup.py installs /usr/local/share/testpooldb.service
-# Without checking for now install into systemd area
-cp /usr/testpool/systemd/testpooldb.service  /lib/systemd/sytem/
-systemctl daemon-reload
-systemctl enable testpooldb.service
-##
+
+if [ "$init_system" = "systemd-sysv: /sbin/init" ]; then
+  echo "info: installing service /lib/systemd/system/testpooldb.service"
+  ##
+  # Install on systemd. 
+  # setup.py installs /usr/local/share/testpooldb.service
+  # Without checking for now install into systemd area
+  cp /usr/testpool/systemd/testpooldb.service  /lib/systemd/system/
+  systemctl daemon-reload
+  systemctl enable testpooldb.service
+  ##
+else
+  echo "error: service system $init_system unsupported"
+fi
