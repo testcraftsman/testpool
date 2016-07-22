@@ -1,0 +1,22 @@
+##
+# Pre removal script
+##
+#!/bin/bash
+
+echo "info: python-testpool.postinst $*"
+env
+init_system=`dpkg -S /sbin/init`
+
+if [ "$init_system" = "systemd-sysv: /sbin/init" ]; then
+  echo "info: remove service /lib/systemd/system/testpooldb.service"
+  if [ -f "/lib/systemd/system/testpooldb.service" ]; then
+    systemctl stop testpooldb
+    systemctl disable testpooldb
+    systemctl daemon-reload
+    systemctl reset-failed
+    rm -f /lib/systemd/system/testpooldb.service
+  fi
+  ##
+else
+  echo "error: service system $init_system unsupported"
+fi

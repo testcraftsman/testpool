@@ -12,6 +12,7 @@ if [ "$init_system" = "systemd-sysv: /sbin/init" ]; then
   cp /usr/testpool/systemd/testpooldb.service  /lib/systemd/system/
   systemctl daemon-reload
   systemctl enable testpooldb.service
+  systemctl start testpooldb.service
   ##
 else
   echo "error: service system $init_system unsupported"

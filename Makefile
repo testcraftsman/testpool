@@ -12,8 +12,6 @@ info::
 
 
 
-uninstall:
-	sudo -H pip uninstall testpool
 
 clean::
 	python ./setup.py clean
@@ -22,6 +20,7 @@ clean::
 	rm -rf ../testpool_* testpool-* deb_dist testpool.egg-info
 
 
+.PHONY: help
 help::
 	@echo "make source - Create source package"
 	@echo "make install - Install on local system"
@@ -29,17 +28,21 @@ help::
 	@echo "make builddeb - Generate a deb package"
 	@echo "make clean - Get rid of scratch and byte files"
 
+.PHONY: source
 source:
 	python setup.py --command-packages=stdeb.command sdist_dsc
 
 .PHONY: rpm.build
-rpm.buil:
+rpm.build:
 	python setup.py bdist_rpm --post-install=rpm/postinstall \
                                   --pre-uninstall=rpm/preuninstall
 
 .PHONY: deb.build
-deb.build: MANIFEST.in ./setup.py 
+deb.build: MANIFEST.in ./setup.py source
 	python setup.py --command-packages=stdeb.command bdist_deb
 
 install:
-	sudo dpkg --install deb_dist/python-testpool_$(VERSION)-1_all.deb
+	sudo -H dpkg --install deb_dist/python-testpool_$(VERSION)-1_all.deb
+
+uninstall:
+	sudo -H dpkg --remove python-testpool
