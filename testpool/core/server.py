@@ -1,21 +1,30 @@
 """ Test pool Server. """
-import logging
 import unittest
 import time
 import testpool.core.ext
 import testpool.core.algo
+import testpool.core.logger
 from testpool.core import commands
 from testpool.core import profile
 from testpooldb import models
 
 FOREVER = None
+LOGGER = testpool.core.logger.create()
+
+
+def args_process(args):
+    """ Process any generic parameters. """
+
+    testpool.core.logger.args_process(LOGGER, args)
 
 
 def argparser():
     """Create server arg parser. """
 
     parser = commands.argparser("testpool")
-    parser.add_argument('--count', type=int, default=FOREVER)
+    parser.add_argument('--count', type=int, default=FOREVER,
+                        help="The numnber events to process and then quit."
+                        "Used for debugging.")
     parser.add_argument('--sleep-time', type=int, default=60,
                         help="Time between checking for changes.")
 
@@ -34,32 +43,32 @@ def adapt(exts):
 def reclaim(exts):
     """ Reclaim any VMs released. """
 
-    logging.info("testpool reclaim started")
+    LOGGER.info("testpool reclaim started")
 
     for vm1 in models.VM.objects.filter(status=models.VM.RELEASED):
-        logging.info("loading %s %s", vm1.profile.hv.product,
-                     vm1.profile.hv.hostname)
+        LOGGER.info("loading %s %s", vm1.profile.hv.product,
+                    vm1.profile.hv.hostname)
         ext = exts[vm1.profile.hv.product]
         vmpool = ext.vmpool_get(vm1.profile.hv.hostname, vm1.profile.name)
 
         testpool.core.algo.reclaim(vmpool, vm1)
-    logging.info("testpool reclaim ended")
+    LOGGER.info("testpool reclaim ended")
 
 
 def setup(exts):
     """ Run the setup of each hypervisor. """
 
-    logging.info("testpool setup started")
+    LOGGER.info("testpool setup started")
     for profile1 in models.Profile.objects.all():
-        logging.info("setup %s %s %s", profile1.name, profile1.template_name,
-                     profile1.vm_max)
+        LOGGER.info("setup %s %s %s", profile1.name, profile1.template_name,
+                    profile1.vm_max)
         ext = exts[profile1.hv.product]
         vmpool = ext.vmpool_get(profile1.hv.hostname, profile1.name)
-        logging.info("algo.setup %s %s", profile1.name, profile1.template_name)
-        logging.info("algo.setup HV %s %d VMs", profile1.hv, profile1.vm_max)
+        LOGGER.info("algo.setup %s %s", profile1.name, profile1.template_name)
+        LOGGER.info("algo.setup HV %s %d VMs", profile1.hv, profile1.vm_max)
 
         testpool.core.algo.remove(vmpool, profile1)
-    logging.info("testpool setup ended")
+    LOGGER.info("testpool setup ended")
 
 
 def main(args):
@@ -67,7 +76,7 @@ def main(args):
 
     count = args.count
 
-    logging.info("testpool server started")
+    LOGGER.info("testpool server started")
     if count != FOREVER and count < 0:
         raise ValueError("count should be a positive number or FOREVER")
 
@@ -86,7 +95,7 @@ def main(args):
         if count != FOREVER:
             count -= 1
 
-    logging.info("testpool server stopped")
+    LOGGER.info("testpool server stopped")
     return 0
 
 

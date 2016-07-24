@@ -43,12 +43,12 @@ def profile_remove(hostname, product, profile):
         return 0
 
 
-def profile_add(hostname, product, profile, vm_max, template_name):
+def profile_add(hostname, product, profile, vm_max, template):
     """ Add a profile. """
 
     (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
                                                product=product)
-    defaults = {"vm_max": vm_max, "template_name": template_name}
+    defaults = {"vm_max": vm_max, "template_name": template}
     models.Profile.objects.update_or_create(name=profile, hv=hv1,
                                             defaults=defaults)
 
@@ -61,15 +61,15 @@ def _do_profile_remove(args):
 
 
 def _do_profile_add(args):
-    """ Add or modify an profile.
+    """ Add or modify a profile.
 
-    If the fake profile exists, calling this again will change the
-    maximum number of VMS and the template name.
+    If the profile exists, calling this again will change the maximum number
+    of VMS and the template name.
     """
 
     logging.info("add a profile %s", args.profile)
     profile_add(args.hostname, args.product, args.profile, args.max,
-                args.template_name)
+                args.template)
 
 
 def _do_profile_list(_):
@@ -102,8 +102,7 @@ def add_subparser(subparser):
     parser.add_argument("hostname", type=str, help="location of the profile.")
     parser.add_argument("product", type=str, help="The type of product.")
     parser.add_argument("profile", type=str, help="Name of the fake profile.")
-    parser.add_argument("template-name", type=str,
-                        help="Number of VM to manage.")
+    parser.add_argument("template", type=str, help="Number of VM to manage.")
     parser.add_argument("max", type=int, help="Number of VM to manage.")
     ##
 
