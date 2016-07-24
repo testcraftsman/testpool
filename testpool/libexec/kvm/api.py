@@ -32,7 +32,8 @@ def get_clone_diskfile(design):
 
 def vm_state_to_str(dom):
     """ Return string form of state. """
-    STATES = {
+
+    states = {
         libvirt.VIR_DOMAIN_NOSTATE: 'no state',
         libvirt.VIR_DOMAIN_RUNNING: 'running',
         libvirt.VIR_DOMAIN_BLOCKED: 'blocked on resource',
@@ -43,7 +44,7 @@ def vm_state_to_str(dom):
     }
 
     state = dom.info()[0]
-    return '%s is %s,' % (dom.name(), STATES.get(state, state))
+    return '%s is %s,' % (dom.name(), states.get(state, state))
 
 
 class VMPool(object):
