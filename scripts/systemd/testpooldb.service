@@ -9,4 +9,4 @@ ExecStart=/usr/bin/stdbuf -oL /usr/bin/testpooldb runserver -v 1
 Restart=always
 
 [Install]
-WantedBy=multi-target.target
+WantedBy=multi-user.target
