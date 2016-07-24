@@ -3,7 +3,9 @@ Description=testpooldb
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/testpooldb runserver
+##
+# running stdbuf changes testpooldb stdout buffer to only one line.
+ExecStart=/usr/bin/stdbuf -oL /usr/bin/testpooldb runserver -v 1
 Restart=always
 
 [Install]

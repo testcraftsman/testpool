@@ -9,9 +9,6 @@ from setuptools.command.install import install
 
 from testpool import __version__, __author__
 
-
-TESTPOOLDB_SERVICE = "/etc/init/testpooldb.conf"
-
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
     README = readme.read()
 
@@ -22,21 +19,6 @@ with open(fpath) as hdl:
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
-
-##
-# Run manage.py migrate
-class install_service(install):
-    """ Run content after main installation. """
-    def run(self):
-        install.run(self)
-
-        logging.info("info log")
-        logging.debug("debug log")
-        logging.info("installation lib %s", self.install_lib)
-
-        current_dir_path = os.path.dirname(os.path.realpath(__file__))
-        create_service_script_path = os.path.join(current_dir_path, 'testpool', 'install_scripts', 'create_service.sh')
-        #subprocess.check_output([create_service_script_path])
 
 setup_args = {
     "name": 'testpool',
@@ -59,6 +41,5 @@ setup_args = {
         'Development Status :: 1 - Pre-Alphe',
         'Programming Language :: Python :: 2.7',
     ],
-    #"cmdclass": {'install': install_service},
 }
 setup(**setup_args)
