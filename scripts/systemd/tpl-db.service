@@ -1,11 +1,11 @@
 [Unit]
-Description=testpooldb
+Description=testpool database
 
 [Service]
 Type=simple
 ##
 # running stdbuf changes testpooldb stdout buffer to only one line.
-ExecStart=/usr/bin/stdbuf -oL /usr/bin/testpooldb runserver -v 1
+ExecStart=/usr/bin/stdbuf -oL /usr/bin/tpl-db runserver -v 1
 Restart=always
 
 [Install]
