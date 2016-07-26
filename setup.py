@@ -25,7 +25,7 @@ setup_args = {
     "version":__version__,
     "packages": find_packages(),
     "include_package_data": True,
-    "scripts": ["bin/tpl", "bin/testpooldaemon", "bin/testpooldb"],
+    "scripts": ["bin/tpl", "bin/testpooldaemon", "bin/tpl-db"],
     "license": 'GPLv3',
     "description": 'Manage and recycle pools of VMs.',
     "long_description": README,
@@ -35,7 +35,7 @@ setup_args = {
     #"install_requires": REQUIREMENTS.split("\n"),
     "data_files": [
         ("testpool/etc", ["etc/testpool/testpool.conf"]),
-        ("testpool/systemd/", ["scripts/systemd/testpooldb.service"]),
+        ("testpool/systemd/", ["scripts/systemd/tpl-db.service"]),
     ],
     "classifiers": [
         'Development Status :: 1 - Pre-Alphe',

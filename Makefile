@@ -10,9 +10,6 @@ export VERSION:=`python -c "import testpool; print testpool.__version__"`
 info::
 	@echo "version ${VERSION}"
 
-
-
-
 clean::
 	python ./setup.py clean
 	rm -rf dist build MANIFEST

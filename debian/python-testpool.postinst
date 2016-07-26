@@ -4,15 +4,15 @@ echo "info: python-testpool.postinst"
 init_system=`dpkg -S /sbin/init`
 
 if [ "$init_system" = "systemd-sysv: /sbin/init" ]; then
-  echo "info: installing service /lib/systemd/system/testpooldb.service"
+  echo "info: installing service /lib/systemd/system/tpl-db.service"
   ##
   # Install on systemd. 
-  # setup.py installs /usr/local/share/testpooldb.service
+  # setup.py installs /usr/local/share/tpl-db.service
   # Without checking for now install into systemd area
-  cp /usr/testpool/systemd/testpooldb.service  /lib/systemd/system/
+  cp /usr/testpool/systemd/tpl-db.service  /lib/systemd/system/
   systemctl daemon-reload
-  systemctl enable testpooldb.service
-  systemctl start testpooldb.service
+  systemctl enable tpl-db.service
+  systemctl start tpl-db.service
   ##
 else
   echo "error: service system $init_system unsupported"
