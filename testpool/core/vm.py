@@ -25,59 +25,25 @@ from django.db.models import Q
 from testpooldb import models
 
 
-def vm_remove(hostname, product, profile, vm_name):
-    """ Remove a vm. """
-
-    try:
-        hv1 = models.HV.objects.get(hostname=hostname, product=product)
-        profile1 = models.Profile.objects.get(name=profile, hv=hv1)
-
-        vm1 = models.VM.objects.get(profile=profile1, name=vm_name)
-        vm1.delete()
-
-    except models.HV.DoesNotExist:
-        return 0
-    except models.Profile.DoesNotExist:
-        profiles = models.Profile.objects.filter(hv=hv1)
-        if profiles.count() == 0:
-            hv1.delete()
-        return 0
-    except models.VM.DoesNotExist:
-        profile1.delete()
-        return 0
-
-    vms = models.Profile.objects.filter(hv=hv1)
-    if vms.count() == 0:
-        hv1.delete()
-
-
-def vm_add(hostname, product, vm_name, vm_max, template_name):
-    """ Add a vm. """
-
+def _profile_get(hostname, product, profile):
+    """ Return the profile given the parameters. """
     (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
                                                product=product)
-    defaults = {"vm_max": vm_max, "template_name": template_name}
-    models.Profile.objects.update_or_create(name=vm_name, hv=hv1,
-                                            defaults=defaults)
+    return models.Profile.objects.get(name=profile, hv=hv1)
 
 
-def _do_vm_remove(args):
-    """ Remove a vm. """
-
-    logging.info("remove a vm %s", args.vm)
-    vm_remove(args.hostname, args.product, args.profile, args.vm)
-
-
-def _do_vm_add(args):
+def _do_vm_incr(args):
     """ Add or modify an vm.
 
     If the fake vm exists, calling this again will change the
     maximum number of VMS and the template name.
     """
 
-    logging.info("add a vm %s", args.vm)
-    vm_add(args.hostname, args.product, args.vm, args.max,
-           args.template_name)
+    logging.info("incrementing VMs %s %s %s %d", args.hostname, args.product,
+                 args.profile, args.count)
+    profile1 = _profile_get(args.hostname, args.product, args.profile)
+    profile1.vm_max += args.count
+    profile1.save()
 
 
 def _do_vm_list(args):
@@ -107,13 +73,15 @@ def add_subparser(subparser):
     rootparser = parser.add_subparsers()
 
     ##
-    # Add
-    parser = rootparser.add_parser("add", description=_do_vm_add.__doc__,
-                                   help="Add a vm")
-    parser.set_defaults(func=_do_vm_add)
+    # Increment
+    parser = rootparser.add_parser("incr", description=_do_vm_incr.__doc__,
+                                   help="Increment the number of VMs")
+    parser.set_defaults(func=_do_vm_incr)
     parser.add_argument("hostname", type=str, help="location of the vm.")
     parser.add_argument("product", type=str, help="The type of product.")
     parser.add_argument("profile", type=str, help="The profile name to clone.")
+    parser.add_argument("--count", type=int, default=1,
+                        help="Increment the maximum number of VMs.")
     ##
 
     ##
@@ -124,18 +92,6 @@ def add_subparser(subparser):
     parser.add_argument("search", type=str,
                         help="list VMs that contain search term.")
     parser.set_defaults(func=_do_vm_list)
-    ##
-
-    ##
-    # Remove
-    parser = rootparser.add_parser("remove",
-                                   description=_do_vm_remove.__doc__,
-                                   help="Remove a vm")
-    parser.set_defaults(func=_do_vm_remove)
-    parser.add_argument("hostname", type=str, help="location of the vm.")
-    parser.add_argument("product", type=str, help="The type of product.")
-    parser.add_argument("profile", type=str, help="The name of the profile.")
-    parser.add_argument("vm", type=str, help="Name of the fake vm.")
     ##
 
     return subparser
