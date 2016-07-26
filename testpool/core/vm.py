@@ -21,6 +21,7 @@ This profile pretends to manage a pool of VMs which are merely pretend
 VMS which do not exist.
 """
 import logging
+from django.db.models import Q
 from testpooldb import models
 
 
@@ -85,12 +86,14 @@ def _do_vm_list(args):
     fmt = "%-16s %-8s %-20s %s"
 
     logging.info("list vms")
-    hv1 = models.HV.objects.get(hostname=args.hostname, product=args.product)
-    profile1 = models.Profile.objects.get(hv=hv1, name=args.profile)
-    vms = models.VM.objects.filter(profile=profile1)
+    vms = models.VM.objects.filter(
+        Q(name__contains=args.search) |
+        Q(profile__hv__hostname__contains=args.search) |
+        Q(profile__hv__product__contains=args.search) |
+        Q(profile__name__contains=args.search)).order_by("name")
 
     print fmt % ("Name", "Status", "Reserved", "Expiration")
-    for vm1 in vms.order_by("id"):
+    for vm1 in vms:
         print fmt % (vm1.name, models.VM.status_to_str(vm1.status),
                      vm1.reserved, vm1.expiration)
 
@@ -118,9 +121,8 @@ def add_subparser(subparser):
     parser = rootparser.add_parser("list",
                                    description=_do_vm_list.__doc__,
                                    help="List vms")
-    parser.add_argument("hostname", type=str, help="location of the vm.")
-    parser.add_argument("product", type=str, help="The type of product.")
-    parser.add_argument("profile", type=str, help="The profile name to clone.")
+    parser.add_argument("search", type=str,
+                        help="list VMs that contain search term.")
     parser.set_defaults(func=_do_vm_list)
     ##
 

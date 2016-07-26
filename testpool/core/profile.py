@@ -21,7 +21,7 @@ This profile pretends to manage a pool of VMs which are merely pretend
 VMS which do not exist.
 """
 import logging
-import testpool
+import testpool.core.ext
 from testpooldb import models
 
 
@@ -72,11 +72,11 @@ def _do_profile_add(args):
 
     extensions = testpool.core.ext.list_get()
 
-    if args.profile not in extensions:
+    if args.product not in extensions:
         logging.debug("acceptable extensions are:")
         for extension in extensions:
             logging.debug("  " + extension)
-        raise ValueError("profile %s not supported" % args.profile)
+        raise ValueError("product %s not supported" % args.profile)
 
     profile_add(args.hostname, args.product, args.profile, args.max,
                 args.template)
