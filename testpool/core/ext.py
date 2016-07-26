@@ -17,7 +17,19 @@ def onerror(name):
     traceback.print_tb(trback)
 
 
-def ext_list():
+def list_get():
+    """ Return the list of extensions. """
+
+    rtc = []
+
+    for package in testpool.settings.PLUGINS:
+        package = importlib.import_module(package)
+        rtc += [item for _, item, _ in pkgutil.iter_modules(package.__path__)]
+
+    return rtc
+
+
+def api_ext_list():
     """ Look for command extensions. """
 
     api_exts = {}
@@ -44,7 +56,7 @@ class Testsuite(unittest.TestCase):
     def test_list(self):
         """ test_list. """
 
-        api_exts = ext_list()
+        api_exts = api_ext_list()
         self.assertTrue(api_exts)
         self.assertTrue("fake" in api_exts)
 

@@ -99,13 +99,13 @@ DATABASES = {
 }
 
 if "test" in sys.argv:
-    DATABASES['memory'] = {
+    DATABASES['default'] = {
         'ENGINE': 'django.db.backends.sqlite3',
         'TEST_CHARSET': 'UTF8', # if your normal db is utf8
         'NAME': ':memory:', # in memory
         'TEST_NAME': ':memory:', # in memory
     }
-    DATABASES['default'] = DATABASES['memory']
+    #DATABASES['default'] = DATABASES['memory']
 
     DEBUG = False # might accelerate a bit
     TEMPLATE_DEBUG = False

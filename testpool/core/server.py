@@ -82,7 +82,7 @@ def main(args):
 
     ##
     # Restart the daemon if extensions change.
-    exts = testpool.core.ext.ext_list()
+    exts = testpool.core.ext.api_ext_list()
     #
     setup(exts)
 
@@ -147,7 +147,7 @@ class ModelTestCase(unittest.TestCase):
 
         args = ModelTestCase.fake_args()
         self.assertEqual(main(args), 0)
-        exts = testpool.core.ext.ext_list()
+        exts = testpool.core.ext.api_ext_list()
 
         vmpool = exts[product].vmpool_get(hostname, profile_name)
 
@@ -182,7 +182,7 @@ class ModelTestCase(unittest.TestCase):
         profile1.vm_max = 12
         profile1.save()
 
-        exts = testpool.core.ext.ext_list()
+        exts = testpool.core.ext.api_ext_list()
         adapt(exts)
 
         vmpool = exts[product].vmpool_get(hostname, profile_name)

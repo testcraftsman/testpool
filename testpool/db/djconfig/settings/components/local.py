@@ -15,13 +15,14 @@ DEFAULT = {
 
 import sys
 
-DATABASES["local"] = DEFAULT
-# Assume if default is defined that this application has been installed
-# and so is a release.
-if "default" in DATABASES:
-    DEBUG = False
-else:
-    DATABASES["default"] = DEFAULT
-
-    # SECURITY WARNING: don't run with debug turned on in production!
-    DEBUG = True
+if "test" not in sys.argv:
+    DATABASES["local"] = DEFAULT
+    # Assume if default is defined that this application has been installed
+    # and so is a release.
+    if "default" in DATABASES:
+        DEBUG = False
+    else:
+        DATABASES["default"] = DEFAULT
+    
+        # SECURITY WARNING: don't run with debug turned on in production!
+        DEBUG = True

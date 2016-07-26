@@ -22,6 +22,7 @@ import importlib
 import pkgutil
 import argparse
 import traceback
+import unittest
 import testpool.settings
 from testpool.core import logger
 from testpool.core import profile
@@ -101,3 +102,16 @@ def main():
     arg_parser = argparser("tpl")
     extensions_find(arg_parser)
     return arg_parser
+
+
+class Testsuite(unittest.TestCase):
+    """ Profile tests. """
+
+    def test_bad_profile(self):
+        """ Test that bad profiles are prevented. """
+
+        arg_parser = main()
+        cmd = "profile add localhost bad bad.profile bad.template 10"
+        args = arg_parser.parse_args(cmd.split())
+        with self.assertRaises(ValueError):
+            args_process(args)

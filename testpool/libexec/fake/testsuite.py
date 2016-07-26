@@ -100,7 +100,7 @@ class Testsuite(unittest.TestCase):
         with self.assertRaises(testpool.core.algo.ResourceReleased):
             testpool.core.algo.push(vm1.id)
 
-        api_exts = testpool.core.ext.ext_list()
+        api_exts = testpool.core.ext.api_ext_list()
         testpool.core.server.reclaim(api_exts)
 
     def tearDown(self):
