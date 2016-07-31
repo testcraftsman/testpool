@@ -33,11 +33,7 @@ def _profile_get(hostname, product, profile):
 
 
 def _do_vm_incr(args):
-    """ Add or modify an vm.
-
-    If the fake vm exists, calling this again will change the
-    maximum number of VMS and the template name.
-    """
+    """ Increment or decrement the number number of VMs. """
 
     logging.info("incrementing VMs %s %s %s %d", args.hostname, args.product,
                  args.profile, args.count)
@@ -45,23 +41,29 @@ def _do_vm_incr(args):
     profile1.vm_max += args.count
     profile1.save()
 
+    return 0
+
 
 def _do_vm_list(args):
     """ List all vms. """
 
     fmt = "%-16s %-8s %-20s %s"
 
-    logging.info("list vms")
-    vms = models.VM.objects.filter(
-        Q(name__contains=args.search) |
-        Q(profile__hv__hostname__contains=args.search) |
-        Q(profile__hv__product__contains=args.search) |
-        Q(profile__name__contains=args.search)).order_by("name")
+    logging.info("list vms by %s", args.patterns)
+    vms = models.VM.objects.all()
+    for pattern in args.patterns:
+        vms = vms.filter(
+            Q(name__contains=pattern) |
+            Q(profile__hv__hostname__contains=pattern) |
+            Q(profile__hv__product__contains=pattern) |
+            Q(profile__name__contains=pattern)).order_by("name")
 
     print fmt % ("Name", "Status", "Reserved", "Expiration")
     for vm1 in vms:
         print fmt % (vm1.name, models.VM.status_to_str(vm1.status),
                      vm1.reserved, vm1.expiration)
+
+    return 0
 
 
 def add_subparser(subparser):
@@ -80,8 +82,8 @@ def add_subparser(subparser):
     parser.add_argument("hostname", type=str, help="location of the vm.")
     parser.add_argument("product", type=str, help="The type of product.")
     parser.add_argument("profile", type=str, help="The profile name to clone.")
-    parser.add_argument("--count", type=int, default=1,
-                        help="Increment the maximum number of VMs.")
+    parser.add_argument("count", type=int,
+                        help="Increment/decrement the maximum number of VMs.")
     ##
 
     ##
@@ -89,8 +91,9 @@ def add_subparser(subparser):
     parser = rootparser.add_parser("list",
                                    description=_do_vm_list.__doc__,
                                    help="List vms")
-    parser.add_argument("search", type=str,
-                        help="list VMs that contain search term.")
+    parser.add_argument("patterns", type=str, default=[], nargs="?",
+                        help="list VMs that contain pattern term. "
+                        "No pattern means everything.")
     parser.set_defaults(func=_do_vm_list)
     ##
 

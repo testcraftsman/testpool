@@ -52,6 +52,7 @@ def profile_add(hostname, product, profile, vm_max, template):
     defaults = {"vm_max": vm_max, "template_name": template}
     models.Profile.objects.update_or_create(name=profile, hv=hv1,
                                             defaults=defaults)
+    return 0
 
 
 def _do_profile_remove(args):
@@ -59,6 +60,7 @@ def _do_profile_remove(args):
 
     logging.info("remove a profile %s", args.profile)
     profile_remove(args.hostname, args.product, args.profile)
+    return 0
 
 
 def _do_profile_add(args):
@@ -78,8 +80,8 @@ def _do_profile_add(args):
             logging.debug("  " + extension)
         raise ValueError("product %s not supported" % args.profile)
 
-    profile_add(args.hostname, args.product, args.profile, args.max,
-                args.template)
+    return profile_add(args.hostname, args.product, args.profile, args.max,
+                       args.template)
 
 
 def _do_profile_list(_):
@@ -94,6 +96,8 @@ def _do_profile_list(_):
         print fmt % (profile.hv.hostname, profile.hv.product, profile.name,
                      "%s/%s" % (current, profile.vm_max),
                      profile.template_name)
+
+    return 0
 
 
 def add_subparser(subparser):

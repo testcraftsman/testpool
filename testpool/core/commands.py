@@ -38,7 +38,7 @@ def args_process(args):
     logger.args_process(LOGGER, args)
 
     LOGGER.debug(args)
-    args.func(args)
+    return args.func(args)
 
 
 def argparser(progname):
@@ -115,3 +115,16 @@ class Testsuite(unittest.TestCase):
         args = arg_parser.parse_args(cmd.split())
         with self.assertRaises(ValueError):
             args_process(args)
+
+    def test_vm_incrt(self):
+        """ Test that bad profiles are prevented. """
+
+        arg_parser = main()
+
+        cmd = "profile add localhost fake fake.profile fake.template 10"
+        args = arg_parser.parse_args(cmd.split())
+        self.assertEqual(args_process(args), 0)
+
+        cmd = "vm incr localhost fake fake.profile 1"
+        args = arg_parser.parse_args(cmd.split())
+        self.assertEqual(args_process(args), 0)
