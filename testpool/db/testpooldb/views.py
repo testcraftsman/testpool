@@ -19,7 +19,6 @@
 """
 # from django.shortcuts import render
 
-from rest_framework import viewsets
 from rest_framework.renderers import JSONRenderer
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -59,12 +58,3 @@ def profile_detail(request, pkey):
     if request.method == "GET":
         serializer = ProfileSerializer(profile)
         return JSONResponse(serializer.data)
-
-
-# pylint: disable=R0901
-class ProfileViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
-    queryset = Profile.objects.all()
-    serializer_class = ProfileSerializer

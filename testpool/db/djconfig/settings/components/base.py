@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'pure_pagination',
     'testpooldb',
     'rest_framework',
+    'profile',
 )
 
 REST_FRAMEWORK = {
