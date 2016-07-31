@@ -28,6 +28,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 
+
 class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
@@ -36,6 +37,7 @@ class JSONResponse(HttpResponse):
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
+
 
 @csrf_exempt
 def profile_list(request):
@@ -46,6 +48,7 @@ def profile_list(request):
         profiles = Profile.objects.all()
         serializer = ProfileSerializer(profiles, many=True)
         return JSONResponse(serializer.data)
+
 
 @csrf_exempt
 def profile_detail(request, pk):
@@ -58,6 +61,7 @@ def profile_detail(request, pk):
     if request.method == "GET":
         serializer = ProfileSerializer(profile)
         return JSONResponse(serializer.data)
+
 
 class ProfileViewSet(viewsets.ModelViewSet):
     """

@@ -116,7 +116,7 @@ class Testsuite(unittest.TestCase):
         with self.assertRaises(ValueError):
             args_process(args)
 
-    def test_vm_incrt(self):
+    def test_vm_incr(self):
         """ Test that bad profiles are prevented. """
 
         arg_parser = main()
