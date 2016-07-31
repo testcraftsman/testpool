@@ -93,6 +93,7 @@ def main(args):
         adapt(exts)
         reclaim(exts)
         if args.sleep_time > 0:
+            LOGGER.info("testpool sleeping %s (seconds)", args.sleep_time)
             time.sleep(args.sleep_time)
 
         if count != FOREVER:

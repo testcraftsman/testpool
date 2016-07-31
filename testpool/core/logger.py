@@ -7,12 +7,17 @@ import testpool.settings
 
 def create():
     """ Create logger for tbd application. """
-    console = logging.StreamHandler()
     formatter = logging.Formatter(testpool.settings.FMT)
-    console.setFormatter(formatter)
-    logger = logging.getLogger("")
-    logger.addHandler(console)
-    logger.setLevel(logging.WARNING)
+    logger = logging.getLogger()
+    hdlr = logger.handlers[0]
+    hdlr.setFormatter(formatter)
+
+    #logger.setFormatter(formatter)
+    #logger.setLevel(logging.WARNING)
+
+    #console = logging.StreamHandler()
+    #console.setFormatter(formatter)
+    #logger.addHandler(console)
 
     return logger
 
