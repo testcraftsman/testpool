@@ -46,12 +46,15 @@ def reclaim(exts):
     LOGGER.info("testpool reclaim started")
 
     for vm1 in models.VM.objects.filter(status=models.VM.RELEASED):
-        LOGGER.info("loading %s %s", vm1.profile.hv.product,
-                    vm1.profile.hv.hostname)
+        LOGGER.info("loading %s %s %s", vm1.profile.hv.hostname,
+                    vm1.profile.hv.product, vm1.name)
         ext = exts[vm1.profile.hv.product]
         vmpool = ext.vmpool_get(vm1.profile.hv.hostname, vm1.profile.name)
 
         testpool.core.algo.reclaim(vmpool, vm1)
+
+        vm1.status = models.VM.FREE
+        vm1.save()
     LOGGER.info("testpool reclaim ended")
 
 

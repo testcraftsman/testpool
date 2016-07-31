@@ -27,8 +27,7 @@ from testpooldb import models
 
 def _profile_get(hostname, product, profile):
     """ Return the profile given the parameters. """
-    (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
-                                               product=product)
+    hv1 = models.HV.objects.get(hostname=hostname, product=product)
     return models.Profile.objects.get(name=profile, hv=hv1)
 
 
@@ -44,10 +43,34 @@ def _do_vm_incr(args):
     return 0
 
 
+def _do_vm_release(args):
+    """ Release VM. """
+
+    logging.info("release %s %s %s", args.hostname, args.profile, args.vmname)
+    vm1 = models.VM.objects.get(name=args.vmname,
+                                profile__hv__hostname=args.hostname,
+                                profile__name=args.profile)
+    vm1.status = models.VM.RELEASED
+    vm1.save()
+    return 0
+
+
+def _do_vm_reserve(args):
+    """ Reserve VM. """
+
+    logging.info("reserve %s %s %s", args.hostname, args.profile, args.vmname)
+    vm1 = models.VM.objects.get(name=args.vmname,
+                                profile__hv__hostname=args.hostname,
+                                profile__name=args.profile)
+    vm1.status = models.VM.RESERVED
+    vm1.save()
+    return 0
+
+
 def _do_vm_list(args):
     """ List all vms. """
 
-    fmt = "%-16s %-8s %-20s %s"
+    fmt = "%-13s %-13s %-16s %-8s %-15s %s"
 
     logging.info("list vms by %s", args.patterns)
     vms = models.VM.objects.all()
@@ -58,10 +81,12 @@ def _do_vm_list(args):
             Q(profile__hv__product__contains=pattern) |
             Q(profile__name__contains=pattern)).order_by("name")
 
-    print fmt % ("Name", "Status", "Reserved", "Expiration")
+    print fmt % ("Host Name", "Profile", "Name", "Status", "Reserved",
+                 "Expiration")
     for vm1 in vms:
-        print fmt % (vm1.name, models.VM.status_to_str(vm1.status),
-                     vm1.reserved, vm1.expiration)
+        print fmt % (vm1.profile.hv.hostname, vm1.profile.name, vm1.name,
+                     models.VM.status_to_str(vm1.status), vm1.reserved,
+                     vm1.expiration)
 
     return 0
 
@@ -85,6 +110,20 @@ def add_subparser(subparser):
     parser.add_argument("count", type=int,
                         help="Increment/decrement the maximum number of VMs.")
     ##
+
+    parser = rootparser.add_parser("release", description=_do_vm_incr.__doc__,
+                                   help="Release VM to be reclaimed.")
+    parser.add_argument("hostname", type=str, help="location of the vm.")
+    parser.add_argument("profile", type=str, help="The profile name to clone.")
+    parser.add_argument("vmname", type=str, help="The VM name.")
+    parser.set_defaults(func=_do_vm_release)
+
+    parser = rootparser.add_parser("reserve", description=_do_vm_incr.__doc__,
+                                   help="Reserve VM.")
+    parser.add_argument("hostname", type=str, help="location of the vm.")
+    parser.add_argument("profile", type=str, help="The profile name to clone.")
+    parser.add_argument("vmname", type=str, help="The VM name.")
+    parser.set_defaults(func=_do_vm_reserve)
 
     ##
     # List
