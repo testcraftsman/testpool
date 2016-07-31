@@ -20,13 +20,11 @@
 # from django.shortcuts import render
 
 from rest_framework import viewsets
-from testpooldb.serializers import ProfileSerializer
-from testpooldb.models import Profile
-
+from rest_framework.renderers import JSONRenderer
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
+from testpooldb.serializers import ProfileSerializer
+from testpooldb.models import Profile
 
 
 class JSONResponse(HttpResponse):
@@ -51,11 +49,11 @@ def profile_list(request):
 
 
 @csrf_exempt
-def profile_detail(request, pk):
+def profile_detail(request, pkey):
     """ Retrieve specific profile.  """
     try:
-        profile = Profile.objects.get(pk=pk)
-    except Snippet.DoesNotExist:
+        profile = Profile.objects.get(pk=pkey)
+    except Profile.DoesNotExist:
         return HttpResponse(status=404)
 
     if request.method == "GET":
@@ -63,6 +61,7 @@ def profile_detail(request, pk):
         return JSONResponse(serializer.data)
 
 
+# pylint: disable=R0901
 class ProfileViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
