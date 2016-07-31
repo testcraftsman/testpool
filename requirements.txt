@@ -4,3 +4,4 @@ pytest==2.8.3
 Django==1.8.4
 django-split-settings==0.1.3
 pytz==2015.7
+djangorestframework==3.4.1

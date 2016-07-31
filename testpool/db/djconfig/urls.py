@@ -17,10 +17,16 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.views.generic import RedirectView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from testpooldb import views
+#from rest_framework import routers
+
+#router = routers.DefaultRouter()
+#router.register(r"profiles", views.ProfileViewSet)
 
 urlpatterns = patterns("",
     url(r'^testpool/admin/', include(admin.site.urls)),
-    ##
+    url(r'^testpool/api/profiles', views.profile_list),
+    url(r'^testpool/api/profiles/(?P<pk>[0-9]+/$', views.profile_detail),
 )
 
 urlpatterns += staticfiles_urlpatterns()

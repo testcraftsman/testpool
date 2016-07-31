@@ -39,7 +39,13 @@ INSTALLED_APPS = (
     'django.core.management',
     'pure_pagination',
     'testpooldb',
+    'rest_framework',
 )
+
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES" : {"rest_framework.permission.IsAdminUser",},
+    "PAGE_SIZE": 10
+}
 
 #TEMPLATE_LOADERS = (
     #"django.template.loaders.filesystem.Loader",

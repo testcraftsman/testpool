@@ -12,12 +12,12 @@ def create():
     hdlr = logger.handlers[0]
     hdlr.setFormatter(formatter)
 
-    #logger.setFormatter(formatter)
-    #logger.setLevel(logging.WARNING)
+    # logger.setFormatter(formatter)
+    # logger.setLevel(logging.WARNING)
 
-    #console = logging.StreamHandler()
-    #console.setFormatter(formatter)
-    #logger.addHandler(console)
+    # console = logging.StreamHandler()
+    # console.setFormatter(formatter)
+    # logger.addHandler(console)
 
     return logger
 

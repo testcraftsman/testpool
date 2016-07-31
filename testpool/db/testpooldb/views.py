@@ -18,3 +18,50 @@
  Holds views for tests results.
 """
 # from django.shortcuts import render
+
+from rest_framework import viewsets
+from testpooldb.serializers import ProfileSerializer
+from testpooldb.models import Profile
+
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.renderers import JSONRenderer
+from rest_framework.parsers import JSONParser
+
+class JSONResponse(HttpResponse):
+    """
+    An HttpResponse that renders its content into JSON.
+    """
+    def __init__(self, data, **kwargs):
+        content = JSONRenderer().render(data)
+        kwargs['content_type'] = 'application/json'
+        super(JSONResponse, self).__init__(content, **kwargs)
+
+@csrf_exempt
+def profile_list(request):
+    """
+    List all code snippets, or create a new snippet.
+    """
+    if request.method == 'GET':
+        profiles = Profile.objects.all()
+        serializer = ProfileSerializer(profiles, many=True)
+        return JSONResponse(serializer.data)
+
+@csrf_exempt
+def profile_detail(request, pk):
+    """ Retrieve specific profile.  """
+    try:
+        profile = Profile.objects.get(pk=pk)
+    except Snippet.DoesNotExist:
+        return HttpResponse(status=404)
+
+    if request.method == "GET":
+        serializer = ProfileSerializer(profile)
+        return JSONResponse(serializer.data)
+
+class ProfileViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows users to be viewed or edited.
+    """
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
