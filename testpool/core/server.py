@@ -1,6 +1,7 @@
 """ Test pool Server. """
 import unittest
 import time
+import logging
 import testpool.core.ext
 import testpool.core.algo
 import testpool.core.logger
@@ -9,7 +10,8 @@ from testpool.core import profile
 from testpooldb import models
 
 FOREVER = None
-LOGGER = testpool.core.logger.create()
+LOGGER = logging.getLogger()
+logging.getLogger("django.db.backends").setLevel(logging.CRITICAL)
 
 
 def args_process(args):
@@ -52,7 +54,6 @@ def reclaim(exts):
         vmpool = ext.vmpool_get(vm1.profile.hv.hostname, vm1.profile.name)
 
         testpool.core.algo.reclaim(vmpool, vm1)
-
         vm1.status = models.VM.FREE
         vm1.save()
     LOGGER.info("testpool reclaim ended")

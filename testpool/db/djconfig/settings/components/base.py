@@ -48,16 +48,6 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10
 }
 
-#TEMPLATE_LOADERS = (
-    #"django.template.loaders.filesystem.Loader",
-    #"django.template.loaders.app_directories.Loader",
-    #"django.template.loaders.eggs.Loader",
-#)
-
-#TEMPLATE_DIRS = (
-    #os.path.join(BASE_DIR, "..", "templates"),
-#)
-
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
