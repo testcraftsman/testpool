@@ -16,7 +16,10 @@
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
 from django.conf.urls import patterns, url
 from . import views 
-urlpatterns = patterns(
-  "profile",
-  url(r"^$", views.index),
+from . import api
+
+urlpatterns = patterns("",
+    url(r'api/profile/(?P<pk>[0-9]+/$)', api.profile_detail),
+    url(r'api/profile/list', api.profile_list),
+    url(r"profile", views.index),
 )

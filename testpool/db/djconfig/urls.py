@@ -18,13 +18,12 @@ from django.contrib import admin
 from django.views.generic import RedirectView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from testpooldb import views
-import profile
 
 urlpatterns = patterns("",
     url(r'^testpool/admin/', include(admin.site.urls)),
-    url(r'^testpool/profile/', include("profile.urls")),
-    url(r'^testpool/api/profiles', views.profile_list),
-    url(r'^testpool/api/profiles/(?P<pk>[0-9]+/$)', views.profile_detail),
+    url(r'^testpool/', include("profile.urls")),
+    #url(r'^testpool/api/profiles', views.profile_list),
+    #url(r'^testpool/api/profiles/(?P<pk>[0-9]+/$)', views.profile_detail),
 )
 
 urlpatterns += staticfiles_urlpatterns()
