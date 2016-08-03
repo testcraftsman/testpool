@@ -5,7 +5,7 @@ import logging
 # information. The existance of the mysql configuration file implies that
 # it will become default database.
 CONF="/etc/testpool/testpool.conf"
-WSGI_APPLICATION = 'cgi-bin.wsgi.application'
+#WSGI_APPLICATION = 'cgi-bin.wsgi.application'
 
 sqllite_path = os.path.join("/var", "tmp", 'testpooldb.sqlite3')
 

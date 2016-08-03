@@ -22,8 +22,8 @@
 from rest_framework.renderers import JSONRenderer
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from testpooldb.serializers import ProfileSerializer
 from testpooldb.models import Profile
+from profile.serializers import ProfileSerializer
 
 
 class JSONResponse(HttpResponse):

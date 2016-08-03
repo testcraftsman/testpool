@@ -88,7 +88,7 @@ TEMPLATES = [
 
 
 
-WSGI_APPLICATION = 'djconfig.wsgi.application'
+#WSGI_APPLICATION = 'djconfig.wsgi.application'
 
 
 # Database

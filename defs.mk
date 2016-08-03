@@ -47,7 +47,8 @@ debug_mark::
 
 check:: pep8 pylint subdirs python27 test debug_mark
 clean::
-	pyclean .
 	find . -name "#*" -delete
 	find . -name ".#*" -delete
 	find . -name "*~" -delete
+	find . -name "*.pyc" -delete
+	find . -name "__pycache__" -delete
