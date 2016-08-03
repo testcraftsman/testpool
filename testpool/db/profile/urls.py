@@ -19,7 +19,7 @@ from . import views
 from . import api
 
 urlpatterns = patterns("",
-    url(r'api/profile/(?P<pk>[0-9]+/$)', api.profile_detail),
+    url(r'api/profile/(?P<pkey>[0-9]+$)', api.profile_detail),
     url(r'api/profile/list', api.profile_list),
     url(r"profile", views.index),
 )

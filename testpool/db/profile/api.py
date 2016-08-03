@@ -41,6 +41,7 @@ def profile_list(request):
     """
     List all code snippets, or create a new snippet.
     """
+
     if request.method == 'GET':
         profiles = Profile.objects.all()
         serializer = ProfileSerializer(profiles, many=True)
@@ -50,6 +51,8 @@ def profile_list(request):
 @csrf_exempt
 def profile_detail(request, pkey):
     """ Retrieve specific profile.  """
+
+    print "MARK: profile", pkey
     try:
         profile = Profile.objects.get(pk=pkey)
     except Profile.DoesNotExist:

@@ -42,4 +42,3 @@ def index(_):
 
     html_data = {"profiles": profiles}
     return render_to_response("profile/index.html", html_data)
-
