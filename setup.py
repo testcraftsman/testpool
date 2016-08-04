@@ -25,7 +25,7 @@ setup_args = {
     "version":__version__,
     "packages": find_packages(),
     "include_package_data": True,
-    "scripts": ["bin/tpl", "bin/testpooldaemon", "bin/tpl-db"],
+    "scripts": ["bin/tpl", "bin/tpl-daemon", "bin/tpl-db"],
     "license": 'GPLv3',
     "description": 'Manage and recycle pools of VMs.',
     "long_description": README,

@@ -7,7 +7,7 @@ recursive-include testpool *.py
 recursive-include bin *.py
 recursive-include scripts *.service
 include bin/tpl
-include bin/testpooldaemon
+include bin/tpl-daemon
 include bin/tpl-db
 include etc/testpool/testpool.conf
 include etc/init/tpl-db.conf
