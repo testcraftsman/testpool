@@ -36,6 +36,7 @@ setup_args = {
     "data_files": [
         ("testpool/etc", ["etc/testpool/testpool.conf"]),
         ("testpool/systemd/", ["scripts/systemd/tpl-db.service"]),
+        ("testpool/systemd/", ["scripts/systemd/tpl-daemon.service"]),
     ],
     "classifiers": [
         'Development Status :: 1 - Pre-Alphe',
