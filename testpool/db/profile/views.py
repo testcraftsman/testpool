@@ -17,9 +17,14 @@
 from django.shortcuts import render_to_response
 from testpooldb import models
 
-class ProfileView(object):
+class ProfileStats(object):
     def __init__(self, profile):
-        """Contruct a product view. """
+        """Contruct a profile view. """
+
+        ##
+        # The ID is needed for the JSON view.
+        self.id = profile.id
+        #
         self.name = profile.name
         self.vm_max = profile.vm_max
         self.vm_free = 0
@@ -38,7 +43,7 @@ def index(_):
     """ Summarize product information. """
 
     profiles = models.Profile.objects.all()
-    profiles = [ProfileView(item) for item in profiles]
+    profiles = [ProfileStats(item) for item in profiles]
 
     html_data = {"profiles": profiles}
     return render_to_response("profile/index.html", html_data)

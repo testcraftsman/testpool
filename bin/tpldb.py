@@ -8,6 +8,7 @@ import testpool.settings
 
 
 if __name__ == "__main__":
+
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djconfig.settings")
     sys.path.append(testpool.settings.TEST_DBSITE_DIR)
 

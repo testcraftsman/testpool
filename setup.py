@@ -7,7 +7,7 @@ from subprocess import call
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 
-from testpool import __version__, __author__
+from testpool import __version__, __author__, __email__
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
     README = readme.read()
@@ -31,7 +31,7 @@ setup_args = {
     "long_description": README,
     "url": 'https://github.com/testbed/testpool.git',
     "author": __author__,
-    "author_email": 'mark.lee.hamilton@gmail.com',
+    "author_email": __email__,
     #"install_requires": REQUIREMENTS.split("\n"),
     "data_files": [
         ("testpool/etc", ["etc/testpool/testpool.conf"]),

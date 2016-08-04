@@ -23,7 +23,9 @@ from rest_framework.renderers import JSONRenderer
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from testpooldb.models import Profile
+from profile.views import ProfileStats
 from profile.serializers import ProfileSerializer
+from profile.serializers import ProfileStatsSerializer
 
 
 class JSONResponse(HttpResponse):
@@ -43,8 +45,8 @@ def profile_list(request):
     """
 
     if request.method == 'GET':
-        profiles = Profile.objects.all()
-        serializer = ProfileSerializer(profiles, many=True)
+        profiles = [ProfileStats(item) for item in Profile.objects.all()]
+        serializer = ProfileStatsSerializer(profiles, many=True)
         return JSONResponse(serializer.data)
 
 
@@ -52,7 +54,6 @@ def profile_list(request):
 def profile_detail(request, pkey):
     """ Retrieve specific profile.  """
 
-    print "MARK: profile", pkey
     try:
         profile = Profile.objects.get(pk=pkey)
     except Profile.DoesNotExist:

@@ -23,9 +23,19 @@ from testpooldb.models import Profile
 
 # pylint: disable=R0903
 class ProfileSerializer(serializers.ModelSerializer):
-    """ Serialize profile object. """
+    """ Serialize ProfileModel. """
 
     class Meta(object):
         """ Define what is in a serialize response. """
         model = Profile
-        fields = ('id', 'name', "vm_max")
+        fields = ('id', 'template_name', 'name', "vm_max", 'kvps')
+
+class ProfileStatsSerializer(serializers.Serializer):
+    """ Serialize ProfileStats object. """
+
+    id = serializers.IntegerField()
+    name = serializers.CharField(max_length=128)
+    vm_max = serializers.IntegerField()
+    vm_free = serializers.IntegerField()
+    vm_reserved = serializers.IntegerField()
+    vm_released = serializers.IntegerField()
