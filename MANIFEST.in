@@ -10,6 +10,5 @@ include bin/tpl
 include bin/tpl-daemon
 include bin/tpl-db
 include etc/testpool/testpool.conf
-include etc/init/tpl-db.conf
 include debian/python-testpool.postinst
 include debian/python-testpool.prerm
