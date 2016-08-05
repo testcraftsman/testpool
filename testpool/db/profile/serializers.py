@@ -30,6 +30,15 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ('id', 'template_name', 'name', "vm_max", 'kvps')
 
+# pylint: disable=R0903
+class VMSerializer(serializers.ModelSerializer):
+    """ Serialize ProfileModel. """
+
+    class Meta(object):
+        """ Define what is in a serialize response. """
+        model = Profile
+        fields = __all__
+
 class ProfileStatsSerializer(serializers.Serializer):
     """ Serialize ProfileStats object. """
 

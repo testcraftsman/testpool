@@ -114,6 +114,11 @@ class VM(models.Model):
         """ User representation. """
         return "%s" % self.name
 
+    def acquire(self):
+        """ Acquire VM. """
+        self.status = VM.RESERVED
+        self.save()
+
     @staticmethod
     def status_to_str(status):
         """ Return string form of the status code. """

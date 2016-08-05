@@ -6,10 +6,34 @@ set -e
 
 echo "info: python-testpool.postinst $*"
 
+init_system=`dpkg -S /sbin/init`
+
+if [ "$init_system" = "systemd-sysv: /sbin/init" ]; then
+  echo "info: remove service /lib/systemd/system/tpl-db.service"
+  if [ -f "/lib/systemd/system/tpl-db.service" ]; then
+    systemctl stop tpl-db
+    systemctl disable tpl-db
+    systemctl daemon-reload
+    systemctl reset-failed
+    rm -f /lib/systemd/system/tpl-db.service
+  fi
+
+  echo "info: remove service /lib/systemd/system/tpl-daemon.service"
+  if [ -f "/lib/systemd/system/tpl-daemon.service" ]; then
+    systemctl stop tpl-daemon
+    systemctl disable tpl-daemon
+    systemctl daemon-reload
+    systemctl reset-failed
+    rm -f /lib/systemd/system/tpl-daemon.service
+  fi
+else
+  echo "error: service system $init_system unsupported"
+fi
+
+
 ##
-# Normally this is generated automatically when prerm is automatically
-# generated. However service needs to be stopped.
-# Automatically added by dh_python2:
+# Normally this is generated automatically.  However service needs 
+# to be stopped. Automatically added by dh_python2:
 if which pyclean >/dev/null 2>&1; then
 	pyclean -p python-testpool 
 else
@@ -19,19 +43,3 @@ else
   	done
 fi
 ##
-
-init_system=`dpkg -S /sbin/init`
-
-if [ "$init_system" = "systemd-sysv: /sbin/init" ]; then
-  echo "info: remove service /lib/systemd/system/testpooldb.service"
-  if [ -f "/lib/systemd/system/testpooldb.service" ]; then
-    systemctl stop testpooldb
-    systemctl disable testpooldb
-    systemctl daemon-reload
-    systemctl reset-failed
-    rm -f /lib/systemd/system/testpooldb.service
-  fi
-  ##
-else
-  echo "error: service system $init_system unsupported"
-fi

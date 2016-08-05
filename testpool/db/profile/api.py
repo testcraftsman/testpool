@@ -26,6 +26,7 @@ from testpooldb.models import Profile
 from profile.views import ProfileStats
 from profile.serializers import ProfileSerializer
 from profile.serializers import ProfileStatsSerializer
+from profile.serializers import VMSerializer
 
 
 class JSONResponse(HttpResponse):
@@ -61,4 +62,20 @@ def profile_detail(request, pkey):
 
     if request.method == "GET":
         serializer = ProfileSerializer(profile)
+        return JSONResponse(serializer.data)
+
+@csrf_exempt
+def profile_acquire(request, name):
+    """
+    List all code snippets, or create a new snippet.
+    """
+
+    logging.debug("profile acquire: %s", name)
+
+    if request.method == 'GET':
+        profile = Profile.objects.get(profile_name=name)
+        vm1 = profile.vm_set().filter(status=models.VM.FREE)
+        vm1.acquire()
+
+        serializer = VMSerializer(vm1)
         return JSONResponse(serializer.data)
