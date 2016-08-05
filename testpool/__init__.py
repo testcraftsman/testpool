@@ -14,9 +14,4 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
-"""
-Hold general testbed content.
-"""
-
-__author__ = 'Mark Hamilton'
-__email__ = 'mark.lee.hamilton@gmail.com'
+""" Hold general testbed content.  """

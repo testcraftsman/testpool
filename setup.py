@@ -10,6 +10,9 @@ from setuptools.command.install import install
 
 from testpool import __author__, __email__
 
+AUTHOR = "Mark Hamilton"
+AUTHOR_EMAIL = "mark.lee.hamilton@gmail.com"
+
 ##
 # Figure out version based on debian changelog
 version = subprocess.check_output("dpkg-parsechangelog --show-field Version",
@@ -37,10 +40,10 @@ setup_args = {
     "description": 'Manage and recycle pools of VMs.',
     "long_description": README,
     "url": 'https://github.com/testbed/testpool.git',
-    "maintainer": __author__,
-    "maintainer_email": __email__,
-    "author": __author__,
-    "author_email": __email__,
+    "maintainer": AUTHOR,
+    "maintainer_email": AUTHOR_EMAIL,
+    "author": AUTHOR,
+    "author_email": AUTHOR_EMAIL,
     #"install_requires": REQUIREMENTS.split("\n"),
     "data_files": [
         ("testpool/etc", ["etc/testpool/testpool.conf"]),
