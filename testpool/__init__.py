@@ -18,6 +18,5 @@
 Hold general testbed content.
 """
 
-__version__ = '0.0.2'
 __author__ = 'Mark Hamilton'
 __email__ = 'mark.lee.hamilton@gmail.com'

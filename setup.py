@@ -3,11 +3,18 @@
 import logging
 import os
 import pkgutil
+import subprocess
 from subprocess import call
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 
-from testpool import __version__, __author__, __email__
+from testpool import __author__, __email__
+
+##
+# Figure out version based on debian changelog
+version = subprocess.check_output("dpkg-parsechangelog --show-field Version",
+                                  shell=True)
+##
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
     README = readme.read()
@@ -22,7 +29,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup_args = {
     "name": 'testpool',
-    "version":__version__,
+    "version": version,
     "packages": find_packages(),
     "include_package_data": True,
     "scripts": ["bin/tpl", "bin/tpl-daemon", "bin/tpl-db"],
@@ -30,6 +37,8 @@ setup_args = {
     "description": 'Manage and recycle pools of VMs.',
     "long_description": README,
     "url": 'https://github.com/testbed/testpool.git',
+    "maintainer": __author__,
+    "maintainer_email": __email__,
     "author": __author__,
     "author_email": __email__,
     #"install_requires": REQUIREMENTS.split("\n"),

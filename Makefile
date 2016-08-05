@@ -5,7 +5,7 @@ PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/testpool
 PROJECT=testpool
-export VERSION:=`python -c "import testpool; print testpool.__version__"`
+export VERSION:=`python ./setup.py --version`
 
 info::
 	@echo "version ${VERSION}"
@@ -36,6 +36,7 @@ rpm.build:
 
 .PHONY: deb.build
 deb.build: MANIFEST.in ./setup.py source
+	dpkg-parsechangelog | sed -rne 's,^Version: (.*),package_version="\1", p' > testpool/version.py
 	python setup.py --command-packages=stdeb.command bdist_deb
 
 install:

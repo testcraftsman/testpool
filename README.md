@@ -10,3 +10,13 @@ documentation on how to setup and configure KVM.
 
    sudo apt install qemu-kvm libvirt-bin libvirt-dev
    sudo pip install libvirt-python
+
+
+Debian Packaging
+
+Make sure to set EMAIL before using dch
+export EMAIL="Mark Hamilton <mark.lee.hamilton@gmail.com>"
+
+
+Also note that versions are incremented in the change log
+  dch -U

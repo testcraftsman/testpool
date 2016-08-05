@@ -12,19 +12,15 @@ override_dh_auto_clean:
 	find . -name \*.pyc -exec rm {} \;
 
 
-
 override_dh_auto_build:
+	dpkg-parsechangelog | sed -rne 's,^Version: (.*),package_version="\1", p' > testpool/version.py
 	python setup.py build --force
+	dh_auto_build
 
 
 override_dh_auto_install:
 	python setup.py install --force --root=debian/python-testpool --no-compile -O0 --install-layout=deb  
 
 
-
 override_dh_python2:
 	dh_python2 --no-guessing-versions
-
-
-
-

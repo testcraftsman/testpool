@@ -1,8 +1,9 @@
-testpool (0.0.1-1ubuntu2) UNRELEASED; urgency=medium
+testpool (0.0.1-2) xenial; urgency=medium
 
+  * contains basic daemon and database support.
   * introduce tpl-daemon and worked on overall structure.
 
- -- mark <mark.lee.hamilton@gmail.com>  Wed, 03 Aug 2016 23:18:23 -0700
+ -- mark Hamilton <mark.lee.hamilton@gmail.com>  Wed, 03 Aug 2016 23:21:33 -0700
 
 testpool (0.0.1-1) unstable; urgency=low
 
