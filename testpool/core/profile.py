@@ -25,22 +25,23 @@ import testpool.core.ext
 from testpooldb import models
 
 
-def profile_remove(hostname, product, profile):
+def profile_remove(hostname, profile):
     """ Remove a profile. """
 
     try:
-        hv1 = models.HV.objects.get(hostname=hostname, product=product)
-
-        profile = models.Profile.objects.get(name=profile, hv=hv1)
+        profile = models.Profile.objects.get(name=profile,
+                                             hv__hostname=hostname)
         profile.delete()
+    except models.Profile.DoesNotExist:
+        pass
 
-        profiles = models.Profile.objects.filter(hv=hv1)
-        if profiles.count() == 0:
+    try:
+        hv1 = models.HV.objects.get(hostname=hostname)
+        if hv1.profile_set.count() == 0:
+            #profiles = models.Profile.objects.filter(hv=hv1)
+            #if profiles.count() == 0:
             hv1.delete()
     except models.HV.DoesNotExist:
-        return 0
-    except models.Profile.DoesNotExist:
-        hv1.delete()
         return 0
 
 
@@ -59,7 +60,7 @@ def _do_profile_remove(args):
     """ Remove a profile. """
 
     logging.info("remove a profile %s", args.profile)
-    profile_remove(args.hostname, args.product, args.profile)
+    profile_remove(args.hostname, args.profile)
     return 0
 
 
@@ -135,7 +136,6 @@ def add_subparser(subparser):
                                    help="Remove a profile")
     parser.set_defaults(func=_do_profile_remove)
     parser.add_argument("hostname", type=str, help="location of the profile.")
-    parser.add_argument("product", type=str, help="The type of product.")
     parser.add_argument("profile", type=str, help="Name of the fake profile.")
     ##
 

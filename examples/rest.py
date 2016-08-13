@@ -2,28 +2,50 @@
   Examples on how to call the REST interfaces.
 
   The database needs to be running in order for these examples can run.
-
-  tpl-db runserver
 """
 import json
 import unittest
 import requests
 import testpool.core.commands
+import testpool.core.server
 
 
 TEST_URL = "http://127.0.0.1:8000/testpool/api/"
 
 
+def setup_module(self):
+    """ Create a profile. """
+
+    ##
+    # Add a fake.profile to the database.
+    arg_parser = testpool.core.commands.main()
+    cmd = "profile add localhost fake fake.profile fake.template 10"
+    args = arg_parser.parse_args(cmd.split())
+    assert(testpool.core.commands.args_process(args) == 0)
+    ##
+
+    ##
+    # Use the existing core server code to create all of the VMs for the
+    # above fake profile.
+    arg_parser = testpool.core.server.argparser()
+    cmd = "--count 1 --verbose --sleep-time 0"
+    args = arg_parser.parse_args(cmd.split())
+    testpool.core.server.args_process(args)
+    testpool.core.server.main(args)
+    ##
+
+
+def teardown_module(self):
+    """ Create a profile. """
+
+    arg_parser = testpool.core.commands.main()
+    cmd = "profile remove localhost fake.profile"
+    args = arg_parser.parse_args(cmd.split())
+    assert(testpool.core.commands.args_process(args) == 0)
+
 class Testsuite(unittest.TestCase):
     """ Demonstrate each REST interface. """
 
-    def setup(self):
-        """ Create a profile. """
-
-        arg_parser = testpool.core.commands.main()
-        cmd = "profile add localhost fake fake.profile fake.template 10"
-        args = arg_parser.parse_args(cmd.split())
-        self.assertEqual(testpool.core.commands.args_process(args), 0)
 
     def test_profile_list(self):
         """ test_profile_list. """
@@ -42,10 +64,11 @@ class Testsuite(unittest.TestCase):
     def test_profile_acquire(self):
         """ test_profile_acquire acquire a VM. """
 
-        url = TEST_URL + "profile/acquire"
+        url = TEST_URL + "profile/acquire/fake.profile"
         resp = requests.get(url)
         resp.raise_for_status()
-        profiles = json.loads(resp.text)
+        vm1 = json.loads(resp.text)
+        print "MARK: vm", vm1
 
-        self.assertEqual(len(profiles), 1)
-        self.assertEqual(profiles[0]["name"], "fake.profile")
+        self.assertTrue(vm1["name"].startswith("fake.template"))
+        self.assertTrue(len(vm1["name"]) > len("fake.template"))

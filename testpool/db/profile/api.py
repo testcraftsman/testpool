@@ -18,15 +18,19 @@
  Holds views for tests results.
 """
 # from django.shortcuts import render
+import logging
 
 from rest_framework.renderers import JSONRenderer
+from rest_framework import serializers
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from testpooldb.models import Profile
+from testpooldb.models import VM
 from profile.views import ProfileStats
 from profile.serializers import ProfileSerializer
 from profile.serializers import ProfileStatsSerializer
 from profile.serializers import VMSerializer
+
 
 
 class JSONResponse(HttpResponse):
@@ -44,6 +48,8 @@ def profile_list(request):
     """
     List all code snippets, or create a new snippet.
     """
+
+    logging.debug("profile list:")
 
     if request.method == 'GET':
         profiles = [ProfileStats(item) for item in Profile.objects.all()]
@@ -73,9 +79,21 @@ def profile_acquire(request, name):
     logging.debug("profile acquire: %s", name)
 
     if request.method == 'GET':
-        profile = Profile.objects.get(profile_name=name)
-        vm1 = profile.vm_set().filter(status=models.VM.FREE)
-        vm1.acquire()
+        try:
+            profile = Profile.objects.get(name=name)
+        except Profile.DoesNotExist:
+            raise serializers.ValidationError("profile %s not found" % name)
 
-        serializer = VMSerializer(vm1)
-        return JSONResponse(serializer.data)
+        try:
+            vms = profile.vm_set.filter(status=VM.FREE)
+
+            if vms.count() == 0:
+                raise serializers.ValidationError("profile %s is full" % name)
+
+            vm1 = vms[0]
+            vm1.acquire()
+
+            serializer = VMSerializer(vm1)
+            return JSONResponse(serializer.data)
+        except VM.DoesNotExist:
+            raise serializers.ValidationError("profile %s is full" % name)

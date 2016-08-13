@@ -19,6 +19,7 @@ Profile serializers for model data.
 """
 from rest_framework import serializers
 from testpooldb.models import Profile
+from testpooldb.models import VM
 
 
 # pylint: disable=R0903
@@ -27,6 +28,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta(object):
         """ Define what is in a serialize response. """
+
         model = Profile
         fields = ('id', 'template_name', 'name', "vm_max", 'kvps')
 
@@ -36,8 +38,9 @@ class VMSerializer(serializers.ModelSerializer):
 
     class Meta(object):
         """ Define what is in a serialize response. """
-        model = Profile
-        fields = __all__
+
+        model = VM
+        fields = ('id', 'name', "status", 'reserved', 'expiration')
 
 class ProfileStatsSerializer(serializers.Serializer):
     """ Serialize ProfileStats object. """
