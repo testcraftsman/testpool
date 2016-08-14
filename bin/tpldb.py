@@ -5,6 +5,7 @@ Administrative management operations.
 import os
 import sys
 
+
 def env_setup():
     """ Main entry point.
 
@@ -27,6 +28,7 @@ def env_setup():
 if __name__ == "__main__":
 
     env_setup()
+    # pylint: disable=C0413
     import testpool.settings
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djconfig.settings")

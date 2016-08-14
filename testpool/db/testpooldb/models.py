@@ -108,7 +108,7 @@ class VM(models.Model):
     name = models.CharField(max_length=128)
     status = models.IntegerField(default=RESERVED, blank=True, null=True)
     reserved = models.DateField(auto_now_add=True)
-    expiration = models.IntegerField(default=10*60*60)
+    expiration = models.IntegerField(default=10*60)
 
     def __str__(self):
         """ User representation. """
@@ -117,6 +117,11 @@ class VM(models.Model):
     def acquire(self):
         """ Acquire VM. """
         self.status = VM.RESERVED
+        self.save()
+
+    def release(self):
+        """ Acquire VM. """
+        self.status = VM.RELEASED
         self.save()
 
     @staticmethod

@@ -13,7 +13,7 @@ import testpool.core.server
 TEST_URL = "http://127.0.0.1:8000/testpool/api/"
 
 
-def setup_module(self):
+def setup_module():
     """ Create a profile. """
 
     ##
@@ -21,7 +21,7 @@ def setup_module(self):
     arg_parser = testpool.core.commands.main()
     cmd = "profile add localhost fake fake.profile fake.template 10"
     args = arg_parser.parse_args(cmd.split())
-    assert(testpool.core.commands.args_process(args) == 0)
+    assert testpool.core.commands.args_process(args) == 0
     ##
 
     ##
@@ -35,17 +35,17 @@ def setup_module(self):
     ##
 
 
-def teardown_module(self):
+def teardown_module():
     """ Create a profile. """
 
     arg_parser = testpool.core.commands.main()
     cmd = "profile remove localhost fake.profile"
     args = arg_parser.parse_args(cmd.split())
-    assert(testpool.core.commands.args_process(args) == 0)
+    assert testpool.core.commands.args_process(args) == 0
+
 
 class Testsuite(unittest.TestCase):
     """ Demonstrate each REST interface. """
-
 
     def test_profile_list(self):
         """ test_profile_list. """
@@ -68,7 +68,21 @@ class Testsuite(unittest.TestCase):
         resp = requests.get(url)
         resp.raise_for_status()
         vm1 = json.loads(resp.text)
-        print "MARK: vm", vm1
 
         self.assertTrue(vm1["name"].startswith("fake.template"))
         self.assertTrue(len(vm1["name"]) > len("fake.template"))
+
+        resp = requests.get(url)
+        resp.raise_for_status()
+        vm2 = json.loads(resp.text)
+
+        self.assertTrue(vm2["name"].startswith("fake.template"))
+        self.assertTrue(len(vm2["name"]) > len("fake.template"))
+
+        url = TEST_URL + "profile/release/%d" % vm1["id"]
+        resp = requests.get(url)
+        resp.raise_for_status()
+
+        url = TEST_URL + "profile/release/%d" % vm2["id"]
+        resp = requests.get(url)
+        resp.raise_for_status()

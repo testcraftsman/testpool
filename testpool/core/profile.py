@@ -38,8 +38,6 @@ def profile_remove(hostname, profile):
     try:
         hv1 = models.HV.objects.get(hostname=hostname)
         if hv1.profile_set.count() == 0:
-            #profiles = models.Profile.objects.filter(hv=hv1)
-            #if profiles.count() == 0:
             hv1.delete()
     except models.HV.DoesNotExist:
         return 0

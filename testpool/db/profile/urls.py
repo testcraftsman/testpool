@@ -19,6 +19,7 @@ from . import views
 from . import api
 
 urlpatterns = patterns("",
+    url(r'api/profile/release/(?P<id>[\d]+$)', api.profile_release),
     url(r'api/profile/acquire/(?P<name>[\.\w]+$)', api.profile_acquire),
     url(r'api/profile/(?P<pkey>[0-9]+$)', api.profile_detail),
     url(r'api/profile/list', api.profile_list),

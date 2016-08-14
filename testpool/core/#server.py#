@@ -151,7 +151,6 @@ class ModelTestCase(unittest.TestCase):
         profile1.delete()
 
     def tearDown(self):
-        profile.profile_remove("localhost", "fake.profile.1")
 
     def test_shrink(self):
         """ test_shrink. """

@@ -22,6 +22,7 @@ import logging
 
 from rest_framework.renderers import JSONRenderer
 from rest_framework import serializers
+from rest_framework import status
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from testpooldb.models import Profile
@@ -30,7 +31,6 @@ from profile.views import ProfileStats
 from profile.serializers import ProfileSerializer
 from profile.serializers import ProfileStatsSerializer
 from profile.serializers import VMSerializer
-
 
 
 class JSONResponse(HttpResponse):
@@ -71,12 +71,12 @@ def profile_detail(request, pkey):
         return JSONResponse(serializer.data)
 
 @csrf_exempt
-def profile_acquire(request, name):
+def profile_pop(request, name):
     """
-    List all code snippets, or create a new snippet.
+    Pop a VM that is ready.
     """
 
-    logging.debug("profile acquire: %s", name)
+    logging.debug("profile pull: %s", name)
 
     if request.method == 'GET':
         try:
@@ -97,3 +97,22 @@ def profile_acquire(request, name):
             return JSONResponse(serializer.data)
         except VM.DoesNotExist:
             raise serializers.ValidationError("profile %s is full" % name)
+
+@csrf_exempt
+def profile_push(request, id):
+    """ Push VM back to profile. """
+
+    logging.debug("profile push: %s", name)
+
+    if request.method == 'GET':
+        try:
+            vm1 = VM.objects.get(id=id)
+        except VM.DoesNotExist:
+            raise serializers.ValidationError("VM %d does not exist" % id)
+
+        if vm1.status != VM.RESERVED:
+            raise serializers.ValidationError("VM %d not reserved" % id)
+        vm1.release()
+
+        content = {"msg": "VM %d released" % id}
+        return Response(content, status=status.HTTP_200_OK
