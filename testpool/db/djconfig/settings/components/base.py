@@ -42,6 +42,9 @@ SECRET_KEY = '2)_mx$*994pc!^dyc*0b3*n^=h3#b32g6j0v6$evq49^l4m^^3'
 
 ALLOWED_HOSTS = ["*"]
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+TEMPLATE_DEBUG = True
 
 # Application definition
 
@@ -56,7 +59,7 @@ INSTALLED_APPS = (
     'pure_pagination',
     'testpooldb',
     'rest_framework',
-    'profile',
+    'testpool_profile',
 )
 
 REST_FRAMEWORK = {
@@ -120,8 +123,6 @@ if "test" in sys.argv:
     }
     #DATABASES['default'] = DATABASES['memory']
 
-    DEBUG = False # might accelerate a bit
-    TEMPLATE_DEBUG = False
 
 
 # Internationalization

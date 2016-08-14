@@ -9,11 +9,11 @@ CONF="/etc/testpool/testpool.conf"
 
 sqllite_path = os.path.join("/var", "tmp", 'testpooldb.sqlite3')
 
-
 if os.path.exists(CONF):
     DEFAULT_PORT = "8001"
     logging.debug("loading %s" % CONF)
     DEBUG = False
+    TEMPLATE_DEBUG = False
     DATABASES["global"] = {
         'ENGINE': 'django.db.backends.sqlite3',
         ##

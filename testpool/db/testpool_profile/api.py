@@ -27,10 +27,10 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from testpooldb.models import Profile
 from testpooldb.models import VM
-from profile.views import ProfileStats
-from profile.serializers import ProfileSerializer
-from profile.serializers import ProfileStatsSerializer
-from profile.serializers import VMSerializer
+from testpool_profile.views import ProfileStats
+from testpool_profile.serializers import ProfileSerializer
+from testpool_profile.serializers import ProfileStatsSerializer
+from testpool_profile.serializers import VMSerializer
 
 
 class JSONResponse(HttpResponse):
@@ -49,7 +49,10 @@ def profile_list(request):
     List all code snippets, or create a new snippet.
     """
 
-    logging.debug("profile list:")
+    logger = logging.getLogger("django.testpool")
+    logger.debug("VM acquired from")
+    logger.info("VM info acquired from")
+    logger.warning("VM warning info acquired from")
 
     if request.method == 'GET':
         profiles = [ProfileStats(item) for item in Profile.objects.all()]
@@ -71,24 +74,25 @@ def profile_detail(request, pkey):
         return JSONResponse(serializer.data)
 
 @csrf_exempt
-def profile_pop(request, name):
+def profile_acquire(request, profile_name):
     """
-    Pop a VM that is ready.
+    Acquire a VM that is ready.
     """
 
-    logging.debug("profile pull: %s", name)
 
     if request.method == 'GET':
         try:
-            profile = Profile.objects.get(name=name)
+            profile = Profile.objects.get(name=profile_name)
         except Profile.DoesNotExist:
-            raise serializers.ValidationError("profile %s not found" % name)
+            raise serializers.ValidationError(
+                "profile %s not found" % profile_name)
 
         try:
             vms = profile.vm_set.filter(status=VM.FREE)
 
             if vms.count() == 0:
-                raise serializers.ValidationError("profile %s is full" % name)
+                raise serializers.ValidationError(
+                    "profile %s is full" % profile_name)
 
             vm1 = vms[0]
             vm1.acquire()
@@ -96,23 +100,24 @@ def profile_pop(request, name):
             serializer = VMSerializer(vm1)
             return JSONResponse(serializer.data)
         except VM.DoesNotExist:
-            raise serializers.ValidationError("profile %s is full" % name)
+            raise serializers.ValidationError(
+                "profile %s is full" % profile_name)
 
 @csrf_exempt
-def profile_push(request, id):
-    """ Push VM back to profile. """
+def profile_release(request, vm_id):
+    """ Release VM. """
 
-    logging.debug("profile push: %s", name)
+    logging.debug("profile push: %s", vm_id)
 
     if request.method == 'GET':
         try:
-            vm1 = VM.objects.get(id=id)
+            vm1 = VM.objects.get(id=vm_id)
         except VM.DoesNotExist:
-            raise serializers.ValidationError("VM %d does not exist" % id)
+            raise serializers.ValidationError("VM %s does not exist" % vm_id)
 
         if vm1.status != VM.RESERVED:
-            raise serializers.ValidationError("VM %d not reserved" % id)
-        vm1.release()
+            raise serializers.ValidationError("VM %s not reserved" % vm_id)
 
-        content = {"msg": "VM %d released" % id}
-        return Response(content, status=status.HTTP_200_OK
+        vm1.release()
+        content = {"msg": "VM %s released" % vm_id}
+        return Response(content, status=status.HTTP_200_OK)

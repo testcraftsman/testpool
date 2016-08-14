@@ -23,6 +23,8 @@ def env_setup():
         # This path is necessary to load anything under testpool clone.
         testpool_dir = os.path.abspath(os.path.join(__file__, "..", ".."))
         sys.path.insert(0, testpool_dir)
+        sys.path.insert(0, os.path.join(testpool_dir, "testpool", "db"))
+        print "MARK: testpool_dir", testpool_dir
 
 
 if __name__ == "__main__":

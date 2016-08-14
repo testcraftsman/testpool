@@ -1,3 +1,4 @@
 Change tpl to use CLICK
 add requirements.
 tpl-db figure out auto setup.
+DEBUG=False when testpool is installed

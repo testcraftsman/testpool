@@ -2,6 +2,7 @@ from split_settings.tools import optional, include
 
 include(
     'components/base.py',
+    'components/loggers.py',
     optional('components/global.py'),
 
     ##
