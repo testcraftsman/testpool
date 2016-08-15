@@ -1,4 +1,3 @@
-print "MARK: debug", DEBUG
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -18,7 +17,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'INFO',
+            'level': 'WARNING',
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
         },
@@ -40,7 +39,8 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': ['console', 'development'],
+            'level': 'DEBUG',
         },
         'django.request': {
             'handlers': ['mail_admins'],
@@ -52,11 +52,17 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': False,
         },
+        ##
+        # Suppress database query in the logging, which is probably not needed
+        # most of the time. 
+        'django.db.backends': {
+            'handlers': ['null'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        ##
         'py.warnings': {
             'handlers': ['console'],
-        },
-        'django.testpool': {
-            'handlers': ['console','development'],
         },
     }
 }
@@ -68,7 +74,7 @@ LOGGING = {
 # permission to modify /var/log
 if not DEBUG:
    LOGGING["handlers"]["production"] = {
-       'level': 'DEBUG',
+       'level': 'INFO',
        'filters': ['require_debug_false'],
        'class': 'logging.FileHandler',
        'filename': '/var/log/testpool/tpl-db.log',
@@ -76,5 +82,5 @@ if not DEBUG:
     }
 
 if not DEBUG:
-    LOGGING["loggers"]['django.testpool']['handlers'].append("production")
+    LOGGING["loggers"]['django']['handlers'].append("production")
 ##

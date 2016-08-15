@@ -32,6 +32,8 @@ from testpool_profile.serializers import ProfileSerializer
 from testpool_profile.serializers import ProfileStatsSerializer
 from testpool_profile.serializers import VMSerializer
 
+logger = logging.getLogger("django.testpool")
+
 
 class JSONResponse(HttpResponse):
     """
@@ -49,8 +51,7 @@ def profile_list(request):
     List all code snippets, or create a new snippet.
     """
 
-    logger = logging.getLogger("django.testpool")
-    logger.debug("VM acquired from")
+    logger.debug("VM debug acquired from")
     logger.info("VM info acquired from")
     logger.warning("VM warning info acquired from")
 
