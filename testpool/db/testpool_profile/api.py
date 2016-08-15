@@ -51,9 +51,7 @@ def profile_list(request):
     List all code snippets, or create a new snippet.
     """
 
-    logger.debug("VM debug acquired from")
-    logger.info("VM info acquired from")
-    logger.warning("VM warning info acquired from")
+    logger.info("testpool_profile.api.profile_list")
 
     if request.method == 'GET':
         profiles = [ProfileStats(item) for item in Profile.objects.all()]
@@ -64,6 +62,8 @@ def profile_list(request):
 @csrf_exempt
 def profile_detail(request, pkey):
     """ Retrieve specific profile.  """
+
+    logger.info("testpool_profile.api.profile_detail")
 
     try:
         profile = Profile.objects.get(pk=pkey)
@@ -80,6 +80,7 @@ def profile_acquire(request, profile_name):
     Acquire a VM that is ready.
     """
 
+    logger.info("testpool_profile.api.profile_acquire %s", profile_name)
 
     if request.method == 'GET':
         try:
@@ -108,7 +109,7 @@ def profile_acquire(request, profile_name):
 def profile_release(request, vm_id):
     """ Release VM. """
 
-    logging.debug("profile push: %s", vm_id)
+    logger.info("testpool_profile.api.profile_release %s", vm_id)
 
     if request.method == 'GET':
         try:
