@@ -53,12 +53,12 @@ class ModelTestCase(TestCase):
         self.assertTrue(hv1)
 
         profile1 = Profile.objects.create(name="profile1", hv=hv1, vm_max=3,
-                                          template_name="template.ubuntu1404")
+                                          template_name="template.ubuntu1404",
+                                          expiration=10*60*60*10000000)
         self.assertTrue(profile1)
 
         for item in range(3):
             vm1 = VM.objects.create(profile=profile1,
                                     name="template.ubuntu1404.%d" % item,
-                                    status=VM.FREE,
-                                    expiration=10*60*60*10000000)
+                                    status=VM.FREE)
             self.assertTrue(vm1)

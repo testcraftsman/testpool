@@ -109,7 +109,6 @@ class VM(models.Model):
     name = models.CharField(max_length=128)
     status = models.IntegerField(default=RESERVED, blank=True, null=True)
     reserved = models.DateTimeField(auto_now_add=True)
-    expiration = models.IntegerField(default=10*60)
 
     def __str__(self):
         """ User representation. """
@@ -117,11 +116,17 @@ class VM(models.Model):
 
     def acquire(self, expiration=None):
         """ Acquire VM.
+
         @param expiration In seconds how long to hold the VM.
         """
+
+        if not expiration:
+            expiration = self.profile.expiration
+
+        delta = datetime.timedelta(0, expiration)
+
         self.status = VM.RESERVED
-        self.expiration = expiration
-        self.reserved = datetime.datetime.now()
+        self.reserved = datetime.datetime.now() + delta
         self.save()
 
     def release(self):
@@ -179,6 +184,7 @@ class Profile(models.Model):
     template_name = models.CharField(max_length=128)
     kvps = models.ManyToManyField(KVP, through="ProfileKVP")
     vm_max = models.IntegerField(default=1)
+    expiration = models.IntegerField(default=10*60)
 
     def __str__(self):
         """ User representation. """

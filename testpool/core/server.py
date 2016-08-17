@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
 """ Test pool Server. """
+import datetime
 import unittest
 import time
 import logging
@@ -72,6 +73,18 @@ def reclaim(exts):
         testpool.core.algo.reclaim(vmpool, vm1)
         vm1.status = models.VM.FREE
         vm1.save()
+
+    ##
+    #  If VM expires reclaim it.
+    for vm1 in models.VM.objects.filter(
+            reserved__lt=datetime.datetime.now()):
+
+        ext = exts[vm1.profile.hv.product]
+        vmpool = ext.vmpool_get(vm1.profile.hv.hostname, vm1.profile.name)
+        testpool.core.algo.reclaim(vmpool, vm1)
+        vm1.status = models.VM.FREE
+        vm1.save()
+    ##
     LOGGER.info("testpool reclaim ended")
 
 
@@ -84,6 +97,7 @@ def setup(exts):
                     profile1.vm_max)
         ext = exts[profile1.hv.product]
         vmpool = ext.vmpool_get(profile1.hv.hostname, profile1.name)
+
         LOGGER.info("algo.setup %s %s", profile1.name, profile1.template_name)
         LOGGER.info("algo.setup HV %s %d VMs", profile1.hv, profile1.vm_max)
 
@@ -208,3 +222,37 @@ class ModelTestCase(unittest.TestCase):
 
         vmpool = exts[product].vmpool_get(hostname, profile_name)
         self.assertEqual(len(vmpool.vm_list()), 12)
+
+    def test_expiration(self):
+        """ test_expiration. """
+
+        product = "fake"
+        hostname = "localhost"
+        profile_name = "fake.profile.4"
+
+        (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
+                                                   product=product)
+        defaults = {"vm_max": 3, "template_name": "fake.template"}
+        (profile1, _) = models.Profile.objects.update_or_create(
+            name=profile_name, hv=hv1, defaults=defaults)
+
+        args = ModelTestCase.fake_args()
+        self.assertEqual(main(args), 0)
+
+        vms = profile1.vm_set.filter(status=models.VM.FREE)
+        vm1 = vms[0]
+        ##
+        # Acquire for 3 seconds.
+        vm1.acquire(3)
+        ##
+        time.sleep(5)
+
+        exts = testpool.core.ext.api_ext_list()
+        reclaim(exts)
+
+        vms = profile1.vm_set.filter(status=models.VM.FREE)
+
+        ##
+        # Check to see if the expiration happens.
+        self.assertEqual(vms.count(), 3)
+        ##
