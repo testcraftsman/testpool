@@ -1,4 +1,4 @@
-Change tpl to use CLICK
-add requirements.
-tpl-db figure out auto setup.
+add requirements to setup.py
+tpl-db figure out auto setup
 DEBUG=False when testpool is installed
+Support acquire to push out expiration.
