@@ -17,6 +17,7 @@
 """
    Test schema for tracking tests and their results.
 """
+import datetime
 from django.db import models
 
 
@@ -107,16 +108,20 @@ class VM(models.Model):
     profile = models.ForeignKey("Profile", null=True, blank=True, default=None)
     name = models.CharField(max_length=128)
     status = models.IntegerField(default=RESERVED, blank=True, null=True)
-    reserved = models.DateField(auto_now_add=True)
+    reserved = models.DateTimeField(auto_now_add=True)
     expiration = models.IntegerField(default=10*60)
 
     def __str__(self):
         """ User representation. """
         return "%s" % self.name
 
-    def acquire(self):
-        """ Acquire VM. """
+    def acquire(self, expiration=None):
+        """ Acquire VM.
+        @param expiration In seconds how long to hold the VM.
+        """
         self.status = VM.RESERVED
+        self.expiration = expiration
+        self.reserved = datetime.datetime.now()
         self.save()
 
     def release(self):

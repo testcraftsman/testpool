@@ -70,16 +70,19 @@ def profile_detail(request, pkey):
     try:
         profile = Profile.objects.get(pk=pkey)
     except Profile.DoesNotExist:
-        return Http404("profile %d not found" % pkey)
+        raise Http404("profile %d not found" % pkey)
 
     if request.method == "GET":
         serializer = ProfileSerializer(profile)
         return JSONResponse(serializer.data)
 
 @csrf_exempt
-def profile_acquire(request, profile_name):
+def profile_acquire(request, profile_name, expiration_seconds=10*60):
     """
     Acquire a VM that is ready.
+
+    @param expiration_seconds The mount of time in seconds before entry
+                              expires.
     """
 
     logger.info("testpool_profile.profile_acquire %s", profile_name)
@@ -88,19 +91,21 @@ def profile_acquire(request, profile_name):
         try:
             profile = Profile.objects.get(name=profile_name)
         except Profile.DoesNotExist:
-            return Http404("profile %s not found" % profile_name)
+            raise Http404("profile %s not found" % profile_name)
 
+        logger.info("profile_acquire found %s", profile_name)
         try:
             vms = profile.vm_set.filter(status=VM.FREE)
 
             if vms.count() == 0:
+                logger.info("profile_acquire %s all VMs taken", profile_name)
                 raise PermissionDenied("all VMs taken for profile %s" %
                                        profile_name)
 
             ##
             # Pick the first VM.
             vm1 = vms[0]
-            vm1.acquire()
+            vm1.acquire(expiration_seconds)
             logger.info("profile %s VM acquired %s", profile_name, vm1.name)
             ##
 
@@ -109,9 +114,7 @@ def profile_acquire(request, profile_name):
 
         except VM.DoesNotExist:
             logger.info("profile %s full", profile_name)
-            content = {"detail":
-                       "all VMs taken for profile %s" % profile_name}
-            return Response(content, status=status.HTTP_403_FORBIDDEN)
+            raise PermissionDenied("profile %s empty" % profile_name)
 
 @csrf_exempt
 def profile_release(request, vm_id):
@@ -123,11 +126,12 @@ def profile_release(request, vm_id):
         try:
             vm1 = VM.objects.get(id=vm_id)
         except VM.DoesNotExist:
-            return Http404("profile %d not found" % vm_id)
+            raise Http404("profile %s not found" % vm_id)
 
         if vm1.status != VM.RESERVED:
-            raise PermissionDenied("VM %d is not reserved" % vm_id)
+            raise PermissionDenied("VM %s is not reserved" % vm_id)
 
         vm1.release()
-        content = {"msg": "VM %s released" % vm_id}
-        return Response(content, status=status.HTTP_200_OK)
+        content = {"detail": "VM %s released" % vm_id}
+
+        return JSONResponse(content)

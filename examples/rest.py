@@ -15,39 +15,38 @@ TEST_URL = "http://127.0.0.1:8000/testpool/api/"
 VM_COUNT = 10
 
 
-def setup_module():
-    """ Create a fake profile with 10 VMs for the tests. """
-
-    ##
-    # Add a fake.profile to the database.
-    arg_parser = testpool.core.commands.main()
-    cmd = "profile add localhost fake fake.profile fake.template %d" % VM_COUNT
-    args = arg_parser.parse_args(cmd.split())
-    assert testpool.core.commands.args_process(args) == 0
-    ##
-
-    ##
-    # Use the existing core server code to create all of the VMs for the
-    # above fake profile.
-    arg_parser = testpool.core.server.argparser()
-    cmd = "--count 1 --verbose --sleep-time 0"
-    args = arg_parser.parse_args(cmd.split())
-    testpool.core.server.args_process(args)
-    testpool.core.server.main(args)
-    ##
-
-
-def teardown_module():
-    """ Delete the fake test profile. """
-
-    arg_parser = testpool.core.commands.main()
-    cmd = "profile remove localhost fake.profile"
-    args = arg_parser.parse_args(cmd.split())
-    assert testpool.core.commands.args_process(args) == 0
-
-
 class Testsuite(unittest.TestCase):
     """ Demonstrate each REST interface. """
+
+    def setUp(self):
+        """ Create a fake profile with 10 VMs for the tests. """
+
+        ##
+        # Add a fake.profile to the database.
+        arg_parser = testpool.core.commands.main()
+        cmd = "profile add localhost fake fake.profile " \
+              "fake.template %d" % VM_COUNT
+        args = arg_parser.parse_args(cmd.split())
+        assert testpool.core.commands.args_process(args) == 0
+        ##
+
+        ##
+        # Use the existing core server code to create all of the VMs for the
+        # above fake profile.
+        arg_parser = testpool.core.server.argparser()
+        cmd = "--count 1 --verbose --sleep-time 0"
+        args = arg_parser.parse_args(cmd.split())
+        testpool.core.server.args_process(args)
+        testpool.core.server.main(args)
+        ##
+
+    def tearDown(self):
+        """ Delete the fake test profile. """
+
+        arg_parser = testpool.core.commands.main()
+        cmd = "profile remove localhost fake.profile"
+        args = arg_parser.parse_args(cmd.split())
+        assert testpool.core.commands.args_process(args) == 0
 
     def test_profile_list(self):
         """ test_profile_list. """
@@ -89,7 +88,7 @@ class Testsuite(unittest.TestCase):
         resp = requests.get(url)
         resp.raise_for_status()
 
-    def test_profile_acquire_too_many(self):
+    def test_acquire_too_many(self):
         """ test_profile_acquire_too_many attempt to acquire more than 10."""
 
         prev_vms = set()
