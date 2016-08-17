@@ -109,5 +109,4 @@ class Testsuite(unittest.TestCase):
         ##
 
         resp = requests.get(url)
-        resp.raise_for_status()
-        json.loads(resp.text)
+        self.assertEqual(resp.status_code, 403)

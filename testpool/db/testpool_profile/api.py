@@ -25,6 +25,8 @@ from rest_framework import serializers
 from rest_framework import status
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.http import Http404
+from django.core.exceptions import PermissionDenied
 from testpooldb.models import Profile
 from testpooldb.models import VM
 from testpool_profile.views import ProfileStats
@@ -68,7 +70,7 @@ def profile_detail(request, pkey):
     try:
         profile = Profile.objects.get(pk=pkey)
     except Profile.DoesNotExist:
-        return HttpResponse(status=404)
+        return Http404("profile %d not found" % pkey)
 
     if request.method == "GET":
         serializer = ProfileSerializer(profile)
@@ -80,30 +82,36 @@ def profile_acquire(request, profile_name):
     Acquire a VM that is ready.
     """
 
-    logger.info("testpool_profile.api.profile_acquire %s", profile_name)
+    logger.info("testpool_profile.profile_acquire %s", profile_name)
 
     if request.method == 'GET':
         try:
             profile = Profile.objects.get(name=profile_name)
         except Profile.DoesNotExist:
-            raise serializers.ValidationError(
-                "profile %s not found" % profile_name)
+            return Http404("profile %s not found" % profile_name)
 
         try:
             vms = profile.vm_set.filter(status=VM.FREE)
 
             if vms.count() == 0:
-                raise serializers.ValidationError(
-                    "profile %s is full" % profile_name)
+                raise PermissionDenied("all VMs taken for profile %s" %
+                                       profile_name)
 
+            ##
+            # Pick the first VM.
             vm1 = vms[0]
             vm1.acquire()
+            logger.info("profile %s VM acquired %s", profile_name, vm1.name)
+            ##
 
             serializer = VMSerializer(vm1)
             return JSONResponse(serializer.data)
+
         except VM.DoesNotExist:
-            raise serializers.ValidationError(
-                "profile %s is full" % profile_name)
+            logger.info("profile %s full", profile_name)
+            content = {"detail":
+                       "all VMs taken for profile %s" % profile_name}
+            return Response(content, status=status.HTTP_403_FORBIDDEN)
 
 @csrf_exempt
 def profile_release(request, vm_id):
@@ -115,10 +123,10 @@ def profile_release(request, vm_id):
         try:
             vm1 = VM.objects.get(id=vm_id)
         except VM.DoesNotExist:
-            raise serializers.ValidationError("VM %s does not exist" % vm_id)
+            return Http404("profile %d not found" % vm_id)
 
         if vm1.status != VM.RESERVED:
-            raise serializers.ValidationError("VM %s not reserved" % vm_id)
+            raise PermissionDenied("VM %d is not reserved" % vm_id)
 
         vm1.release()
         content = {"msg": "VM %s released" % vm_id}
