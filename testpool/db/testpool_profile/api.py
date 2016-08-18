@@ -77,44 +77,60 @@ def profile_detail(request, pkey):
         return JSONResponse(serializer.data)
 
 @csrf_exempt
-def profile_acquire(request, profile_name, expiration_seconds=10*60):
+def profile_acquire(request, profile_name):
     """
-    Acquire a VM that is ready.
+    Ac_seconds quire a VM that is ready.
 
-    @param expiration_seconds The mount of time in seconds before entry
-                              expires.
+    @param expiration The mount of time in seconds before entry expires.
     """
 
-    logger.info("testpool_profile.profile_acquire %s", profile_name)
-
+    logger.info("profile_acquire %s", profile_name)
     if request.method == 'GET':
-        try:
-            profile = Profile.objects.get(name=profile_name)
-        except Profile.DoesNotExist:
-            raise Http404("profile %s not found" % profile_name)
+        expiration_seconds = int(request.GET.get("expiration", 10*60))
+        vm_id = request.GET.get("id", None)
+        logger.debug("expiration in seconds %s", expiration_seconds)
+        logger.debug("vm_id %s", vm_id)
 
-        logger.info("profile_acquire found %s", profile_name)
-        try:
-            vms = profile.vm_set.filter(status=VM.FREE)
+        if vm_id:
+            try:
+                vm1 = VM.objects.get(id=vm_id)
+            except VM.DoesNotExist:
+                raise Http404("VM %s not found" % vm_id)
+        else:
+            try:
+                profile = Profile.objects.get(name=profile_name)
+            except Profile.DoesNotExist:
+                raise Http404("profile %s not found" % profile_name)
 
-            if vms.count() == 0:
-                logger.info("profile_acquire %s all VMs taken", profile_name)
-                raise PermissionDenied("all VMs taken for profile %s" %
+            logger.info("profile_acquire found %s", profile_name)
+
+            try:
+                vms = profile.vm_set.filter(status=VM.FREE)
+
+                if vms.count() == 0:
+                    logger.info("profile_acquire %s all VMs taken",
+                                profile_name)
+                    raise PermissionDenied("all VMs taken for profile %s" %
                                        profile_name)
 
-            ##
-            # Pick the first VM.
-            vm1 = vms[0]
-            vm1.acquire(expiration_seconds)
-            logger.info("profile %s VM acquired %s", profile_name, vm1.name)
-            ##
+                ##
+                # Pick the first VM.
+                vm1 = vms[0]
+                ##
+            except VM.DoesNotExist:
+                logger.info("profile %s full", profile_name)
+                raise PermissionDenied("profile %s empty" % profile_name)
 
-            serializer = VMSerializer(vm1)
-            return JSONResponse(serializer.data)
+        ##
+        # assert vm1 defined.
+        vm1.acquire(expiration_seconds)
+        logger.info("profile %s VM acquired %s", profile_name, vm1.name)
+        serializer = VMSerializer(vm1)
+        return JSONResponse(serializer.data)
+        ##
 
-        except VM.DoesNotExist:
-            logger.info("profile %s full", profile_name)
-            raise PermissionDenied("profile %s empty" % profile_name)
+    else:
+        logging.error("profile_acquire method %s unsupported", request.method)
 
 @csrf_exempt
 def profile_release(request, vm_id):
@@ -135,3 +151,5 @@ def profile_release(request, vm_id):
         content = {"detail": "VM %s released" % vm_id}
 
         return JSONResponse(content)
+    else:
+        logging.error("profile_release method %s unsupported", request.method)
