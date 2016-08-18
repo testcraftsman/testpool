@@ -8,8 +8,6 @@ from subprocess import call
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 
-from testpool import __author__, __email__
-
 AUTHOR = "Mark Hamilton"
 AUTHOR_EMAIL = "mark.lee.hamilton@gmail.com"
 
