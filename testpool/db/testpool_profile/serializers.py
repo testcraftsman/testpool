@@ -30,7 +30,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         """ Define what is in a serialize response. """
 
         model = Profile
-        fields = ('id', 'template_name', 'name', "vm_max", 'kvps')
+        fields = ('id', 'template_name', 'name', "vm_max", 'expiration',
+                  'kvps')
 
 # pylint: disable=R0903
 class VMSerializer(serializers.ModelSerializer):
@@ -40,7 +41,7 @@ class VMSerializer(serializers.ModelSerializer):
         """ Define what is in a serialize response. """
 
         model = VM
-        fields = ('id', 'name', "status", 'reserved', 'expiration')
+        fields = ('id', 'name', "status", 'reserved')
 
 class ProfileStatsSerializer(serializers.Serializer):
     """ Serialize ProfileStats object. """

@@ -42,7 +42,6 @@ class Testsuite(unittest.TestCase):
 
     def tearDown(self):
         """ Delete the fake test profile. """
-
         arg_parser = testpool.core.commands.main()
         cmd = "profile remove localhost fake.profile"
         args = arg_parser.parse_args(cmd.split())
