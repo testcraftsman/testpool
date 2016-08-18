@@ -122,13 +122,13 @@ class Testsuite(unittest.TestCase):
         vm1 = json.loads(resp.text)
         vm_id = vm1["id"]
 
-        params = {"id": vm1["id"]}
-        resp = requests.get(url, urllib.urlencode(params))
+        url = TEST_URL + "vm/renew/%(id)s" % vm1
+        resp = requests.get(url)
         resp.raise_for_status()
         vm1 = json.loads(resp.text)
         self.assertEqual(vm1["id"], vm_id)
 
-        params = {"id": vm1["id"], "expiration": 100}
+        params = {"expiration": 100}
         resp = requests.get(url, urllib.urlencode(params))
         resp.raise_for_status()
         vm1 = json.loads(resp.text)

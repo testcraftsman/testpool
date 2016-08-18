@@ -87,39 +87,31 @@ def profile_acquire(request, profile_name):
     logger.info("profile_acquire %s", profile_name)
     if request.method == 'GET':
         expiration_seconds = int(request.GET.get("expiration", 10*60))
-        vm_id = request.GET.get("id", None)
+        vm_id = request.GET.get("vm_id", None)
         logger.debug("expiration in seconds %s", expiration_seconds)
-        logger.debug("vm_id %s", vm_id)
 
-        if vm_id:
-            try:
-                vm1 = VM.objects.get(id=vm_id)
-            except VM.DoesNotExist:
-                raise Http404("VM %s not found" % vm_id)
-        else:
-            try:
-                profile = Profile.objects.get(name=profile_name)
-            except Profile.DoesNotExist:
-                raise Http404("profile %s not found" % profile_name)
+        try:
+            profile = Profile.objects.get(name=profile_name)
+        except Profile.DoesNotExist:
+            raise Http404("profile %s not found" % profile_name)
 
-            logger.info("profile_acquire found %s", profile_name)
+        logger.info("profile_acquire found %s", profile_name)
 
-            try:
-                vms = profile.vm_set.filter(status=VM.FREE)
+        try:
+            vms = profile.vm_set.filter(status=VM.FREE)
 
-                if vms.count() == 0:
-                    logger.info("profile_acquire %s all VMs taken",
-                                profile_name)
-                    raise PermissionDenied("all VMs taken for profile %s" %
+            if vms.count() == 0:
+                logger.info("profile_acquire %s all VMs taken", profile_name)
+                raise PermissionDenied("all VMs taken for profile %s" %
                                        profile_name)
 
-                ##
-                # Pick the first VM.
-                vm1 = vms[0]
-                ##
-            except VM.DoesNotExist:
-                logger.info("profile %s full", profile_name)
-                raise PermissionDenied("profile %s empty" % profile_name)
+            ##
+            # Pick the first VM.
+            vm1 = vms[0]
+            ##
+        except VM.DoesNotExist:
+            logger.info("profile %s full", profile_name)
+            raise PermissionDenied("profile %s empty" % profile_name)
 
         ##
         # assert vm1 defined.
@@ -128,7 +120,6 @@ def profile_acquire(request, profile_name):
         serializer = VMSerializer(vm1)
         return JSONResponse(serializer.data)
         ##
-
     else:
         logging.error("profile_acquire method %s unsupported", request.method)
 
