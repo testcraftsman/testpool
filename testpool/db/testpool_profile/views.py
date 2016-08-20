@@ -14,6 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
+"""
+View profile information.
+"""
 from django.shortcuts import render_to_response
 from testpooldb import models
 

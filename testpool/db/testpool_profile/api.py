@@ -21,8 +21,6 @@
 import logging
 
 from rest_framework.renderers import JSONRenderer
-from rest_framework import serializers
-from rest_framework import status
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.http import Http404
@@ -34,7 +32,7 @@ from testpool_profile.serializers import ProfileSerializer
 from testpool_profile.serializers import ProfileStatsSerializer
 from testpool_profile.serializers import VMSerializer
 
-logger = logging.getLogger("django.testpool")
+LOGGER = logging.getLogger("django.testpool")
 
 
 class JSONResponse(HttpResponse):
@@ -53,7 +51,7 @@ def profile_list(request):
     List all code snippets, or create a new snippet.
     """
 
-    logger.info("testpool_profile.api.profile_list")
+    LOGGER.info("testpool_profile.api.profile_list")
 
     if request.method == 'GET':
         profiles = [ProfileStats(item) for item in Profile.objects.all()]
@@ -65,7 +63,7 @@ def profile_list(request):
 def profile_detail(request, pkey):
     """ Retrieve specific profile.  """
 
-    logger.info("testpool_profile.api.profile_detail")
+    LOGGER.info("testpool_profile.api.profile_detail")
 
     try:
         profile = Profile.objects.get(pk=pkey)
@@ -84,24 +82,23 @@ def profile_acquire(request, profile_name):
     @param expiration The mount of time in seconds before entry expires.
     """
 
-    logger.info("profile_acquire %s", profile_name)
+    LOGGER.info("profile_acquire %s", profile_name)
     if request.method == 'GET':
         expiration_seconds = int(request.GET.get("expiration", 10*60))
-        vm_id = request.GET.get("vm_id", None)
-        logger.debug("expiration in seconds %s", expiration_seconds)
+        LOGGER.debug("expiration in seconds %s", expiration_seconds)
 
         try:
             profile = Profile.objects.get(name=profile_name)
         except Profile.DoesNotExist:
             raise Http404("profile %s not found" % profile_name)
 
-        logger.info("profile_acquire found %s", profile_name)
+        LOGGER.info("profile_acquire found %s", profile_name)
 
         try:
             vms = profile.vm_set.filter(status=VM.FREE)
 
             if vms.count() == 0:
-                logger.info("profile_acquire %s all VMs taken", profile_name)
+                LOGGER.info("profile_acquire %s all VMs taken", profile_name)
                 raise PermissionDenied("all VMs taken for profile %s" %
                                        profile_name)
 
@@ -110,13 +107,13 @@ def profile_acquire(request, profile_name):
             vm1 = vms[0]
             ##
         except VM.DoesNotExist:
-            logger.info("profile %s full", profile_name)
+            LOGGER.info("profile %s full", profile_name)
             raise PermissionDenied("profile %s empty" % profile_name)
 
         ##
         # assert vm1 defined.
         vm1.acquire(expiration_seconds)
-        logger.info("profile %s VM acquired %s", profile_name, vm1.name)
+        LOGGER.info("profile %s VM acquired %s", profile_name, vm1.name)
         serializer = VMSerializer(vm1)
         return JSONResponse(serializer.data)
         ##
@@ -127,7 +124,7 @@ def profile_acquire(request, profile_name):
 def profile_release(request, vm_id):
     """ Release VM. """
 
-    logger.info("testpool_profile.api.profile_release %s", vm_id)
+    LOGGER.info("testpool_profile.api.profile_release %s", vm_id)
 
     if request.method == 'GET':
         try:
