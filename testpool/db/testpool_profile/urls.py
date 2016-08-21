@@ -19,7 +19,7 @@ from django.conf.urls import patterns, url
 from . import views
 from . import api
 
-#pylint: disable=C0103
+# pylint: disable=C0103
 urlpatterns = patterns(
     "",
     url(r'api/profile/release/(?P<vm_id>[\d]+$)', api.profile_release),

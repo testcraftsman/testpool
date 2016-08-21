@@ -33,6 +33,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'template_name', 'name', "vm_max", 'expiration',
                   'kvps')
 
+
 # pylint: disable=R0903
 class VMSerializer(serializers.ModelSerializer):
     """ Serialize ProfileModel. """
@@ -43,8 +44,9 @@ class VMSerializer(serializers.ModelSerializer):
         model = VM
         fields = ('id', 'name', "status", 'reserved')
 
-#pylint: disable=C0103
-#pylint: disable=W0223
+
+# pylint: disable=C0103
+# pylint: disable=W0223
 class ProfileStatsSerializer(serializers.Serializer):
     """ Serialize ProfileStats object. """
 

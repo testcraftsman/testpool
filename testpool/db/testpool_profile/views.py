@@ -20,6 +20,7 @@ View profile information.
 from django.shortcuts import render_to_response
 from testpooldb import models
 
+
 class ProfileStats(object):
     def __init__(self, profile):
         """Contruct a profile view. """
@@ -41,6 +42,7 @@ class ProfileStats(object):
                 self.vm_released += 1
             elif item.status == models.VM.FREE:
                 self.vm_free += 1
+
 
 def index(_):
     """ Summarize product information. """

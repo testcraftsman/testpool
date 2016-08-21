@@ -74,6 +74,7 @@ def profile_detail(request, pkey):
         serializer = ProfileSerializer(profile)
         return JSONResponse(serializer.data)
 
+
 @csrf_exempt
 def profile_acquire(request, profile_name):
     """
@@ -119,6 +120,7 @@ def profile_acquire(request, profile_name):
         ##
     else:
         logging.error("profile_acquire method %s unsupported", request.method)
+
 
 @csrf_exempt
 def profile_release(request, vm_id):
