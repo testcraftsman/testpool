@@ -17,6 +17,7 @@
 from django.conf.urls import patterns, url
 from . import api
 
-urlpatterns = patterns("",
+urlpatterns = patterns(
+    "",
     url(r'api/vm/renew/(?P<vm_id>[\d]+$)', api.vm_renew),
 )

@@ -21,11 +21,14 @@ from django.shortcuts import render_to_response
 from testpooldb import models
 
 
+# pylint: disable=R0903
 class ProfileStats(object):
+    """ Provides individual profile stats used in the profile view. """
     def __init__(self, profile):
         """Contruct a profile view. """
 
         ##
+        # pylint: disable=C0103
         # The ID is needed for the JSON view.
         self.id = profile.id
         #

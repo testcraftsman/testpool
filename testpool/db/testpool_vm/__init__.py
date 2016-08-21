@@ -1,3 +1,3 @@
 """
-View profile information. 
+View profile information.
 """
