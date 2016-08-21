@@ -21,20 +21,13 @@
 import logging
 
 from rest_framework.renderers import JSONRenderer
-from rest_framework import serializers
-from rest_framework import status
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.http import Http404
-from django.core.exceptions import PermissionDenied
-from testpooldb.models import Profile
 from testpooldb.models import VM
-from testpool_profile.views import ProfileStats
-from testpool_profile.serializers import ProfileSerializer
-from testpool_profile.serializers import ProfileStatsSerializer
 from testpool_profile.serializers import VMSerializer
 
-logger = logging.getLogger("django.testpool")
+LOGGER = logging.getLogger("django.testpool")
 
 
 class JSONResponse(HttpResponse):
@@ -55,14 +48,14 @@ def vm_renew(request, vm_id):
     @param expiration The mount of time in seconds before VM expires.
     """
 
-    logger.info("profile_renew %s", vm_id)
+    LOGGER.info("profile_renew %s", vm_id)
     if request.method == 'GET':
         expiration_seconds = int(request.GET.get("expiration", 10*60))
-        logger.info("expiration in seconds %s", expiration_seconds)
+        LOGGER.info("expiration in seconds %s", expiration_seconds)
 
         try:
             vm1 = VM.objects.get(id=vm_id)
-            logger.info("VM %s found", vm1.name)
+            LOGGER.info("VM %s found", vm1.name)
         except VM.DoesNotExist:
             raise Http404("VM %s not found" % vm_id)
 
