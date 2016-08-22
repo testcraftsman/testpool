@@ -123,9 +123,21 @@ class VMPool(testpool.core.api.VMPool):
 
         return list(db_vm_read(self.context))
 
+    # pylint: disable=W0613
+    # pylint: disable=R0201
+    def vm_attr_get(self, vm_name):
+        """ Return the list of attributes for the VM.
+
+        These attributes are stored in the database, eventually they are
+        passed through the REST interface to the client.
+        """
+
+        return {"ip": "127.0.0.1"}
+
 
 def vmpool_get(url_name, profile):
     """ Return a handle to the KVM API. """
+
     context = "%s/%s" % (url_name, profile)
     return VMPool(context)
 

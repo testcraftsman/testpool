@@ -20,6 +20,8 @@ Profile serializers for model data.
 from rest_framework import serializers
 from testpooldb.models import Profile
 from testpooldb.models import VM
+from testpooldb.models import KVP
+from testpooldb.models import Key
 
 
 # pylint: disable=R0903
@@ -33,16 +35,42 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'template_name', 'name', "vm_max", 'expiration',
                   'kvps')
 
-
-# pylint: disable=R0903
-class VMSerializer(serializers.ModelSerializer):
+class KeySerializer(serializers.ModelSerializer):
     """ Serialize ProfileModel. """
 
     class Meta(object):
         """ Define what is in a serialize response. """
 
+        model = Key
+        fields = ('value',)
+
+
+class KVPListSerializer(serializers.RelatedField):
+    """ Serialize ProfileModel. """
+
+    def to_representation(self, value):
+        return (value.key.value, value.value)
+
+    #key = KeySerializer()
+
+    #class Meta(object):
+        #""" Define what is in a serialize response. """
+#
+        #model = KVP
+        #fields = ('key', 'value')
+#
+
+# pylint: disable=R0903
+class VMSerializer(serializers.ModelSerializer):
+    """ Serialize ProfileModel. """
+
+    kvps = KVPListSerializer(many=True, read_only=True)
+
+    class Meta(object):
+        """ Define what is in a serialize response. """
+
         model = VM
-        fields = ('id', 'name', "status", 'reserved')
+        fields = ('id', 'name', "status", 'reserved', 'kvps')
 
 
 # pylint: disable=C0103

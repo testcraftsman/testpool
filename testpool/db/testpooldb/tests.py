@@ -23,6 +23,7 @@ from .models import Key
 from .models import KVP
 from .models import HV
 from .models import VM
+from .models import VMKVP
 
 
 class ModelTestCase(TestCase):
@@ -62,3 +63,21 @@ class ModelTestCase(TestCase):
                                     name="template.ubuntu1404.%d" % item,
                                     status=VM.FREE)
             self.assertTrue(vm1)
+
+    def test_vm_attr(self):
+        """ Test adding attribute to a VM. """
+
+        hv1 = HV.objects.create(hostname="localhost")
+        self.assertTrue(hv1)
+
+        profile1 = Profile.objects.create(name="profile1", hv=hv1, vm_max=3,
+                                          template_name="template.ubuntu1404",
+                                          expiration=10*60*60*10000000)
+        self.assertTrue(profile1)
+
+        vm1 = VM.objects.create(profile=profile1,
+                                name="template.ubuntu1404.0",
+                                status=VM.FREE)
+        self.assertTrue(vm1)
+        (kvp, _) = KVP.get_or_create("key1", "value1")
+        VMKVP.objects.create(vm=vm1, kvp=kvp)

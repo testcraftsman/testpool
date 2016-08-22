@@ -98,6 +98,19 @@ class KVP(models.Model):
             models.Q(value__contains=contains))
 
 
+class VMKVP(models.Model):
+    """ Key value pair for profile. """
+
+    # pylint: disable=C0103
+    vm = models.ForeignKey("VM")
+    # pylint: enable=C0103
+    kvp = models.ForeignKey(KVP)
+
+    def __str__(self):
+        """ User representation. """
+        return str(self.kvp)
+
+
 class VM(models.Model):
     """ A single test consisting of one or more results. """
 
@@ -109,6 +122,7 @@ class VM(models.Model):
     name = models.CharField(max_length=128)
     status = models.IntegerField(default=RESERVED, blank=True, null=True)
     reserved = models.DateTimeField(auto_now_add=True)
+    kvps = models.ManyToManyField(KVP, through="VMKVP")
 
     def __str__(self):
         """ User representation. """
@@ -155,7 +169,8 @@ class VM(models.Model):
 
 
 class ProfileKVP(models.Model):
-    """ Testsuites are associated to a set of keys. """
+    """ Key value pair for profile. """
+
     profile = models.ForeignKey("Profile")
     kvp = models.ForeignKey(KVP)
 

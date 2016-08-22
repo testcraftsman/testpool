@@ -79,8 +79,8 @@ def adapt(vmpool, profile):
         for count in range(profile.vm_max):
             changes += 1
             vm_name = profile.template_name + ".%d" % count
-            (vm1, _) = models.VM.objects.get_or_create(profile=profile,
-                                                       name=vm_name)
+            (vm1, created) = models.VM.objects.get_or_create(profile=profile,
+                                                             name=vm_name)
             vm_state = vmpool.vm_state_get(vm_name)
             if vm_state == testpool.core.api.VMPool.STATE_NONE:
                 logging.debug("%s expanding pool VM with %s ", profile.name,
@@ -99,6 +99,17 @@ def adapt(vmpool, profile):
                     (kvp, _) = models.KVP.get_or_create("state", "bad")
                     vm1.profile.kvp_get_or_create(kvp)
                     vm1.status = models.VM.FREE
+
+            if created:
+                for (key, value) in vmpool.vm_attr_get(vm_name).iteritems():
+                    (kvp, _) = models.KVP.get_or_create(key, value)
+                    models.VMKVP.objects.create(vm=vm1, kvp=kvp)
+
+                ##
+                # MARK
+                (kvp, _) = models.KVP.get_or_create("mark", "ken")
+                models.VMKVP.objects.create(vm=vm1, kvp=kvp)
+
             vm1.save()
         ##
     return changes
