@@ -105,9 +105,6 @@ def adapt(vmpool, profile):
                     (kvp, _) = models.KVP.get_or_create(key, value)
                     models.VMKVP.objects.create(vm=vm1, kvp=kvp)
 
-                ##
-                # MARK
-                (kvp, _) = models.KVP.get_or_create("mark", "ken")
                 models.VMKVP.objects.create(vm=vm1, kvp=kvp)
 
             vm1.save()
