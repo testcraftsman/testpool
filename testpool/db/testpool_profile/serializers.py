@@ -35,6 +35,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'template_name', 'name', "vm_max", 'expiration',
                   'kvps')
 
+
 class KeySerializer(serializers.ModelSerializer):
     """ Serialize ProfileModel. """
 
@@ -45,24 +46,16 @@ class KeySerializer(serializers.ModelSerializer):
         fields = ('value',)
 
 
-class KVPListSerializer(serializers.RelatedField):
-    """ Serialize ProfileModel. """
+class KVPListSerializer(serializers.ModelSerializer):
+    """ Serialize KVP List. """
 
     def to_representation(self, value):
-        return (value.key.value, value.value)
+        return value.key.value, value.value
 
-    #key = KeySerializer()
-
-    #class Meta(object):
-        #""" Define what is in a serialize response. """
-#
-        #model = KVP
-        #fields = ('key', 'value')
-#
 
 # pylint: disable=R0903
 class VMSerializer(serializers.ModelSerializer):
-    """ Serialize ProfileModel. """
+    """ Serialize VM. """
 
     kvps = KVPListSerializer(many=True, read_only=True)
 
