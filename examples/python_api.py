@@ -8,15 +8,23 @@ Once a VM is acquired, this test can login and use the VM throughout the
 entire testsuite.
 """
 import unittest
-import testpool.core.commands
-import testpool.core.server
+import pytest
+import testpool.client
+
+
+GLOBAL = {"resource": None}
 
 
 ##
 # A fake.profile is used to show examples without having to take the time
 # to configure an actual hypervisor.
-RESOURCE = testpool.client.VMHndl("127.0.0.1", "fake.profile")
-VM_COUNT = 10
+@pytest.yield_fixture(scope="module", autouse=True)
+def vm_hndl(_):
+    """ provide an example of a global RESOURCE for the entire test."""
+
+    with testpool.client.VMHndl("127.0.0.1", "fake.profile") as hndl:
+        GLOBAL["resource"] = hndl
+        yield hndl
 
 
 class Testsuite(unittest.TestCase):
@@ -32,16 +40,16 @@ class Testsuite(unittest.TestCase):
         ##
         # The ip attribute provides the IP address of the VM. The testsuite
         # uses a fake profile where all VMs use 127.0.0.1.
-        self.assertEqual(RESOURCE.ip, "127.0.0.1")
+        self.assertEqual(GLOBAL["resource"].ip_addr, "127.0.0.1")
 
     def test_vm_context_manager(self):
         """ show an example of the client contact manager. """
 
         ##
         # Shows an example of the context manager.
-        with testpool.client.VMHndl("127.0.0.1", "fake.profile") as vm1:
+        with testpool.client.VMHndl("127.0.0.1", "fake.profile") as hndl:
             ##
             # This assert is to show that a different VM was picked.
             # Normally vm.ip will point to another VM, but for the fake.profile
             # all VMs have 127.0.0.1 IP address.
-            self.assertNotEqual(vm1.id, RESOURCE.id)
+            self.assertNotEqual(hndl.vm.id, GLOBAL["resource"].vm.id)

@@ -125,6 +125,15 @@ class VMPool(testpool.core.api.VMPool):
 
     # pylint: disable=W0613
     # pylint: disable=R0201
+    def ip_get(self, vm_name):
+        """ Return VM IP address used to connect to the VM.
+        @param vm_name Return the IP off the vm_name.
+        """
+
+        return "127.0.0.1"
+
+    # pylint: disable=W0613
+    # pylint: disable=R0201
     def vm_attr_get(self, vm_name):
         """ Return the list of attributes for the VM.
 

@@ -79,8 +79,10 @@ def adapt(vmpool, profile):
         for count in range(profile.vm_max):
             changes += 1
             vm_name = profile.template_name + ".%d" % count
+            ip_addr = vmpool.ip_get(vm_name)
             (vm1, created) = models.VM.objects.get_or_create(profile=profile,
-                                                             name=vm_name)
+                                                             name=vm_name,
+                                                             ip_addr=ip_addr)
             vm_state = vmpool.vm_state_get(vm_name)
             if vm_state == testpool.core.api.VMPool.STATE_NONE:
                 logging.debug("%s expanding pool VM with %s ", profile.name,

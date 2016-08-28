@@ -122,10 +122,18 @@ class VM(models.Model):
     name = models.CharField(max_length=128)
     status = models.IntegerField(default=RESERVED, blank=True, null=True)
     reserved = models.DateTimeField(auto_now_add=True)
+
+    ##
+    # ip_addr is the IP address in dot notation
+    # xxx.xxx.xxx.xxx
+    # This is the IP of the management interface.
+    ip_addr = models.CharField(max_length=16)
+    ##
     kvps = models.ManyToManyField(KVP, through="VMKVP")
 
     def __str__(self):
         """ User representation. """
+
         return "%s" % self.name
 
     def acquire(self, expiration=None):
@@ -145,6 +153,7 @@ class VM(models.Model):
 
     def release(self):
         """ Acquire VM. """
+
         self.status = VM.RELEASED
         self.save()
 

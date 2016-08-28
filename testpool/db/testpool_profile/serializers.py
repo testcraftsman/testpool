@@ -20,7 +20,6 @@ Profile serializers for model data.
 from rest_framework import serializers
 from testpooldb.models import Profile
 from testpooldb.models import VM
-from testpooldb.models import KVP
 from testpooldb.models import Key
 
 

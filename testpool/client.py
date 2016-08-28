@@ -18,13 +18,18 @@
 
 import json
 import time
+import requests
+import urllib
 import threading
-import argparse import Namespace
+from argparse import Namespace
 
 
-def renew(obj):
+def _renew(*args, **kwargs):
     """ Renew VM acquisition. """
-    obj.renew()
+    hndl = args[0]
+    hndl.renew()
+    interval = hndl.expiration/2
+    hndl.threading = threading.Timer(interval, _renew, args=(hndl,))
 
 
 class VMHndl(object):
@@ -33,36 +38,50 @@ class VMHndl(object):
     As long as the object exists, the VM acquired will be renewed.
     """
 
-    def __init__(self, hostname, profile_name, expiration=120):
+    def __init__(self, ip_addr, profile_name, expiration=10):
         """ Acquire a VM given the parameters.
+
         @param expiration The time in seconds.
         """
-
         self.profile_name = profile_name
-        self.hostname = hostname
+        self.ip_addr = ip_addr
+        self.expiration = expiration
 
-        params = {"expiration": 100}
+        params = {"expiration": expiration}
 
-        resp = requests.get(url_get("acquire"), urllib.urlencode(params))
+        resp = requests.get(self._url_get("acquire"), urllib.urlencode(params))
         resp.raise_for_status()
-        self.vm = json.loads(resp.text,
-                             object_hook=lambda d: Namespace(**d)))
+        self.vm = json.loads(resp.text, object_hook=lambda d: Namespace(**d))
 
-        interval = expiration/2
-        thgreading.Timer(interval, _renew, self).start()
+        interval = self.expiration/2
+        self.threading = threading.Timer(interval, _renew, args=(self,))
+        self.threading.start()
+
+    def __enter__(self):
+        """ Operations are handled in the constructor. """
+        return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        """ Operations are handled in the constructor. """
+        self.reelase()
+
+    def release(self):
+        """ Release VM resource. """
+
+        self.threading.cancel()
+        requests.get(self._url_get("release"))
 
     def renew(self):
         """ Return usage of the VM. """
 
         params = {"id": self.vm.id,
                   "expiration": 100}
-        resp = requests.get(url_get("renew"), urllib.urlencode(params))
-
-        interval = expiration/2
-        thgreading.Timer(interval, _renew, self).start()
+        resp = requests.get(self._url_get("renew"), urllib.urlencode(params))
 
     def _url_get(self, action):
         """ Create URL for the given action. """
 
-        url = "http://%s:8000/testpool/api/" % self.hostname
-        return self.url + "profile/%s/%s" % (action, self.profile_name)
+        ##
+        # This should be a config.
+        url = "http://%s:8000/testpool/api/" % self.ip_addr
+        return url + "profile/%s/%s" % (action, self.profile_name)
