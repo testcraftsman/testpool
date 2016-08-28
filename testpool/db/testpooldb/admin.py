@@ -43,18 +43,10 @@ class VMAdmin(admin.ModelAdmin):
     model = models.VM
 
 
-class ProfileKVPAdmin(admin.ModelAdmin):
-    """ Show set of keys that associate a testsuite. """
-
-    model = models.ProfileKVP
-
-
 class ProfileAdmin(admin.ModelAdmin):
     """ Show set of keys that associate a testsuite. """
 
     model = models.Profile
-
-    inlines = [ProfileKVPAdmin]
 
 
 class HVAdmin(admin.ModelAdmin):
@@ -66,6 +58,5 @@ class HVAdmin(admin.ModelAdmin):
 admin.site.register(models.Key, KeyAdmin)
 admin.site.register(models.KVP, KVPAdmin)
 admin.site.register(models.VM, VMAdmin)
-admin.site.register(models.ProfileKVP, ProfileKVPAdmin)
 admin.site.register(models.Profile, ProfileAdmin)
 admin.site.register(models.HV, HVAdmin)

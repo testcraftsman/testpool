@@ -76,9 +76,7 @@ def reclaim(exts):
 
     ##
     #  If VM expires reclaim it.
-    for vm1 in models.VM.objects.filter(
-            reserved__lt=datetime.datetime.now()):
-
+    for vm1 in models.VM.objects.filter(reserved__lt=datetime.datetime.now()):
         ext = exts[vm1.profile.hv.product]
         vmpool = ext.vmpool_get(vm1.profile.hv.hostname, vm1.profile.name)
         testpool.core.algo.reclaim(vmpool, vm1)
