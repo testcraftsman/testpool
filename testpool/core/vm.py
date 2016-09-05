@@ -58,10 +58,9 @@ def _do_vm_release(args):
 def _do_vm_reserve(args):
     """ Reserve VM. """
 
-    logging.info("reserve %s %s %s", args.hostname, args.profile, args.vmname)
+    logging.info("reserve %s %s", args.hostname, args.vmname)
     vm1 = models.VM.objects.get(name=args.vmname,
-                                profile__hv__hostname=args.hostname,
-                                profile__name=args.profile)
+                                profile__hv__hostname=args.hostname)
     vm1.status = models.VM.RESERVED
     vm1.save()
     return 0
@@ -70,7 +69,7 @@ def _do_vm_reserve(args):
 def _do_vm_list(args):
     """ List all vms. """
 
-    fmt = "%-13s %-13s %-16s %-8s %-15s %s"
+    fmt = "%-13s %-13s %-16s %-8s %s"
 
     logging.info("list vms by %s", args.patterns)
     vms = models.VM.objects.all()
@@ -81,12 +80,10 @@ def _do_vm_list(args):
             Q(profile__hv__product__contains=pattern) |
             Q(profile__name__contains=pattern)).order_by("name")
 
-    print fmt % ("Host Name", "Profile", "Name", "Status", "Reserved",
-                 "Expiration")
+    print fmt % ("Host Name", "Profile", "Name", "Status", "Reserved")
     for vm1 in vms:
         print fmt % (vm1.profile.hv.hostname, vm1.profile.name, vm1.name,
-                     models.VM.status_to_str(vm1.status), vm1.reserved,
-                     vm1.expiration)
+                     models.VM.status_to_str(vm1.status), vm1.reserved)
 
     return 0
 
@@ -121,7 +118,6 @@ def add_subparser(subparser):
     parser = rootparser.add_parser("reserve", description=_do_vm_incr.__doc__,
                                    help="Reserve VM.")
     parser.add_argument("hostname", type=str, help="location of the vm.")
-    parser.add_argument("profile", type=str, help="The profile name to clone.")
     parser.add_argument("vmname", type=str, help="The VM name.")
     parser.set_defaults(func=_do_vm_reserve)
 
