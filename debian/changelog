@@ -1,11 +1,17 @@
-testpool (0.0.1-2) xenial; urgency=medium
+testpool (0.0.3) UNRELEASED; urgency=medium
+
+  * Introduce package requirements.
+
+ -- mark <mark@hamilton>  Mon, 05 Sep 2016 12:54:03 -0700
+
+testpool (0.0.2) xenial; urgency=medium
 
   * contains basic daemon and database support.
   * introduce tpl-daemon and worked on overall structure.
 
  -- mark Hamilton <mark.lee.hamilton@gmail.com>  Wed, 03 Aug 2016 23:21:33 -0700
 
-testpool (0.0.1-1) unstable; urgency=low
+testpool (0.0.1) unstable; urgency=low
 
   * source package automatically created by stdeb 0.8.5
 

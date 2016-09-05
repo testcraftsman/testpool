@@ -1,5 +1,12 @@
 # testpool
-Provide a pool of pre populated VMs for quick access 
+Manages a pool of VMs making sure they are available for quick use
+
+This package is useful when users want to test against pristine VMs. VMs
+are acquired, modified during testing. When finished, the VM released
+where it is destroyed and new VM is cloned in its place.
+
+The goal is for VMs to always be available when tests need them and not 
+waiting for VMs to be cloned.
 
 KVM Support
 
@@ -14,9 +21,15 @@ documentation on how to setup and configure KVM.
 
 Debian Packaging
 
+Before debian packages can be created apt-file must be installed and updated
+so that the python requirements.txt file can be mapped to equivalent 
+debian package dependencies.
+
+  sudo apt-get install apt-file
+  sudo apt-file update
+
 Make sure to set EMAIL before using dch
 export EMAIL="Mark Hamilton <mark.lee.hamilton@gmail.com>"
-
 
 Also note that versions are incremented in the change log
   dch -U
