@@ -19,7 +19,7 @@ GLOBAL = {"resource": None}
 # A fake.profile is used to show examples without having to take the time
 # to configure an actual hypervisor.
 @pytest.yield_fixture(scope="module", autouse=True)
-def vm_hndl(_):
+def vm_hndl():
     """ provide an example of a global RESOURCE for the entire test."""
 
     with testpool.client.VMHndl("127.0.0.1", "fake.profile") as hndl:

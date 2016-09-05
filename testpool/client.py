@@ -63,7 +63,7 @@ class VMHndl(object):
 
     def __exit__(self, exception_type, exception_value, traceback):
         """ Operations are handled in the constructor. """
-        self.reelase()
+        self.release()
 
     def release(self):
         """ Release VM resource. """
