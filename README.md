@@ -8,6 +8,11 @@ where it is destroyed and new VM is cloned in its place.
 The goal is for VMs to always be available when tests need them and not 
 waiting for VMs to be cloned.
 
+
+Installation
+
+   sudo pip install libvirt-python django-split-settings>=0.1.3 testpool
+
 KVM Support
 
 Complete steps for install KVM content can be found on the internet. 
@@ -16,7 +21,6 @@ explains how to install the necessary packages but please consult official
 documentation on how to setup and configure KVM.
 
    sudo apt install qemu-kvm libvirt-bin libvirt-dev
-   sudo pip install libvirt-python
 
 
 Debian Packaging
