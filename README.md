@@ -22,7 +22,6 @@ documentation on how to setup and configure KVM.
 
    sudo apt install qemu-kvm libvirt-bin libvirt-dev
 
-
 Debian Packaging
 
 Before debian packages can be created apt-file must be installed and updated
