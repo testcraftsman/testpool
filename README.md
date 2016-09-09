@@ -9,10 +9,6 @@ The goal is for VMs to always be available when tests need them and not
 waiting for VMs to be cloned.
 
 
-Installation
-
-   sudo pip install libvirt-python django-split-settings>=0.1.3 testpool
-
 KVM Support
 
 Complete steps for install KVM content can be found on the internet. 
