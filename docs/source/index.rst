@@ -9,6 +9,7 @@ Welcome to Testpool's Documentation!
 Contents:
 
 .. toctree::
+   quickstart.rst
    installation.rst
    :maxdepth: 3
 
