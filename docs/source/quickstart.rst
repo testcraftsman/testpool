@@ -32,7 +32,22 @@ information:
     hypervisor
 
 For the rest of this quide, we'll assume the user is admin with password 
-as the password.
+as password. Testpool will be installed on the hypervisor, so the IP address
+used is localhost.
+
+Now a single VM is required which represents the template that is managed
+and cloned by Testpool. Using virt-manager, these instructions will create
+an Ubuntu 16.04 server VM.
+
+  #. sudo apt-get install virt-manager
+  #. Run virt-manager
+  #. From File, choose *Add Connection*.
+  #. If applicable, choose *Connect to remote host*
+  #. Enter admin for *Username* and IP address for the *Hostname*. This may
+     be either localhost or the IP address of the KVM hypervisor.
+     The default ssh method will probably work.
+  #. Now connect and enter the user password.
+  #. Choose *Create a new virtual manager*.
 
 Testpool Installation
 ---------------------
