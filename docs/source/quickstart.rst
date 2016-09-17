@@ -17,6 +17,22 @@ is functionaly rich and useful for evaluation purposes.
 KVM Installation 
 ----------------
 
+For this quick start guide, we'll need a single VM named test.template running
+on a KVM system. What the VM is running is not important and there are 
+good instructions on the internet for setting up a KVM hypervisor and 
+creating a VM. This section will provide references to these sites.
+
+
+For installing KVM on Ubuntu 16.04, refer to this site https://help.ubuntu.com/community/KVM/Installation. Once complete, you will need the following 
+information:
+
+  - user and password that can install VMs. This is the user that is part of
+    the libvirtd and kvm groups. 
+  - IP Address of the KVM hypervisor if Testpool is not running on the
+    hypervisor
+
+For the rest of this quide, we'll assume the user is admin with password 
+as the password.
 
 Testpool Installation
 ---------------------
