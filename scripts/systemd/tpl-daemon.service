@@ -5,7 +5,7 @@ Description=testpool daemon which reclaims used VMs
 Type=simple
 ##
 # running stdbuf changes testpooldb stdout buffer to only one line.
-ExecStart=/usr/bin/stdbuf -oL /usr/bin/tpl-daemon -v 1
+ExecStart=/usr/bin/stdbuf -oL /usr/bin/tpl-daemon --verbose
 Restart=always
 
 [Install]

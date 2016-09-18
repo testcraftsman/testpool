@@ -69,22 +69,18 @@ or
   **cd testpool**
   **cat requirements.system | sudo xargs apt-get install**
   **sudo apt-file update**
+  **sudo pip install -r requirements.pip**
+  **sudo apt-get -f install**
 
 #. Build Testpool debian package and install 
-  **make deb.build install **
-
-#. Create local temporary database
-
-  **tbd-manage migrate**
-#. Validate proper configuration. confirm all checks pass.
-
-   **tbd db check**
+  **make deb.build**
+  **sudo make install**
 
 A Short Tour
 ------------
 
-In order to track test results, basic product information and testplans
-must be defined by using **tbd**.
+In order for Testpool to manage VMs, Hypervisor information is registered
+with the Testpool. Basic hypervisor content is defined by **tpl**.
 
 Products must have one or more branches associated with them. Products
 and branches are used to organize tests results. Lets create a product
