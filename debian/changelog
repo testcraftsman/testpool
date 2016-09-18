@@ -1,7 +1,14 @@
-testpool (0.0.3) UNRELEASED; urgency=medium
+testpool (0.0.4) xenial; urgency=medium
+
+  * Working through quick status installation.
+
+ -- mark <mark@hamilton>  Sat, 17 Sep 2016 21:25:47 -0700
+
+testpool (0.0.3) xenial; urgency=medium
 
   * Introduce package requirements.
   * Work through quick start documentation.
+  * 
 
  -- mark <mark@hamilton>  Mon, 05 Sep 2016 12:54:03 -0700
 
