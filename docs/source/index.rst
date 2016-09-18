@@ -11,6 +11,7 @@ Contents:
 .. toctree::
    quickstart.rst
    installation.rst
+   development.rst
    :maxdepth: 3
 
 

@@ -47,20 +47,33 @@ an Ubuntu 16.04 server VM.
      be either localhost or the IP address of the KVM hypervisor.
      The default ssh method will probably work.
   #. Now connect and enter the user password.
+  #. Select Hypervisor in the virt-manager,
   #. Choose *Create a new virtual manager*.
+  #. Choose *Network Install (HTTP, FTP or NFS)* then Forward.
+  #. For URL, enter *http://us.archive.ubuntu.com/ubuntu/dists/wily/main/installer-amd64/*
+
 
 Testpool Installation
 ---------------------
 
-Here are the required steps to setup the demo environment. You must first
-start with an Ubuntu 16.04 system.
+We'll install Testpool from source, however prior the following must be
+installed, starting with an Ubuntu 16.04 system:
 
-#. Install several requried packages:
-
-  **sudo apt-get install python-pip python-yaml libmysqlclient-dev python-dev**
 #. Install testpool from the github release area:
 
-  **sudo pip install https://github.com/testpool/testpool/archive/v0.1-alpha.9.tar.gz**
+  **wget https://github.com/testcraftsman/testpool/archive/0.0.3.tar.gz**
+  **tar -xf 0.0.3.tar.gz**
+or 
+  **git clone https://github.com/testcraftsman/testpool**
+
+#. Install several requried packages:
+  **cd testpool**
+  **cat requirements.system | sudo xargs apt-get install**
+
+#. Build Testpool debian package and install 
+  **make deb.build install **
+
+
 #. Create local temporary database
 
   **tbd-manage migrate**
