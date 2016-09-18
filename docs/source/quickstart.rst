@@ -60,7 +60,6 @@ We'll install Testpool from source, however prior the following must be
 installed, starting with an Ubuntu 16.04 system:
 
 #. Install testpool from the github release area:
-
   **wget https://github.com/testcraftsman/testpool/archive/0.0.3.tar.gz**
   **tar -xf 0.0.3.tar.gz**
 or 
@@ -69,10 +68,10 @@ or
 #. Install several requried packages:
   **cd testpool**
   **cat requirements.system | sudo xargs apt-get install**
+  **sudo apt-file update**
 
 #. Build Testpool debian package and install 
   **make deb.build install **
-
 
 #. Create local temporary database
 
