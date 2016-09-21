@@ -3,6 +3,11 @@
 echo "info: python-testpool.postinst"
 init_system=`dpkg -S /sbin/init`
 
+##
+# Before a db can start, recent migrations need to be applied.
+/usr/bin/tpl-db migrate
+##
+
 if [ "$init_system" = "systemd-sysv: /sbin/init" ]; then
 
   ##
