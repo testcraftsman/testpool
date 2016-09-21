@@ -80,7 +80,7 @@ A Short Tour
 ------------
 
 In order for Testpool to manage VMs, Hypervisor information is registered
-with the Testpool. Basic hypervisor content is defined by **tpl**.
+with the Testpool.
 
 Products must have one or more branches associated with them. Products
 and branches are used to organize tests results. Lets create a product
