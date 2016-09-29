@@ -24,8 +24,12 @@ class VMPool(object):
     """ The VM is running. """
     STATE_NONE = 2
     """ Indicate that the VM does not exist. """
+
     STATE_BAD_STATE = 3
     """ System exists but is not running. """
+
+    STATE_DESTROYED = 4
+    """ VM has been destroyed. """
 
     STATE_STRING = {
         STATE_RUNNING: "running",
@@ -54,4 +58,4 @@ class VMPool(object):
 
     def vm_list(self):
         """ Return the list of VMs. """
-        raise NotImplementedError("state_get unsupported")
+        raise NotImplementedError("state_list unsupported")
