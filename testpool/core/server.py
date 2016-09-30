@@ -71,7 +71,7 @@ def reclaim(exts):
         vmpool = ext.vmpool_get(vm1.profile.hv.hostname, vm1.profile.name)
 
         testpool.core.algo.reclaim(vmpool, vm1)
-        vm1.status = models.VM.FREE
+        vm1.status = models.VM.PENDING
         vm1.save()
 
     ##
@@ -80,7 +80,7 @@ def reclaim(exts):
         ext = exts[vm1.profile.hv.product]
         vmpool = ext.vmpool_get(vm1.profile.hv.hostname, vm1.profile.name)
         testpool.core.algo.reclaim(vmpool, vm1)
-        vm1.status = models.VM.FREE
+        vm1.status = models.VM.PENDING
         vm1.save()
     ##
     LOGGER.info("testpool reclaim ended")
@@ -104,6 +104,24 @@ def setup(exts):
         testpool.core.algo.remove(vmpool, profile1)
     LOGGER.info("testpool setup ended")
 
+def pending_to_ready(exts):
+    """ Look for pending VMs and attempt to make them ready.
+    A pending VM is one that is missing its IP information.
+    """
+
+    LOGGER.info("pending_to_ready started")
+    ##
+    #  If VM expires reclaim it.
+    for vm1 in models.VM.objects.filter(status=models.VM.PENDING):
+        ext = exts[vm1.profile.hv.product]
+        vmpool = ext.vmpool_get(vm1.profile.hv.hostname, vm1.profile.name)
+        vm1.ip_addr = vmpool.ip_get(vm_name)
+        if vm1.ip_addr:
+            vm1.status = models.VM.READY
+            vm1.save()
+    ##
+    LOGGER.info("pending_to_ready ended")
+
 
 def main(args):
     """ Main entry point for server. """
@@ -123,6 +141,7 @@ def main(args):
     while count == FOREVER or count > 0:
         adapt(exts)
         reclaim(exts)
+        pending_to_ready(exts)
         if args.sleep_time > 0:
             LOGGER.info("testpool sleeping %s (seconds)", args.sleep_time)
             time.sleep(args.sleep_time)
@@ -239,7 +258,7 @@ class ModelTestCase(unittest.TestCase):
         args = ModelTestCase.fake_args()
         self.assertEqual(main(args), 0)
 
-        vms = profile1.vm_set.filter(status=models.VM.FREE)
+        vms = profile1.vm_set.filter(status=models.VM.PENDING)
         vm1 = vms[0]
         ##
         # Acquire for 3 seconds.
@@ -250,7 +269,7 @@ class ModelTestCase(unittest.TestCase):
         exts = testpool.core.ext.api_ext_list()
         reclaim(exts)
 
-        vms = profile1.vm_set.filter(status=models.VM.FREE)
+        vms = profile1.vm_set.filter(status=models.VM.PENDING)
 
         ##
         # Check to see if the expiration happens.

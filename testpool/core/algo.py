@@ -100,10 +100,9 @@ def adapt(vmpool, profile):
                     logging.debug("%s VM cloned %s", profile.name, vm_name)
                     (kvp, _) = models.KVP.get_or_create("state", "bad")
                     vm1.profile.kvp_get_or_create(kvp)
-                    vm1.status = models.VM.FREE
+                    vm1.status = models.VM.PENDING
 
-            #vm1.ip_addr = vmpool.ip_get(vm_name)
-
+            vm1.ip_addr = vmpool.ip_get(vm_name)
             if created:
                 for (key, value) in vmpool.vm_attr_get(vm_name).iteritems():
                     (kvp, _) = models.KVP.get_or_create(key, value)
@@ -141,7 +140,7 @@ def pop(hostname, product, profile_name):
     hv1 = models.HV.objects.get(hostname=hostname, product=product)
     profile1 = models.Profile.objects.get(hv=hv1, name=profile_name)
 
-    vms = models.VM.objects.filter(profile=profile1, status=models.VM.FREE)
+    vms = models.VM.objects.filter(profile=profile1, status=models.VM.PENDING)
     if vms.count() == 0:
         raise NoResources("%s: all VMs taken" % profile_name)
 

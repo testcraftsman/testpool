@@ -43,7 +43,7 @@ class ProfileStats(object):
                 self.vm_reserved += 1
             elif item.status == models.VM.RELEASED:
                 self.vm_released += 1
-            elif item.status == models.VM.FREE:
+            elif item.status == models.VM.PENDING:
                 self.vm_free += 1
 
 

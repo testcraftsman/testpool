@@ -113,12 +113,14 @@ class VMKVP(models.Model):
 
 class VM(models.Model):
     """ A single test consisting of one or more results.
-    FREE - system is pending towards being ready
-    RESERVED - VM is currently in use
+    READY - system is ready to be used.
+    PENDING - system is pending towards being ready.
+    RESERVED - VM is currently in use.
     RELEASED - VM has been released and must be reclaimed.
     """
 
-    FREE = 2
+    READY = 3
+    PENDING = 2
     RESERVED = 1
     RELEASED = 0
 
@@ -169,7 +171,7 @@ class VM(models.Model):
             return "reserved"
         elif status == VM.RELEASED:
             return "released"
-        elif status == VM.FREE:
+        elif status == VM.PENDING:
             return "free"
 
     @staticmethod

@@ -61,7 +61,7 @@ class ModelTestCase(TestCase):
         for item in range(3):
             vm1 = VM.objects.create(profile=profile1,
                                     name="template.ubuntu1404.%d" % item,
-                                    status=VM.FREE)
+                                    status=VM.PENDING)
             self.assertTrue(vm1)
 
     def test_vm_attr(self):
@@ -77,7 +77,7 @@ class ModelTestCase(TestCase):
 
         vm1 = VM.objects.create(profile=profile1,
                                 name="template.ubuntu1404.0",
-                                status=VM.FREE)
+                                status=VM.PENDING)
         self.assertTrue(vm1)
         (kvp, _) = KVP.get_or_create("key1", "value1")
         VMKVP.objects.create(vm=vm1, kvp=kvp)

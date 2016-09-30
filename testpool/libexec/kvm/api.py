@@ -195,6 +195,17 @@ class VMPool(testpool.core.api.VMPool):
             rtc.append(item.name())
         return rtc
 
+    # pylint: disable=W0613
+    # pylint: disable=R0201
+    def vm_attr_get(self, vm_name):
+        """ Return the list of attributes for the VM.
+
+        These attributes are stored in the database, eventually they are
+        passed through the REST interface to the client.
+        """
+
+        return {}
+
 
 def vmpool_get(profile):
     """ Return a handle to the KVM API. """

@@ -99,7 +99,7 @@ def profile_acquire(request, profile_name):
         LOGGER.info("profile_acquire found %s", profile_name)
 
         try:
-            vms = profile.vm_set.filter(status=VM.FREE)
+            vms = profile.vm_set.filter(status=VM.PENDING)
 
             if vms.count() == 0:
                 LOGGER.info("profile_acquire %s all VMs taken", profile_name)
