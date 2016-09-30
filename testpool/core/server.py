@@ -55,7 +55,7 @@ def adapt(exts):
 
     for profile1 in models.Profile.objects.all():
         ext = exts[profile1.hv.product]
-        vmpool = ext.vmpool_get(profile1.hv.hostname, profile1.name)
+        vmpool = ext.vmpool_get(profile1)
         testpool.core.algo.adapt(vmpool, profile1)
 
 
@@ -93,8 +93,10 @@ def setup(exts):
     for profile1 in models.Profile.objects.all():
         LOGGER.info("setup %s %s %s", profile1.name, profile1.template_name,
                     profile1.vm_max)
+
         ext = exts[profile1.hv.product]
-        vmpool = ext.vmpool_get(profile1.hv.hostname, profile1.name)
+        
+        vmpool = ext.vmpool_get(profile1)
 
         LOGGER.info("algo.setup %s %s", profile1.name, profile1.template_name)
         LOGGER.info("algo.setup HV %s %d VMs", profile1.hv, profile1.vm_max)

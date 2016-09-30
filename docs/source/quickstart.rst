@@ -65,6 +65,13 @@ installed, starting with an Ubuntu 16.04 system:
 or 
   **git clone https://github.com/testcraftsman/testpool**
 
+#. Install the latest virt-manager in order to install the latest python
+   bindings:
+  wget https://github.com/virt-manager/virt-manager/archive/v1.4.0.tar.gz
+  tar -xf v1.4.0.tar.gz
+  cd virt-manager-1.4.0
+  sudo -H python ./setup.py install
+
 #. Install several requried packages:
   **cd testpool**
   **cat requirements.system | sudo xargs apt-get install**
@@ -72,9 +79,13 @@ or
   **sudo pip install -r requirements.pip**
   **sudo apt-get -f install**
 
-#. Build Testpool debian package and install 
-  **make deb.build**
-  **sudo make install**
+#. Run Testpool database. In a shell run 
+   **cd testpool**
+   **./bin/tpl-db runserver -v 3**
+
+#. In a second shell, run the Testpool daemon:
+   **cd testpool**
+   **./bin/tpl-daemon -v**
 
 A Short Tour
 ------------
@@ -86,7 +97,7 @@ Products must have one or more branches associated with them. Products
 and branches are used to organize tests results. Lets create a product
 named **product1** with a branch **branch1.1**.
 
-  **tbd product add product1 branch1.1**
+  **tpl profile add localhost kvm test.profile test.template 10**
 
 To see the effect of this command:
 

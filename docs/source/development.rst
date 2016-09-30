@@ -14,3 +14,8 @@ debian package dependencies.
 Make sure to set EMAIL before using dch
 Also note that versions are incremented in the change log
   dch -U
+
+Build Testpool debian package and install 
+  **make deb.build**
+  **sudo make install**
+

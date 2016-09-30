@@ -144,10 +144,10 @@ class VMPool(testpool.core.api.VMPool):
         return {"ip": "127.0.0.1"}
 
 
-def vmpool_get(url_name, profile):
+def vmpool_get(profile1):
     """ Return a handle to the KVM API. """
 
-    context = "%s/%s" % (url_name, profile)
+    context = "%s/%s" % (profile1.hv.hostname, profile1.name)
     return VMPool(context)
 
 

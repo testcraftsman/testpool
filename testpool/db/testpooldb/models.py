@@ -112,22 +112,26 @@ class VMKVP(models.Model):
 
 
 class VM(models.Model):
-    """ A single test consisting of one or more results. """
+    """ A single test consisting of one or more results.
+    FREE - system is pending towards being ready
+    RESERVED - VM is currently in use
+    RELEASED - VM has been released and must be reclaimed.
+    """
 
     FREE = 2
     RESERVED = 1
     RELEASED = 0
 
-    profile = models.ForeignKey("Profile", null=True, blank=True, default=None)
+    profile = models.ForeignKey("Profile")
     name = models.CharField(max_length=128)
-    status = models.IntegerField(default=RESERVED, blank=True, null=True)
+    status = models.IntegerField(default=RESERVED)
     reserved = models.DateTimeField(auto_now_add=True)
 
     ##
     # ip_addr is the IP address in dot notation
     # xxx.xxx.xxx.xxx
     # This is the IP of the management interface.
-    ip_addr = models.CharField(max_length=16)
+    ip_addr = models.CharField(max_length=16, blank=True, null=True)
     ##
     kvps = models.ManyToManyField(KVP, through="VMKVP")
 

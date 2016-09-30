@@ -33,7 +33,7 @@ LOGGING = {
             'level': 'DEBUG',
             'filters': ['require_debug_true'],
             'class': 'logging.FileHandler',
-            'filename': '/tmp/tpl-db.log',
+            'filename': './tpl-db.log',
             'formatter': 'verbose'
         },
     },
