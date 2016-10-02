@@ -119,7 +119,7 @@ def pending_to_ready(exts):
     #  If VM expires reclaim it.
     for vm1 in models.VM.objects.filter(status=models.VM.PENDING):
         ext = exts[vm1.profile.hv.product]
-        vmpool = ext.vmpool_get(vm1.profile.hv.hostname, vm1.profile.name)
+        vmpool = ext.vmpool_get(vm1.profile)
         vm1.ip_addr = vmpool.ip_get(vm1.profile.name)
         if vm1.ip_addr:
             vm1.status = models.VM.READY
