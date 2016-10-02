@@ -55,6 +55,11 @@ def adapt(vmpool, profile):
     vm_list = vmpool.vm_list()
 
     ##
+    # Do not include the template name.
+    vm_list = [item for item in vm_list if item != profile.template_name]
+    ##
+
+    ##
     # Now remove any extract VMs because the maximum VMs was reduced.
     # The first number used is 0.
     vm_current = len(vm_list)

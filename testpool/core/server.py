@@ -80,7 +80,10 @@ def reclaim(exts):
 
     ##
     #  If VM expires reclaim it.
-    for vm1 in models.VM.objects.filter(reserved__lt=datetime.datetime.now()):
+    for vm1 in models.VM.objects.filter(status=models.VM.RESERVED,
+                                        reserved__lt=datetime.datetime.now()):
+        LOGGER.info("vm expires %s %s %s", vm1.profile.hv.hostname,
+                    vm1.profile.hv.product, vm1.name)
         ext = exts[vm1.profile.hv.product]
         vmpool = ext.vmpool_get(vm1.profile)
         testpool.core.algo.reclaim(vmpool, vm1)
@@ -91,7 +94,10 @@ def reclaim(exts):
 
 
 def setup(exts):
-    """ Run the setup of each hypervisor. """
+    """ Run the setup of each hypervisor.
+
+    VMs are reset so that they are begin the reclaim process.
+    """
 
     LOGGER.info("testpool setup started")
     for profile1 in models.Profile.objects.all():
@@ -122,8 +128,13 @@ def pending_to_ready(exts):
         vmpool = ext.vmpool_get(vm1.profile)
         vm1.ip_addr = vmpool.ip_get(vm1.profile.name)
         if vm1.ip_addr:
+            LOGGER.info("%s: VM %s discovered ip addr %s", vm1.profile.name,
+                        vm1.name, vm1.ip_addr)
             vm1.status = models.VM.READY
             vm1.save()
+        else:
+            LOGGER.info("%s: VM %s waiting for ip addr", vm1.profile.name,
+                        vm1.name)
     ##
     LOGGER.info("pending_to_ready ended")
 
