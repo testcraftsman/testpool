@@ -95,7 +95,7 @@ def setup(exts):
                     profile1.vm_max)
 
         ext = exts[profile1.hv.product]
-        
+
         vmpool = ext.vmpool_get(profile1)
 
         LOGGER.info("algo.setup %s %s", profile1.name, profile1.template_name)
@@ -103,6 +103,7 @@ def setup(exts):
 
         testpool.core.algo.remove(vmpool, profile1)
     LOGGER.info("testpool setup ended")
+
 
 def pending_to_ready(exts):
     """ Look for pending VMs and attempt to make them ready.
@@ -115,7 +116,7 @@ def pending_to_ready(exts):
     for vm1 in models.VM.objects.filter(status=models.VM.PENDING):
         ext = exts[vm1.profile.hv.product]
         vmpool = ext.vmpool_get(vm1.profile.hv.hostname, vm1.profile.name)
-        vm1.ip_addr = vmpool.ip_get(vm_name)
+        vm1.ip_addr = vmpool.ip_get(vm1.profile.name)
         if vm1.ip_addr:
             vm1.status = models.VM.READY
             vm1.save()

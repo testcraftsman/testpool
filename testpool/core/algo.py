@@ -48,6 +48,7 @@ def adapt(vmpool, profile):
     @return Returns the number of changes. Positive number indicates the
             number of VMs created.
     """
+    logging.debug("%s: adapt started", profile.name)
 
     changes = 0
 
@@ -89,6 +90,7 @@ def adapt(vmpool, profile):
                               vm_name)
                 vmpool.clone(profile.template_name, vm_name)
                 vm_state = vmpool.start(vm_name)
+                logging.error("%s VM clone state %s", profile.name, vm_state)
 
                 if vm_state != testpool.core.api.VMPool.STATE_RUNNING:
                     logging.error("%s VM clone %s failed", profile.name,
@@ -112,6 +114,7 @@ def adapt(vmpool, profile):
 
             vm1.save()
         ##
+    logging.debug("%s: adapt ended", profile.name)
     return changes
 
 

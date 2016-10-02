@@ -87,7 +87,7 @@ class Testsuite(unittest.TestCase):
             name="test.profile1", hv=hv1, template_name="test.template",
             vm_max=10)
 
-        vmpool = api.vmpool_get("localhost", profile_name)
+        vmpool = api.vmpool_get(profile1)
         self.assertTrue(vmpool)
         testpool.core.algo.remove(vmpool, profile1)
         rtc = testpool.core.algo.adapt(vmpool, profile1)

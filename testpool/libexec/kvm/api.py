@@ -8,29 +8,37 @@ from xml.etree import ElementTree
 import libvirt
 import testpool.core.api
 
-def libvirt_callback(userdata, err):
-    ignore = userdata
-    ignore = err
-libvirt.registerErrorHandler(f=libvirt_callback, ctx=None)
-
 
 ##
 # Because KVM support is bunbled with testpool, we do not want to
 # fail if the intent is to not use it.
+# pylint: disable=E0401
 try:
     import virtinst.cloner as cloner
     import virtinst.connection
-    # from virtinst.User import User
 except ImportError:
-    virtinst_dir = os.path.join("/usr", "share", "virt-manager")
-    if os.path.exists(virtinst_dir) and virtinst_dir not in sys.path:
-        sys.path.append(virtinst_dir)
+    VIRTINST_DIR = os.path.join("/usr", "share", "virt-manager")
+    if os.path.exists(VIRTINST_DIR) and VIRTINST_DIR not in sys.path:
+        sys.path.append(VIRTINST_DIR)
         import virtinst.cloner as cloner
         import virtinst.connection
+# pylint: enable=E0401
 ##
 
 
+##
+# pylint: disable=W0613
+def libvirt_callback(userdata, err):
+    """ libvirt callback to address exceptions. """
+    pass
+# pylint: enable=W0613
+##
+
+libvirt.registerErrorHandler(f=libvirt_callback, ctx=None)
+
+
 def get_clone_diskfile(design):
+    """ Retrieve disk content for cloning. """
 
     new_diskfiles = [None]
     newidx = 0
@@ -82,10 +90,15 @@ class VMPool(testpool.core.api.VMPool):
 
     def __init__(self, url_name, context):
         """ Constructor. """
+        testpool.core.api.VMPool.__init__(self, context)
 
         self.context = context
         self.url_name = url_name
         self.conn = libvirt.open(url_name)
+
+    def type_get(self):
+        """ Return the type of the interface. """
+        return "kvm"
 
     def vm_state_get(self, vm_name):
         """ Return the state of the VM. """
@@ -107,7 +120,7 @@ class VMPool(testpool.core.api.VMPool):
             vm_hndl = self.conn.lookupByName(vm_name)
         except (AttributeError, libvirt.libvirtError):
             return testpool.core.api.VMPool.STATE_NONE
-            
+
         logging.debug("%s vm_destroy VM state %s", vm_name,
                       vm_state_to_str(vm_hndl))
         vm_xml = vm_hndl.XMLDesc()
@@ -134,7 +147,7 @@ class VMPool(testpool.core.api.VMPool):
 
     def clone(self, orig_name, new_name):
         """ Clone KVM system. """
-        def _do_creds_authname(creds):
+        def _do_creds_authname(_):
             return 0
 
         conn = virtinst.connection.VirtualConnection(self.url_name)
@@ -169,13 +182,13 @@ class VMPool(testpool.core.api.VMPool):
         vm_dom.create()
 
     def ip_get(self, vm_name, source=0):
-        """ Return IP address of VM. 
+        """ Return IP address of VM.
         IP address may not be found if the VM is not fully running.
         """
 
         try:
             dom = self.conn.lookupByName(vm_name)
-            ifc = dom.interfaceAddresses(0) 
+            ifc = dom.interfaceAddresses(0)
         except libvirt.libvirtError:
             logging.debug("%s: domain not found", vm_name)
             return None

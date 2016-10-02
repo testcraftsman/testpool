@@ -20,16 +20,16 @@ class Testsuite(unittest.TestCase):
         hv1 = libvirt.open(url)
         self.assertTrue(hv1)
 
-        hv1 = kvm.api.VMPool(url, "test")
-        self.assertTrue(hv1)
+        vmpool = kvm.api.VMPool(url, "test")
+        self.assertTrue(vmpool)
         for item in range(3):
             vm_name = "test.template.%d" % item
             try:
-                hv1.destroy(vm_name)
+                vmpool.destroy(vm_name)
             except libvirt.libvirtError:
                 continue
 
-        pool = [item for item in hv1.conn.listAllDomains()]
+        pool = [item for item in vmpool.conn.listAllDomains()]
         pool = [item.name() for item in pool]
         pool = [item for item in pool if item.startswith("test.template")]
         for item in range(3):
@@ -52,9 +52,7 @@ class Testsuite(unittest.TestCase):
         fmt = "qemu+ssh://mark@%s/system"
         cmd = fmt % TEST_HOST
 
-        print "MARK: 1", cmd
         hndl = libvirt.open(cmd)
-        print "MARK: 2", hndl
         self.assertTrue(hndl)
 
         self.assertTrue(hndl.getInfo())
