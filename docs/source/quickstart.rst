@@ -59,18 +59,22 @@ Testpool Installation
 We'll install Testpool from source, however prior the following must be
 installed, starting with an Ubuntu 16.04 system:
 
-#. Install testpool from the github release area:
-  **wget https://github.com/testcraftsman/testpool/archive/0.0.3.tar.gz**
-  **tar -xf 0.0.3.tar.gz**
-or 
-  **git clone https://github.com/testcraftsman/testpool**
-
 #. Install the latest virt-manager in order to install the latest python
    bindings:
   wget https://github.com/virt-manager/virt-manager/archive/v1.4.0.tar.gz
   tar -xf v1.4.0.tar.gz
   cd virt-manager-1.4.0
   sudo -H python ./setup.py install
+
+#. Install the latest python bindings to libvirt from 
+  **https://pypi.python.org/pypi/libvirt-python**
+
+#. Install testpool from the github release area:
+  **wget https://github.com/testcraftsman/testpool/archive/0.0.3.tar.gz**
+  **tar -xf 0.0.3.tar.gz**
+or 
+  **git clone https://github.com/testcraftsman/testpool**
+
 
 #. Install several requried packages:
   **cd testpool**

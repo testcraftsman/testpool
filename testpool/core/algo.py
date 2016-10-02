@@ -90,7 +90,7 @@ def adapt(vmpool, profile):
                               vm_name)
                 vmpool.clone(profile.template_name, vm_name)
                 vm_state = vmpool.start(vm_name)
-                logging.error("%s VM clone state %s", profile.name, vm_state)
+                logging.debug("%s VM clone state %s", profile.name, vm_state)
 
                 if vm_state != testpool.core.api.VMPool.STATE_RUNNING:
                     logging.error("%s VM clone %s failed", profile.name,
@@ -118,21 +118,29 @@ def adapt(vmpool, profile):
     return changes
 
 
-def remove(vmpool, profile):
-    """ Remove all VMs from the host. """
+def reset(vmpool, profile):
+    """ Reset profile and remove all VMs from the host. """
 
-    for count in range(profile.vm_max):
-        vm_name = profile.template_name + ".%d" % count
+    ##
+    # Quickly go through all of the VMs to reclaim them.
+    ##
+    for vm1 in profile.vm_set.all():
+        vm1.status = models.VM.RELEASED
+        vm1.save()
+
+    for vm1 in profile.vm_set.all():
+        vm_name = vm1.name
+        logging.debug("%s removing VM %s", profile.name, vm_name)
+
+        vm_state = vmpool.vm_state_get(vm_name)
+        if vm_state != testpool.core.api.VMPool.STATE_NONE:
+            vmpool.destroy(vm_name)
+
         try:
             vm1 = models.VM.objects.get(profile=profile, name=vm_name)
             vm1.delete()
         except models.VM.DoesNotExist:
             pass
-
-        vm_state = vmpool.vm_state_get(vm_name)
-        if vm_state != testpool.core.api.VMPool.STATE_NONE:
-            logging.debug("%s removing VM %s", profile.name, vm_name)
-            vmpool.destroy(vm_name)
 
 
 def pop(hostname, product, profile_name):

@@ -5,10 +5,11 @@
 <H1>Profiles Statistics</H1>
 <table>
  <tr>
-  <th>Name</th><th>Free</th><th>Reserved</th><th>Released</th><th>Max</th>
+  <th>Host</th><th>Profile</th><th>Free</th><th>Reserved</th><th>Released</th><th>Max</th>
  </tr>
  {% for profile in profiles %}
   <tr>
+   <td>{{profile.hostname}}</td>
    <td>{{profile.name}}</td>
    <td>{{profile.vm_free}}</td>
    <td>{{profile.vm_reserved}}</td>

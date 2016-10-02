@@ -179,7 +179,12 @@ class VMPool(testpool.core.api.VMPool):
         """ Start VM. """
 
         vm_dom = self.conn.lookupByName(vm_name)
-        vm_dom.create()
+        rtc = vm_dom.create()
+
+        if rtc == 0:
+            return testpool.core.api.VMPool.STATE_RUNNING
+        else:
+            return testpool.core.api.VMPool.STATE_BAD_STATE
 
     def ip_get(self, vm_name, source=0):
         """ Return IP address of VM.

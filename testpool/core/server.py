@@ -53,10 +53,14 @@ def argparser():
 def adapt(exts):
     """ Check to see if the pools should change. """
 
+    LOGGER.info("testpool adapt started")
+
     for profile1 in models.Profile.objects.all():
         ext = exts[profile1.hv.product]
         vmpool = ext.vmpool_get(profile1)
         testpool.core.algo.adapt(vmpool, profile1)
+
+    LOGGER.info("testpool adapt ended")
 
 
 def reclaim(exts):
@@ -68,7 +72,7 @@ def reclaim(exts):
         LOGGER.info("loading %s %s %s", vm1.profile.hv.hostname,
                     vm1.profile.hv.product, vm1.name)
         ext = exts[vm1.profile.hv.product]
-        vmpool = ext.vmpool_get(vm1.profile.hv.hostname, vm1.profile.name)
+        vmpool = ext.vmpool_get(vm1.profile)
 
         testpool.core.algo.reclaim(vmpool, vm1)
         vm1.status = models.VM.PENDING
@@ -78,7 +82,7 @@ def reclaim(exts):
     #  If VM expires reclaim it.
     for vm1 in models.VM.objects.filter(reserved__lt=datetime.datetime.now()):
         ext = exts[vm1.profile.hv.product]
-        vmpool = ext.vmpool_get(vm1.profile.hv.hostname, vm1.profile.name)
+        vmpool = ext.vmpool_get(vm1.profile)
         testpool.core.algo.reclaim(vmpool, vm1)
         vm1.status = models.VM.PENDING
         vm1.save()
@@ -101,7 +105,7 @@ def setup(exts):
         LOGGER.info("algo.setup %s %s", profile1.name, profile1.template_name)
         LOGGER.info("algo.setup HV %s %d VMs", profile1.hv, profile1.vm_max)
 
-        testpool.core.algo.remove(vmpool, profile1)
+        testpool.core.algo.reset(vmpool, profile1)
     LOGGER.info("testpool setup ended")
 
 

@@ -32,6 +32,7 @@ class ProfileStats(object):
         # The ID is needed for the JSON view.
         self.id = profile.id
         #
+        self.hostname = profile.hv.hostname
         self.name = profile.name
         self.vm_max = profile.vm_max
         self.vm_free = 0
