@@ -22,7 +22,6 @@ on a KVM system. What the VM is running is not important and there are
 good instructions on the internet for setting up a KVM hypervisor and 
 creating a VM. This section will provide references to these sites.
 
-
 For installing KVM on Ubuntu 16.04, refer to this site https://help.ubuntu.com/community/KVM/Installation. Once complete, you will need the following 
 information:
 
@@ -43,14 +42,14 @@ an Ubuntu 16.04 server VM.
   #. Run virt-manager
   #. From File, choose *Add Connection*.
   #. If applicable, choose *Connect to remote host*
-  #. Enter admin for *Username* and IP address for the *Hostname*. This may
+  #. Enter admin for **Username** and IP address for the **Hostname**. This may
      be either localhost or the IP address of the KVM hypervisor.
      The default ssh method will probably work.
   #. Now connect and enter the user password.
   #. Select Hypervisor in the virt-manager,
-  #. Choose *Create a new virtual manager*.
-  #. Choose *Network Install (HTTP, FTP or NFS)* then Forward.
-  #. For URL, enter *http://us.archive.ubuntu.com/ubuntu/dists/wily/main/installer-amd64/*
+  #. Choose **Create a new virtual manager**.
+  #. Choose **Network Install (HTTP, FTP or NFS)** then Forward.
+  #. For URL, enter **http://us.archive.ubuntu.com/ubuntu/dists/wily/main/installer-amd64/**
 
 
 Testpool Installation
@@ -59,107 +58,54 @@ Testpool Installation
 We'll install Testpool from source, however prior the following must be
 installed, starting with an Ubuntu 16.04 system:
 
-#. Install the latest virt-manager in order to install the latest python
-   bindings:
-  wget https://github.com/virt-manager/virt-manager/archive/v1.4.0.tar.gz
-  tar -xf v1.4.0.tar.gz
-  cd virt-manager-1.4.0
-  sudo -H python ./setup.py install
+  #. Install the latest virt-manager in order to install the latest python
+     bindings::
 
-#. Install the latest python bindings to libvirt from 
-  **https://pypi.python.org/pypi/libvirt-python**
+       wget https://github.com/virt-manager/virt-manager/archive/v1.4.0.tar.gz
+       tar -xf v1.4.0.tar.gz
+       cd virt-manager-1.4.0
+       sudo -H python ./setup.py install
 
-#. Install testpool from the github release area:
-  **wget https://github.com/testcraftsman/testpool/archive/0.0.3.tar.gz**
-  **tar -xf 0.0.3.tar.gz**
-or 
-  **git clone https://github.com/testcraftsman/testpool**
+  #. Install the latest python bindings to libvirt from::
 
+       https://pypi.python.org/pypi/libvirt-python
 
-#. Install several requried packages:
-  **cd testpool**
-  **cat requirements.system | sudo xargs apt-get install**
-  **sudo apt-file update**
-  **sudo pip install -r requirements.pip**
-  **sudo apt-get -f install**
+  #. Install testpool from the github release area::
 
-#. Run Testpool database. In a shell run 
-   **cd testpool**
-   **./bin/tpl-db runserver -v 3**
+       wget https://github.com/testcraftsman/testpool/archive/0.0.3.tar.gz
+       tar -xf 0.0.3.tar.gz
 
-#. In a second shell, run the Testpool daemon:
-   **cd testpool**
-   **./bin/tpl-daemon -v**
+  #. Install several requried packages::
+
+       cd testpool
+       cat requirements.system | sudo xargs apt-get install
+       sudo apt-file update
+       sudo pip install -r requirements.pip
+       sudo apt-get -f install
+
+  #. Run Testpool database. In a shell run::
+
+       cd testpool
+       ./bin/tpl-db runserver -v 3
+
+  #. In a second shell, run the Testpool daemon::
+
+       cd testpool
+       ./bin/tpl-daemon -v
 
 A Short Tour
 ------------
 
 In order for Testpool to manage VMs, Hypervisor information is registered
-with the Testpool.
+with the Testpool along with a single VM template.
 
-Products must have one or more branches associated with them. Products
-and branches are used to organize tests results. Lets create a product
-named **product1** with a branch **branch1.1**.
+Create a VM on the KVM hypervisor called test.template and keep it shutdown. Now create a testpool profile given the IP address and name of the VM template.
 
-  **tpl profile add localhost kvm test.profile test.template 10**
+While running testpool on the hypervisor, use tpl CLI create a test pool 
+profile::
 
-To see the effect of this command:
+  tpl profile add localhost kvm test.profile test.template 4
 
-  **tbd product list**
- 
-Testplans define testsuites, their tests and key values pairs that organize
-test results. Testplans can be associated with any number of products.
-Let's create a testplan with several testsuites and tests.
-
-  **tbd testplan add testsuite1**
-
-  **tbd testplan add testsuite2**
-
-When done adding testsuites, pack them which makes sure internal data 
-structures are organized in a way to be efficient.
-
-  **tbd testplan pack**
-
-  **tbd testplan key add 0 OS ubuntu14.04**
-
-  **tbd testplan key add 1 OS ubuntu14.04**
-
-  **tbd testplan test add 0 test1.1**
-
-  **tbd testplan test add 0 test1.2**
-
-  **tbd testplan test add 1 test2.1**
-
-  **tbd testplan test add 1 test2.2**
-
-
-The previous testplan commands created a **default** testplan since a name
-was not defined. Now lets associated the testplan with the product.
-
-  **tbd product testplan add product1 branch1.1 default**
-
-Lets see what this has done. 
-
-  **tbd testplan list**
-
-Summarizes two testsuites each with two tests. The order value, not previously
-specified, governs the order in which this content will be displayed here 
-and in the web site. Lets take a look a the web content. In another window, 
-start a temporary web server:
-
-  **tbd-manage runserver**
-
-Now open a browser and keep it open. We'll refer back to it:
-
-  **http://127.0.0.1:8000/testpool**
-
-Testpool assumes that products and branches require a build. Its this build
-information along with everything else we've specified that are necessary
-for tracking test results.
-
-To create a build with the id **100**:
-  **tbd build add product1 branch1.1 100**
-
-Save a test result:
-
-  **tbd result set product1 branch1.1 100 testsuite1 test1.1 pass OS=ubuntu14.04**
+The Testpool Daemon will clone 4 VMs from the test.template. This can take
+a while which is the point for this tool. Use **virt-manager** to see the 
+VMs being created.
