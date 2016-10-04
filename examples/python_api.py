@@ -22,7 +22,7 @@ GLOBAL = {"resource": None}
 def vm_hndl():
     """ provide an example of a global RESOURCE for the entire test."""
 
-    with testpool.client.VMHndl("127.0.0.1", "fake.profile") as hndl:
+    with testpool.client.VMHndl("127.0.0.1", "test.profile") as hndl:
         GLOBAL["resource"] = hndl
         yield hndl
 
@@ -47,9 +47,9 @@ class Testsuite(unittest.TestCase):
 
         ##
         # Shows an example of the context manager.
-        with testpool.client.VMHndl("127.0.0.1", "fake.profile") as hndl:
+        with testpool.client.VMHndl("127.0.0.1", "test.profile") as hndl:
             ##
             # This assert is to show that a different VM was picked.
-            # Normally vm.ip will point to another VM, but for the fake.profile
+            # Normally vm.ip will point to another VM, but for the test.profile
             # all VMs have 127.0.0.1 IP address.
             self.assertNotEqual(hndl.vm.id, GLOBAL["resource"].vm.id)

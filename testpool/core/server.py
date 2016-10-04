@@ -14,7 +14,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
-""" Test pool Server. """
+""" Test pool Server.
+
+Server algorithm. VMs, given a current state, can be assigned an action
+and when the action should fire.
+
+ACTION    SUCCESS STATE   FAILURE
+destroy   clone   PENDING N attempts then mark BAD
+clone     attr    PENDING N attempst then mark BAD
+"""
 import datetime
 import unittest
 import time
@@ -27,7 +35,7 @@ from testpool.core import profile
 from testpooldb import models
 
 FOREVER = None
-LOGGER = logging.getLogger()
+LOGGER = logging.getLogger(__name__)
 logging.getLogger("django.db.backends").setLevel(logging.CRITICAL)
 
 
@@ -46,7 +54,6 @@ def argparser():
                         "Used for debugging.")
     parser.add_argument('--sleep-time', type=int, default=60,
                         help="Time between checking for changes.")
-
     return parser
 
 
@@ -126,7 +133,8 @@ def pending_to_ready(exts):
     for vm1 in models.VM.objects.filter(status=models.VM.PENDING):
         ext = exts[vm1.profile.hv.product]
         vmpool = ext.vmpool_get(vm1.profile)
-        vm1.ip_addr = vmpool.ip_get(vm1.profile.name)
+        vm1.ip_addr = vmpool.ip_get(vm1.name)
+        print "MARK: vm2", vm1.ip_addr
         if vm1.ip_addr:
             LOGGER.info("%s: VM %s discovered ip addr %s", vm1.profile.name,
                         vm1.name, vm1.ip_addr)

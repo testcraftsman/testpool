@@ -4,6 +4,7 @@ API for KVM hypervisors.
 import sys
 import os
 import logging
+import datetime
 from xml.etree import ElementTree
 import libvirt
 import testpool.core.api
@@ -172,7 +173,9 @@ class VMPool(testpool.core.api.VMPool):
         # setup design object
         design.setup_clone()
         # start cloning
+        print "MARK: clone start", datetime.datetime.now()
         design.start_duplicate(None)
+        print "MARK: clone after", datetime.datetime.now()
         logging.debug("end clone")
 
     def start(self, vm_name):
@@ -190,19 +193,33 @@ class VMPool(testpool.core.api.VMPool):
         """ Return IP address of VM.
         IP address may not be found if the VM is not fully running.
         """
+        logging.debug("%s: ip_get called", vm_name)
+
+        print "MARK: ip_get called", vm_name
 
         try:
             dom = self.conn.lookupByName(vm_name)
-            ifc = dom.interfaceAddresses(0)
-        except libvirt.libvirtError:
-            logging.debug("%s: domain not found", vm_name)
+            print "MARK: dom", dom
+            logging.debug("%s: ip_get dom %s", vm_name, dom)
+        except libvirt.libvirtError, earg:
+            print "MARK: domain not found", earg
             return None
+
         try:
-            ip_addr = ifc["addrs"][source]["addr"]
-            return ip_addr
+            logging.debug("%s: domain not found", vm_name)
+            ifc = dom.interfaceAddresses(0)
+            print "MARK: ifc", ifc
+            logging.debug("%s: ip_get dom ifc %s", vm_name, ifc)
+        except libvirt.libvirtError:
+            print "MARK: ifc not found"
+            return None
+
+        try:
+            for (key, values) in ifc.iteritems():
+                return values["addrs"][source]["addr"]
         except KeyError:
             logging.debug("%s: ip address not set", vm_name)
-            return None
+        return None
 
     def vm_list(self):
         """ Return the list of VMs. """

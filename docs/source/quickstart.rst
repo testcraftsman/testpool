@@ -109,3 +109,5 @@ profile::
 The Testpool Daemon will clone 4 VMs from the test.template. This can take
 a while which is the point for this tool. Use **virt-manager** to see the 
 VMs being created.
+
+.. literalinclude:: /../../examples/python_api.py
