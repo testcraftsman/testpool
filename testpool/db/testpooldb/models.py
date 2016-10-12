@@ -17,6 +17,7 @@
 """
    Test schema for tracking tests and their results.
 """
+import logging
 import datetime
 from django.db import models
 
@@ -116,17 +117,17 @@ class VM(models.Model):
     READY - system is ready to be used.
     PENDING - system is pending towards being ready.
     RESERVED - VM is currently in use.
-    RELEASED - VM has been released and must be reclaimed.
+    BAD - VM is in a bad state
     """
 
     READY = 3
     PENDING = 2
     RESERVED = 1
-    RELEASED = 0
+    BAD = 0
 
     profile = models.ForeignKey("Profile")
     name = models.CharField(max_length=128)
-    status = models.IntegerField(default=RESERVED)
+    status = models.IntegerField(default=PENDING)
     reserved = models.DateTimeField(auto_now_add=True)
 
     ##
@@ -135,27 +136,14 @@ class VM(models.Model):
     # This is the IP of the management interface.
     ip_addr = models.CharField(max_length=16, blank=True, null=True)
     ##
+    action = models.CharField(max_length=36, default="clone")
+    action_time = models.DateTimeField(auto_now_add=True)
     kvps = models.ManyToManyField(KVP, through="VMKVP")
 
     def __str__(self):
         """ User representation. """
 
-        return "%s" % self.name
-
-    def acquire(self, expiration=None):
-        """ Acquire VM.
-
-        @param expiration In seconds how long to hold the VM.
-        """
-
-        if not expiration:
-            expiration = self.profile.expiration
-
-        delta = datetime.timedelta(0, expiration)
-
-        self.status = VM.RESERVED
-        self.reserved = datetime.datetime.now() + delta
-        self.save()
+        return str(self.name)
 
     def release(self):
         """ Acquire VM. """
@@ -172,7 +160,7 @@ class VM(models.Model):
         elif status == VM.RELEASED:
             return "released"
         elif status == VM.PENDING:
-            return "free"
+            return "pending"
 
     @staticmethod
     def status_map(status):
@@ -181,6 +169,15 @@ class VM(models.Model):
             return VM.RESERVeD
         elif status == "released":
             return VM.RELEASED
+
+    def transition(self, status, action, action_time_delta):
+        """ Transition VM through states. """
+        logging.info("%s: transition %s %s %s %d", self.name, status, action,
+                     action_time_delta)
+        self.status = status
+        self.action = action
+        self.action_time = datetime.datetime.now() + datetime.timedelta(0, action_time_delta)
+        self.save()
 
 
 class ProfileKVP(models.Model):

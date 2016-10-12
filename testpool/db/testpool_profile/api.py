@@ -116,7 +116,9 @@ def profile_acquire(request, profile_name):
 
         ##
         # assert vm1 defined.
-        vm1.acquire(expiration_seconds)
+        vm1.transition(models.VM.RESERVED, testpool.core.algo.ACTION_DESTROY,
+                       expiration_seconds)
+        ##
         LOGGER.info("profile %s VM acquired %s", profile_name, vm1.name)
         serializer = VMSerializer(vm1)
         return JSONResponse(serializer.data)
@@ -140,7 +142,10 @@ def profile_release(request, vm_id):
         if vm1.status != VM.RESERVED:
             raise PermissionDenied("VM %s is not reserved" % vm_id)
 
-        vm1.release()
+        ##
+        # assert vm1 defined.
+        vm1.transition(models.VM.PENDING, testpool.core.algo.ACTION_DESTROY, 1)
+        ##
         content = {"detail": "VM %s released" % vm_id}
 
         return JSONResponse(content)

@@ -4,8 +4,15 @@
 import sys
 import logging
 import traceback
+import datetime
 from testpooldb import models
 import testpool.core.api
+
+
+ACTION_ATTR = "attr"
+ACTION_CLONE = "clone"
+ACTION_DESTROY = "destroy"
+ACTION_STATUS = "status"
 
 
 class ResourceReleased(Exception):
@@ -68,18 +75,15 @@ def adapt(vmpool, profile):
     if vm_current == profile.vm_max:
         return changes
     elif vm_current > profile.vm_max:
-        for vm_number in range(profile.vm_max, vm_current+1):
-            changes -= 1
-            vm_name = profile.template_name + ".%d" % vm_number
-            logging.debug("setup %s reducing pool %s destroyed", profile.name,
-                          vm_name)
-            vmpool.destroy(vm_name)
+        how_many = vm_current - profile.vm_max
+        for vm_name in vm_list.reverse():
+            vm1 = models.VM.objects.get(profile=profile, name=vm_name)
+            if vm1.status == models.VM.READY:
+                vm1.transition(models.VM.PENDING, ACTION_DESTROY, 1)
+                how_many -= 1
 
-            try:
-                vm1 = models.VM.objects.get(profile=profile, name=vm_name)
-                vm1.delete()
-            except models.VM.DoesNotExist:
-                pass
+            if how_many <= 0:
+                break
     else:
         ##
         # there are not enough VMs. Add more.
@@ -93,45 +97,33 @@ def adapt(vmpool, profile):
             if vm_state == testpool.core.api.VMPool.STATE_NONE:
                 logging.debug("%s expanding pool VM with %s ", profile.name,
                               vm_name)
-                vmpool.clone(profile.template_name, vm_name)
-                vm_state = vmpool.start(vm_name)
-                logging.debug("%s VM clone state %s", profile.name, vm_state)
-
-                if vm_state != testpool.core.api.VMPool.STATE_RUNNING:
-                    logging.error("%s VM clone %s failed", profile.name,
-                                  vm_name)
-                    (kvp, _) = models.KVP.get_or_create("state", "bad")
-                    vm1.profile.kvp_get_or_create(kvp)
-                    vm1.status = models.VM.RELEASED
-                else:
-                    logging.debug("%s VM cloned %s", profile.name, vm_name)
-                    (kvp, _) = models.KVP.get_or_create("state", "bad")
-                    vm1.profile.kvp_get_or_create(kvp)
-                    vm1.status = models.VM.PENDING
-
-            vm1.ip_addr = vmpool.ip_get(vm_name)
-            if created:
-                for (key, value) in vmpool.vm_attr_get(vm_name).iteritems():
-                    (kvp, _) = models.KVP.get_or_create(key, value)
-                    models.VMKVP.objects.create(vm=vm1, kvp=kvp)
-
-                models.VMKVP.objects.create(vm=vm1, kvp=kvp)
-
-            vm1.save()
-        ##
-    logging.debug("%s: adapt ended", profile.name)
-    return changes
+                vmpool.transition(models.VM.PENDING, ACTION_CLONE, 1)
 
 
-def reset(vmpool, profile):
+def clone(vmpool, vm1):
+    vmpool.clone(vm1.profile.template_name, vm1.name)
+    vm_state = vmpool.start(vm_name)
+    logging.debug("%s VM clone state %s", profile.name, vm_state)
+
+    if vm_state != testpool.core.api.VMPool.STATE_RUNNING:
+        logging.error("%s VM clone %s failed", profile.name, vm_name)
+        vm1.transition(models.VM.BAD, ACTION_DESTROY, 1)
+    else:
+        logging.debug("%s VM cloned %s", profile.name, vm_name)
+        vm1.transition(models.VM.PENDING, ACTION_ATTR, 1)
+
+
+def attr(vmpool, vm1):
+    
+    vm1.ip_addr = vmpool.ip_get(vm1.name)
+    for (key, value) in vmpool.vm_attr_get(vm_name).iteritems():
+        (kvp, _) = models.KVP.get_or_create(key, value)
+        models.VMKVP.objects.create(vm=vm1, kvp=kvp)
+        vm1.transition(models.VM.READY, ACTION_STATUS, 10*60)
+
+
+def destroy(vmpool, profile):
     """ Reset profile and remove all VMs from the host. """
-
-    ##
-    # Quickly go through all of the VMs to reclaim them.
-    ##
-    for vm1 in profile.vm_set.all():
-        vm1.status = models.VM.RELEASED
-        vm1.save()
 
     for vm1 in profile.vm_set.all():
         vm_name = vm1.name
@@ -180,11 +172,28 @@ def push(vm_id):
         raise ResourceReleased(vm_id)
 
 
-def reclaim(vmpool, vmh):
+def vm_clone(vmpool, vmh):
     """ Reclaim a VM and rebuild it. """
 
     logging.debug("reclaiming %s", vmh.name)
 
-    vmpool.destroy(vmh.name)
     vmpool.clone(vmh.profile.template_name, vmh.name)
     vmpool.start(vmh.name)
+    vmh.transition(models.VM.PENDING, testpool.core.algo.ACTION_ATTR, 1)
+
+
+def vm_destroy(vmpool, vm1):
+    """ Reset profile and remove all VMs from the host. """
+
+    vm_name = vm1.name
+    logging.debug("%s removing VM %s", profile.name, vm_name)
+
+    vm_state = vmpool.vm_state_get(vm_name)
+    if vm_state != testpool.core.api.VMPool.STATE_NONE:
+        vmpool.destroy(vm_name)
+
+    try:
+        vm1 = models.VM.objects.get(profile=profile, name=vm_name)
+        vm1.delete()
+    except models.VM.DoesNotExist:
+        pass

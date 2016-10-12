@@ -19,9 +19,11 @@
 Server algorithm. VMs, given a current state, can be assigned an action
 and when the action should fire.
 
-ACTION    SUCCESS STATE   FAILURE
-destroy   clone   PENDING N attempts then mark BAD
-clone     attr    PENDING N attempst then mark BAD
+STATE    ACTION    SUCCESS   STATE    FAILURE
+PENDING  destroy   clone  PENDING  N attempts then mark BAD
+PENDING  clone     attr   PENDING  N attempst then mark BAD
+PENDING  attr      ready  READY    N attempst then mark BAD
+RESERVED destroy   clone  PENDING  N attempts then mark BAD
 """
 import datetime
 import unittest
@@ -70,21 +72,33 @@ def adapt(exts):
     LOGGER.info("testpool adapt ended")
 
 
-def reclaim(exts):
+def action_destroy(exts, vm1):
     """ Reclaim any VMs released. """
 
-    LOGGER.info("testpool reclaim started")
+    LOGGER.info("testpool destroy started")
 
-    for vm1 in models.VM.objects.filter(status=models.VM.RELEASED):
-        LOGGER.info("loading %s %s %s", vm1.profile.hv.hostname,
-                    vm1.profile.hv.product, vm1.name)
-        ext = exts[vm1.profile.hv.product]
-        vmpool = ext.vmpool_get(vm1.profile)
+    LOGGER.info("loading %s %s %s", vm1.profile.hv.hostname,
+                vm1.profile.hv.product, vm1.name)
+    ext = exts[vm1.profile.hv.product]
+    vmpool = ext.vmpool_get(vm1.profile)
 
-        testpool.core.algo.reclaim(vmpool, vm1)
-        vm1.status = models.VM.PENDING
-        vm1.save()
+    testpool.core.algo.vm_destroy(vmpool, vm1)
 
+
+def action_clone(exts, vm1):
+    """ Clone a new VM. """
+
+    LOGGER.info("testpool action_clone started")
+
+    LOGGER.info("loading %s %s %s", vm1.profile.hv.hostname,
+                vm1.profile.hv.product, vm1.name)
+    ext = exts[vm1.profile.hv.product]
+    vmpool = ext.vmpool_get(vm1.profile)
+    testpool.core.algo.vm_clone(vmpool, vm1)
+
+
+def action_reclaim(exts, vm1):
+    """ Reclaim a VM onces it has been reserved. """
     ##
     #  If VM expires reclaim it.
     for vm1 in models.VM.objects.filter(status=models.VM.RESERVED,
@@ -103,29 +117,25 @@ def reclaim(exts):
 def setup(exts):
     """ Run the setup of each hypervisor.
 
-    VMs are reset so that they are begin the reclaim process.
+    VMs are reset to pending with the action to destroy them.
     """
 
     LOGGER.info("testpool setup started")
     for profile1 in models.Profile.objects.all():
         LOGGER.info("setup %s %s %s", profile1.name, profile1.template_name,
                     profile1.vm_max)
-
-        ext = exts[profile1.hv.product]
-
-        vmpool = ext.vmpool_get(profile1)
-
-        LOGGER.info("algo.setup %s %s", profile1.name, profile1.template_name)
-        LOGGER.info("algo.setup HV %s %d VMs", profile1.hv, profile1.vm_max)
-
-        testpool.core.algo.reset(vmpool, profile1)
+        ##
+        # Quickly go through all of the VMs to reclaim them by transitioning.
+        # them to PENDING and action destroy
+        for vm1 in profile1.vm_set.all():
+            vm1.transition(models.VM.RESERVED,
+                           testpool.core.algo.ACTION_DESTROY, 1)
+        ##
     LOGGER.info("testpool setup ended")
 
 
-def pending_to_ready(exts):
-    """ Look for pending VMs and attempt to make them ready.
-    A pending VM is one that is missing its IP information.
-    """
+def action_attr(exts):
+    """ Retrieve attributes. """
 
     LOGGER.info("pending_to_ready started")
     ##
@@ -134,12 +144,10 @@ def pending_to_ready(exts):
         ext = exts[vm1.profile.hv.product]
         vmpool = ext.vmpool_get(vm1.profile)
         vm1.ip_addr = vmpool.ip_get(vm1.name)
-        print "MARK: vm2", vm1.ip_addr
         if vm1.ip_addr:
             LOGGER.info("%s: VM %s discovered ip addr %s", vm1.profile.name,
                         vm1.name, vm1.ip_addr)
-            vm1.status = models.VM.READY
-            vm1.save()
+            vm1.transition(models.VM.READY, testpool.core.algo.ACTION_NONE, 1)
         else:
             LOGGER.info("%s: VM %s waiting for ip addr", vm1.profile.name,
                         vm1.name)
@@ -164,8 +172,16 @@ def main(args):
 
     while count == FOREVER or count > 0:
         adapt(exts)
-        reclaim(exts)
-        pending_to_ready(exts)
+        vm1 = models.VM.objects.filter(status!=models.VM.READY).order_by("action_time").first()
+        if vm1:
+            logging.info("%s: %s at %s", vm1.name, vm1.action, vm1.action_time)
+            if vm1.action == testpool.core.algo.ACTION_DESTROY:
+                action_destroy(exts, vm1)
+            elif vm1.action == testpool.core.algo.ACTION_CLONE:
+                action_clone(exts, vm1)
+            elif vm1.action == testpool.core.algo.ACTION_ATTR:
+                action_attr(exts)
+
         if args.sleep_time > 0:
             LOGGER.info("testpool sleeping %s (seconds)", args.sleep_time)
             time.sleep(args.sleep_time)

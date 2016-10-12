@@ -61,7 +61,9 @@ def vm_renew(request, vm_id):
 
         ##
         # assert vm1 defined.
-        vm1.acquire(expiration_seconds)
+        vm1.transition(models.VM.RESERVED, testpool.core.algo.ACTION_DESTROY,
+                       expiration_seconds)
+
         serializer = VMSerializer(vm1)
         return JSONResponse(serializer.data)
         ##
