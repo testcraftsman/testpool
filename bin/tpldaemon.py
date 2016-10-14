@@ -9,7 +9,12 @@ import logging
 
 def main():
     """ main entry point. """
+
     from testpool.core import server
+    from testpool.core import logger
+    import testpool.settings
+    logging.basicConfig(level=logging.CRITICAL)
+    logger.create()
 
     arg_parser = server.argparser()
     args = arg_parser.parse_args()
@@ -30,8 +35,6 @@ def env_setup():
     # is part of a git clone.
     git_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".git"))
     if os.path.exists(git_dir):
-        logging.info("add working directory content to PYTHONPATH.")
-
         ##
         # This path is necessary to load anything under testpool clone.
         testpool_dir = os.path.abspath(os.path.join(__file__, "..", ".."))

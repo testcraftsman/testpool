@@ -13,6 +13,7 @@ ACTION_ATTR = "attr"
 ACTION_CLONE = "clone"
 ACTION_DESTROY = "destroy"
 ACTION_STATUS = "status"
+ACTION_NONE = "none"
 
 
 class ResourceReleased(Exception):
@@ -97,7 +98,8 @@ def adapt(vmpool, profile):
             if vm_state == testpool.core.api.VMPool.STATE_NONE:
                 logging.debug("%s expanding pool VM with %s ", profile.name,
                               vm_name)
-                vmpool.transition(models.VM.PENDING, ACTION_CLONE, 1)
+                vm1.transition(models.VM.PENDING, ACTION_CLONE, 1)
+    return changes
 
 
 def clone(vmpool, vm1):
@@ -182,18 +184,18 @@ def vm_clone(vmpool, vmh):
     vmh.transition(models.VM.PENDING, testpool.core.algo.ACTION_ATTR, 1)
 
 
-def vm_destroy(vmpool, vm1):
-    """ Reset profile and remove all VMs from the host. """
+def vm_destroy(vmpool, vmh):
+    """ Destroy a single VM. """
 
-    vm_name = vm1.name
-    logging.debug("%s removing VM %s", profile.name, vm_name)
+    vm_name = vmh.name
+    logging.debug("%s removing VM %s", vmh.profile.name, vm_name)
 
     vm_state = vmpool.vm_state_get(vm_name)
     if vm_state != testpool.core.api.VMPool.STATE_NONE:
         vmpool.destroy(vm_name)
 
-    try:
-        vm1 = models.VM.objects.get(profile=profile, name=vm_name)
-        vm1.delete()
-    except models.VM.DoesNotExist:
-        pass
+    if vmh.profile.vm_set.all().count() > vmh.profile.vm_max:
+        try:
+            vmh.delete()
+        except models.VM.DoesNotExist:
+            pass

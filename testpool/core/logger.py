@@ -28,9 +28,10 @@ def create():
     formatter = logging.Formatter(testpool.settings.FMT)
     logger = logging.getLogger()
 
-    console = logging.StreamHandler()
-    console.setFormatter(formatter)
-    logger.addHandler(console)
+    if len(logger.handlers) == 0:
+        console = logging.StreamHandler()
+        console.setFormatter(formatter)
+        logger.addHandler(console)
 
     return logger
 

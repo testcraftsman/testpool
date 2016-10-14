@@ -157,23 +157,34 @@ class VM(models.Model):
 
         if status == VM.RESERVED:
             return "reserved"
-        elif status == VM.RELEASED:
-            return "released"
         elif status == VM.PENDING:
             return "pending"
+        elif status == VM.BAD:
+            return "bad"
+        elif status == VM.READY:
+            return "ready"
+        else:
+            raise ValueError("status %d unknown" % status)
 
     @staticmethod
     def status_map(status):
         """ Return status. """
         if status == "reserved":
-            return VM.RESERVeD
-        elif status == "released":
-            return VM.RELEASED
+            return VM.RESERVED
+        elif status == "bad":
+            return VM.BAD
+        elif status == "ready":
+            return VM.READY
+        elif status == "pending":
+            return VM.PENDING
+        else:
+            raise ValueError("status %s unknown" % status)
 
     def transition(self, status, action, action_time_delta):
         """ Transition VM through states. """
-        logging.info("%s: transition %s %s %s %d", self.name, status, action,
-                     action_time_delta)
+        logging.info("%s: transition %s %s in %d (sec)", self.name,
+                     VM.status_to_str(status),
+                     action, action_time_delta)
         self.status = status
         self.action = action
         self.action_time = datetime.datetime.now() + datetime.timedelta(0, action_time_delta)

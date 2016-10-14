@@ -18,6 +18,7 @@
 Contains functionality common to extensions.
 """
 import sys
+import logging
 import importlib
 import pkgutil
 import argparse
@@ -30,15 +31,12 @@ from testpool.core import profile
 from testpool.core import vm
 
 
-LOGGER = logger.create()
-
-
 def args_process(args):
     """ Process any generic parameters. """
 
-    logger.args_process(LOGGER, args)
+    logger.args_process(args)
 
-    LOGGER.debug(args)
+    logging.debug(args)
     return args.func(args)
 
 
@@ -55,7 +53,7 @@ def argparser(progname):
 
 def onerror(name):
     """ Show module that fails to load. """
-    LOGGER.error("importing module %s", name)
+    logging.error("importing module %s", name)
 
     _, _, trback = sys.exc_info()
     traceback.print_tb(trback)
@@ -75,7 +73,7 @@ def extensions_find(arg_parser):
     ##
 
     for package in testpool.settings.PLUGINS:
-        LOGGER.debug("loading commands %s", package)
+        logging.debug("loading commands %s", package)
 
         package = importlib.import_module(package)
         for _, module, ispkg in pkgutil.walk_packages(package.__path__,
@@ -85,7 +83,7 @@ def extensions_find(arg_parser):
             # only include commands from commands.py files.
             if ispkg or not module.endswith("commands"):
                 continue
-            LOGGER.debug("  loading commands from %s", module)
+            logging.debug("  loading commands from %s", module)
             module = importlib.import_module(module)
             try:
                 module.add_subparser(subparser)
@@ -94,8 +92,8 @@ def extensions_find(arg_parser):
                 # This means that the module is missing the add method.
                 # All modules identified in settings to extend CLI
                 # must have an add method
-                LOGGER.error("adding subparser for %s.%s", package, module)
-                LOGGER.exception(arg)
+                logging.error("adding subparser for %s.%s", package, module)
+                logging.exception(arg)
 
 
 def main():
