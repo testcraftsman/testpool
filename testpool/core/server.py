@@ -138,9 +138,10 @@ def action_attr(exts, vmh):
     vmpool = ext.vmpool_get(vmh.profile)
     vmh.ip_addr = vmpool.ip_get(vmh.name)
     if vmh.ip_addr:
-        logging.info("%s: VM %s discovered ip addr %s", vmh.profile.name,
-                     vmh.name, vmh.ip_addr)
+        logging.info("%s: VM %s ip %s", vmh.profile.name, vmh.name,
+                     vmh.ip_addr)
         vmh.transition(models.VM.READY, testpool.core.algo.ACTION_NONE, 1)
+        adapt(exts)
     else:
         logging.info("%s: VM %s waiting for ip addr", vmh.profile.name,
                      vmh.name)
