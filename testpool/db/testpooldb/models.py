@@ -21,6 +21,8 @@ import logging
 import datetime
 from django.db import models
 
+LOGGER = logging.getLogger("testpool.db")
+
 
 # pylint: disable=E1101
 class Key(models.Model):
@@ -182,12 +184,13 @@ class VM(models.Model):
 
     def transition(self, status, action, action_time_delta):
         """ Transition VM through states. """
-        logging.info("%s: transition %s %s in %d (sec)", self.name,
+        LOGGER.info("%s: transition %s %s in %d (sec)", self.name,
                      VM.status_to_str(status),
                      action, action_time_delta)
         self.status = status
         self.action = action
-        self.action_time = datetime.datetime.now() + datetime.timedelta(0, action_time_delta)
+        delta = datetime.timedelta(seconds=action_time_delta)
+        self.action_time = datetime.datetime.now() + delta
         self.save()
 
 

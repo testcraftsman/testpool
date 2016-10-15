@@ -5,6 +5,8 @@ Single entry point for test bed CLI.
 import os
 import sys
 import logging
+logging.getLogger().setLevel(level=logging.WARNING)
+logging.getLogger("django.db.backends").setLevel(logging.CRITICAL)
 
 
 def main():
@@ -13,8 +15,6 @@ def main():
     from testpool.core import server
     from testpool.core import logger
     import testpool.settings
-    logging.basicConfig(level=logging.CRITICAL)
-    logger.create()
 
     arg_parser = server.argparser()
     args = arg_parser.parse_args()

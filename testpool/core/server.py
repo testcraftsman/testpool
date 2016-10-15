@@ -39,12 +39,10 @@ from testpooldb import models
 
 FOREVER = None
 LOGGER = logger.create()
-logging.getLogger("django.db.backends").setLevel(logging.CRITICAL)
 
 
 def args_process(args):
     """ Process any generic parameters. """
-
     testpool.core.logger.args_process(LOGGER, args)
 
 
@@ -63,47 +61,55 @@ def argparser():
 def adapt(exts):
     """ Check to see if the pools should change. """
 
-    logging.info("testpool adapt started")
+    LOGGER.info("adapt started")
 
     for profile1 in models.Profile.objects.all():
         ext = exts[profile1.hv.product]
         vmpool = ext.vmpool_get(profile1)
         testpool.core.algo.adapt(vmpool, profile1)
 
-    logging.info("testpool adapt ended")
+    LOGGER.info("adapt ended")
 
 
 def action_destroy(exts, vmh):
     """ Reclaim any VMs released. """
 
-    logging.info("testpool destroy started %s %s %s",
-                 vmh.profile.hv.hostname, vmh.profile.hv.product, vmh.name)
+    LOGGER.info("%s: action_destroy started %s %s %s",
+                vmh.profile.name, vmh.profile.hv.hostname,
+                vmh.profile.hv.product, vmh.name)
 
     ext = exts[vmh.profile.hv.product]
     vmpool = ext.vmpool_get(vmh.profile)
 
     try:
         testpool.core.algo.vm_destroy(vmpool, vmh)
-        logging.info("testpool destroy done")
+        testpool.core.algo.adapt(vmpool, vmh.profile)
+        LOGGER.info("%s: action_destroy %s done", vmh.profile.name,
+                    vmh.name)
     except Exception:
-        logging.debug("%s: destroy interrupted", vmh.name)
+        LOGGER.debug("%s: action_destroy %s interrupted", vmh.profile.name,
+                     vmh.name)
         vmh.transition(vmh.status, vmh.action, 60)
 
 
 def action_clone(exts, vmh):
     """ Clone a new VM. """
 
-    logging.info("testpool clone started %s %s %s",
-                 vmh.profile.hv.hostname, vmh.profile.hv.product, vmh.name)
+    LOGGER.info("%s: action_clone started %s %s %s",
+                vmh.profile.name, vmh.profile.hv.hostname,
+                vmh.profile.hv.product, vmh.name)
+
     ext = exts[vmh.profile.hv.product]
     vmpool = ext.vmpool_get(vmh.profile)
     try:
         testpool.core.algo.vm_clone(vmpool, vmh)
+        testpool.core.algo.adapt(vmpool, vmh.profile)
     except Exception:
-        logging.debug("%s: clone interrupted", vmh.name)
+        LOGGER.debug("%s: action_clone %s interrupted", vmh.profile.name,
+                     vmh.name)
         vmh.transition(vmh.status, vmh.action, 60)
 
-    logging.info("testpool action_clone done")
+    LOGGER.info("%s: action_clone done", vmh.profile.name)
 
 
 def setup(exts):
@@ -112,25 +118,30 @@ def setup(exts):
     VMs are reset to pending with the action to destroy them.
     """
 
-    logging.info("testpool setup started")
+    LOGGER.info("setup started")
+
     for profile1 in models.Profile.objects.all():
-        logging.info("setup %s %s %s", profile1.name, profile1.template_name,
+        LOGGER.info("setup %s %s %s", profile1.name, profile1.template_name,
                     profile1.vm_max)
         ##
         # Quickly go through all of the VMs to reclaim them by transitioning.
         # them to PENDING and action destroy
+        delta = 1
         for vmh in profile1.vm_set.all():
+            print "MARK: vm", vmh, vmh.action_time
             vmh.transition(models.VM.RESERVED,
-                           testpool.core.algo.ACTION_DESTROY, 1)
+                           testpool.core.algo.ACTION_DESTROY, delta)
+            delta += 60
         ##
-    logging.info("testpool setup ended")
+    LOGGER.info("setup ended")
 
 
 def action_attr(exts, vmh):
     """ Retrieve attributes. """
 
-    logging.info("testpool attr started %s %s %s",
-                 vmh.profile.hv.hostname, vmh.profile.hv.product, vmh.name)
+    LOGGER.info("%s: action_attr started %s %s %s",
+                vmh.profile.name, vmh.profile.hv.hostname,
+                vmh.profile.hv.product, vmh.name)
 
     ##
     #  If VM expires reclaim it.
@@ -138,16 +149,16 @@ def action_attr(exts, vmh):
     vmpool = ext.vmpool_get(vmh.profile)
     vmh.ip_addr = vmpool.ip_get(vmh.name)
     if vmh.ip_addr:
-        logging.info("%s: VM %s ip %s", vmh.profile.name, vmh.name,
+        LOGGER.info("%s: VM %s ip %s", vmh.profile.name, vmh.name,
                      vmh.ip_addr)
         vmh.transition(models.VM.READY, testpool.core.algo.ACTION_NONE, 1)
         adapt(exts)
     else:
-        logging.info("%s: VM %s waiting for ip addr", vmh.profile.name,
+        LOGGER.info("%s: VM %s waiting for ip addr", vmh.profile.name,
                      vmh.name)
         vmh.transition(vmh.status, vmh.action, 60)
     ##
-    logging.info("testpool attr ended")
+    LOGGER.info("%s: action_attr ended", vmh.profile.name)
 
 
 def main(args):
@@ -155,7 +166,7 @@ def main(args):
 
     count = args.count
 
-    logging.info("testpool server started")
+    LOGGER.info("testpool server started")
     if count != FOREVER and count < 0:
         raise ValueError("count should be a positive number or FOREVER")
 
@@ -177,8 +188,8 @@ def main(args):
             action_delay = vmh.action_time - datetime.datetime.now()
             action_delay = action_delay.seconds
             LOGGER.info("%s: status %s action %s when %s", vmh.name,
-                        models.VM.status_to_str(vmh.status),
-                        vmh.action, action_delay)
+                        models.VM.status_to_str(vmh.status), vmh.action,
+                        action_delay)
         else:
             action_delay = args.sleep_time
 

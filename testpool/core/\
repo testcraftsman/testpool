@@ -26,7 +26,6 @@ def create():
     """ Create logger for tbd application. """
 
     logger = logging.getLogger("testpool")
-    logger.propagate = False
 
     if len(logger.handlers) == 0:
         formatter = logging.Formatter(testpool.settings.FMT)
@@ -34,6 +33,7 @@ def create():
         console.setFormatter(formatter)
         logger.addHandler(console)
 
+    LOGGER = logger
     return logger
 
 

@@ -31,12 +31,10 @@ from testpool.core import profile
 from testpool.core import vm
 
 
-def args_process(args):
+def args_process(log_hndl, args):
     """ Process any generic parameters. """
 
-    logger.args_process(args)
-
-    logging.debug(args)
+    logger.args_process(log_hndl, args)
     return args.func(args)
 
 

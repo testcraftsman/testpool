@@ -49,8 +49,15 @@ def profile_add(hostname, product, profile, vm_max, template):
     (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
                                                product=product)
     defaults = {"vm_max": vm_max, "template_name": template}
-    models.Profile.objects.update_or_create(name=profile, hv=hv1,
-                                            defaults=defaults)
+    (profile1, _) = models.Profile.objects.update_or_create(name=profile,
+                                                            hv=hv1,
+                                                            defaults=defaults)
+
+    ##
+    # Check to see if the number of VMs should change.
+    testpool.core.algo.adapt(vmpool, profile1)
+    ##
+
     return 0
 
 
@@ -58,7 +65,14 @@ def _do_profile_remove(args):
     """ Remove a profile. """
 
     logging.info("remove a profile %s", args.profile)
-    profile_remove(args.hostname, args.profile)
+    try:
+        profile = models.Profile.objects.get(name=profile,
+                                             hv__hostname=hostname)
+        profile.vm_max = 0
+        profile.save()
+    except models.Profile.DoesNotExist:
+        pass
+
     return 0
 
 

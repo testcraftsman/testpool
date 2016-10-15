@@ -10,10 +10,13 @@ import logging
 def parse():
     """ main entry point. """
     from testpool.core import commands
+    from testpool.core import logger
+
+    logger = logger.create()
 
     arg_parser = commands.main()
     args = arg_parser.parse_args()
-    return commands.args_process(args)
+    return commands.args_process(logger, args)
 
 
 def env_setup():
@@ -29,8 +32,6 @@ def env_setup():
     # is part of a git clone.
     git_dir = os.path.abspath(os.path.join(__file__, "..", "..", ".git"))
     if os.path.exists(git_dir):
-        logging.info("add working directory content to PYTHONPATH.")
-
         ##
         # This path is necessary to load anything under testpool clone.
         testpool_dir = os.path.abspath(os.path.join(__file__, "..", ".."))
