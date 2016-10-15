@@ -183,7 +183,7 @@ def main(args):
             action_delay = args.sleep_time
 
         if action_delay <= 0:
-            logging.info("%s: %s at %s", vmh.name, vmh.action, vmh.action_time)
+            LOGGER.info("%s: %s at %s", vmh.name, vmh.action, vmh.action_time)
             if vmh.action == testpool.core.algo.ACTION_DESTROY:
                 action_destroy(exts, vmh)
             elif vmh.action == testpool.core.algo.ACTION_CLONE:
@@ -193,17 +193,17 @@ def main(args):
             elif vmh.action == testpool.core.algo.ACTION_NONE:
                 pass
             else:
-                logging.error("%s: unknown action %s", vmh.name, vmh.action)
+                LOGGER.error("%s: unknown action %s", vmh.name, vmh.action)
         else:
             sleep_time = min(60, action_delay)
             sleep_time = max(1, sleep_time)
-            logging.info("testpool sleeping %s (seconds)", sleep_time)
+            LOGGER.info("testpool sleeping %s (seconds)", sleep_time)
             time.sleep(sleep_time)
 
         if count != FOREVER:
             count -= 1
 
-    logging.info("testpool server stopped")
+    LOGGER.info("testpool server stopped")
     return 0
 
 
