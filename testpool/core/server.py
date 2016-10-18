@@ -199,7 +199,12 @@ def main(args):
             "action_time"
             ).first()
 
-        if vmh.action_time < current:
+        if not vmh:
+            sleep_time = 60
+            LOGGER.info("testpool no actions sleeping %s (seconds)",
+                        sleep_time)
+            time.sleep(sleep_time)
+        elif vmh.action_time < current:
             LOGGER.info("%s: status %s action %s at %s", vmh.name,
                         models.VM.status_to_str(vmh.status), vmh.action,
                         vmh.action_time)

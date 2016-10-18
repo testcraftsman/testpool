@@ -130,7 +130,6 @@ class VM(models.Model):
     profile = models.ForeignKey("Profile")
     name = models.CharField(max_length=128)
     status = models.IntegerField(default=PENDING)
-    reserved = models.DateTimeField(auto_now_add=True)
 
     ##
     # ip_addr is the IP address in dot notation

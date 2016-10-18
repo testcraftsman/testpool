@@ -38,7 +38,7 @@ def teardown_db():
     arg_parser = testpool.core.commands.main()
     cmd = "profile remove localhost fake.profile"
     args = arg_parser.parse_args(cmd.split())
-    assert testpool.core.commands.args_process(args) == 0
+    assert testpool.core.commands.args_process(None, args) == 0
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -51,7 +51,7 @@ def setup_db(request):
     arg_parser = testpool.core.commands.main()
     cmd = "profile add localhost fake fake.profile fake.template 10"
     args = arg_parser.parse_args(cmd.split())
-    assert testpool.core.commands.args_process(args) == 0
+    assert testpool.core.commands.args_process(None, args) == 0
     ##
 
     ##

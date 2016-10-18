@@ -34,7 +34,8 @@ from testpool.core import vm
 def args_process(log_hndl, args):
     """ Process any generic parameters. """
 
-    logger.args_process(log_hndl, args)
+    if log_hndl:
+        logger.args_process(log_hndl, args)
     return args.func(args)
 
 
