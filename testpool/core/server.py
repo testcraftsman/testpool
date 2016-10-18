@@ -126,9 +126,8 @@ def setup(exts):
         ##
         # Quickly go through all of the VMs to reclaim them by transitioning.
         # them to PENDING and action destroy
-        delta = 1
+        delta = 0
         for vmh in profile1.vm_set.all():
-            print "MARK: vm", vmh, vmh.action_time
             vmh.transition(models.VM.RESERVED,
                            testpool.core.algo.ACTION_DESTROY, delta)
             delta += 60
@@ -161,6 +160,17 @@ def action_attr(exts, vmh):
     LOGGER.info("%s: action_attr ended", vmh.profile.name)
 
 
+def events_show(banner):
+    for vmh in models.VM.objects.exclude(
+        status=models.VM.READY).order_by("action_time"):
+        action_delay = vmh.action_time - datetime.datetime.now()
+        action_delay = action_delay.seconds
+
+        LOGGER.info("%s: %s %s action %s at %s", vmh.name, banner,
+                    models.VM.status_to_str(vmh.status), vmh.action,
+                    vmh.action_time)
+
+
 def main(args):
     """ Main entry point for server. """
 
@@ -175,25 +185,24 @@ def main(args):
     exts = testpool.core.ext.api_ext_list()
     #
     setup(exts)
+    events_show("after setup")
     adapt(exts)
+    events_show("after adapt")
 
     while count == FOREVER or count > 0:
+        events_show("while loop")
+
+        current = datetime.datetime.now()
         vmh = models.VM.objects.exclude(
-            status=models.VM.READY
+            status=models.VM.READY,
             ).order_by(
             "action_time"
             ).first()
 
-        if vmh:
-            action_delay = vmh.action_time - datetime.datetime.now()
-            action_delay = action_delay.seconds
-            LOGGER.info("%s: status %s action %s when %s", vmh.name,
+        if vmh.action_time < current:
+            LOGGER.info("%s: status %s action %s at %s", vmh.name,
                         models.VM.status_to_str(vmh.status), vmh.action,
-                        action_delay)
-        else:
-            action_delay = args.sleep_time
-
-        if action_delay <= 0:
+                        vmh.action_time)
             LOGGER.info("%s: %s at %s", vmh.name, vmh.action, vmh.action_time)
             if vmh.action == testpool.core.algo.ACTION_DESTROY:
                 action_destroy(exts, vmh)
@@ -206,6 +215,7 @@ def main(args):
             else:
                 LOGGER.error("%s: unknown action %s", vmh.name, vmh.action)
         else:
+            action_delay = abs(vmh.action_time - current).seconds
             sleep_time = min(60, action_delay)
             sleep_time = max(1, sleep_time)
             LOGGER.info("testpool sleeping %s (seconds)", sleep_time)

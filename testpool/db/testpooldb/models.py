@@ -189,7 +189,7 @@ class VM(models.Model):
                      action, action_time_delta)
         self.status = status
         self.action = action
-        delta = datetime.timedelta(seconds=action_time_delta)
+        delta = datetime.timedelta(seconds=action_time_delta+1)
         self.action_time = datetime.datetime.now() + delta
         self.save()
 
