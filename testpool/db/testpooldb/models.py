@@ -184,8 +184,7 @@ class VM(models.Model):
     def transition(self, status, action, action_time_delta):
         """ Transition VM through states. """
         LOGGER.info("%s: transition %s %s in %d (sec)", self.name,
-                     VM.status_to_str(status),
-                     action, action_time_delta)
+                    VM.status_to_str(status), action, action_time_delta)
         self.status = status
         self.action = action
         delta = datetime.timedelta(seconds=action_time_delta+1)

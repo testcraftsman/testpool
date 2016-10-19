@@ -31,6 +31,7 @@ from testpool_profile.views import ProfileStats
 from testpool_profile.serializers import ProfileSerializer
 from testpool_profile.serializers import ProfileStatsSerializer
 from testpool_profile.serializers import VMSerializer
+from testpool.core import algo
 
 LOGGER = logging.getLogger("django.testpool")
 
@@ -116,8 +117,7 @@ def profile_acquire(request, profile_name):
 
         ##
         # assert vm1 defined.
-        vm1.transition(models.VM.RESERVED, testpool.core.algo.ACTION_DESTROY,
-                       expiration_seconds)
+        vm1.transition(VM.RESERVED, algo.ACTION_DESTROY, expiration_seconds)
         ##
         LOGGER.info("profile %s VM acquired %s", profile_name, vm1.name)
         serializer = VMSerializer(vm1)
@@ -144,7 +144,7 @@ def profile_release(request, vm_id):
 
         ##
         # assert vm1 defined.
-        vm1.transition(models.VM.PENDING, testpool.core.algo.ACTION_DESTROY, 1)
+        vm1.transition(VM.PENDING, algo.ACTION_DESTROY, 1)
         ##
         content = {"detail": "VM %s released" % vm_id}
 

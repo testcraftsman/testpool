@@ -28,7 +28,6 @@ RESERVED destroy   clone  PENDING  N attempts then mark BAD
 import datetime
 import unittest
 import time
-import logging
 import testpool.settings
 import testpool.core.ext
 import testpool.core.algo
@@ -41,6 +40,7 @@ FOREVER = None
 LOGGER = logger.create()
 
 
+# pylint: disable=W0703
 def args_process(args):
     """ Process any generic parameters. """
     testpool.core.logger.args_process(LOGGER, args)
@@ -112,7 +112,7 @@ def action_clone(exts, vmh):
     LOGGER.info("%s: action_clone done", vmh.profile.name)
 
 
-def setup(exts):
+def setup(_):
     """ Run the setup of each hypervisor.
 
     VMs are reset to pending with the action to destroy them.
@@ -149,20 +149,21 @@ def action_attr(exts, vmh):
     vmh.ip_addr = vmpool.ip_get(vmh.name)
     if vmh.ip_addr:
         LOGGER.info("%s: VM %s ip %s", vmh.profile.name, vmh.name,
-                     vmh.ip_addr)
+                    vmh.ip_addr)
         vmh.transition(models.VM.READY, testpool.core.algo.ACTION_NONE, 1)
         adapt(exts)
     else:
         LOGGER.info("%s: VM %s waiting for ip addr", vmh.profile.name,
-                     vmh.name)
+                    vmh.name)
         vmh.transition(vmh.status, vmh.action, 60)
     ##
     LOGGER.info("%s: action_attr ended", vmh.profile.name)
 
 
 def events_show(banner):
+    """ Show all of the pending events. """
     for vmh in models.VM.objects.exclude(
-        status=models.VM.READY).order_by("action_time"):
+            status=models.VM.READY).order_by("action_time"):
         action_delay = vmh.action_time - datetime.datetime.now()
         action_delay = action_delay.seconds
 
@@ -194,10 +195,7 @@ def main(args):
 
         current = datetime.datetime.now()
         vmh = models.VM.objects.exclude(
-            status=models.VM.READY,
-            ).order_by(
-            "action_time"
-            ).first()
+            status=models.VM.READY).order_by("action_time").first()
 
         if not vmh:
             sleep_time = 60
@@ -347,7 +345,7 @@ class ModelTestCase(unittest.TestCase):
         time.sleep(5)
 
         exts = testpool.core.ext.api_ext_list()
-        reclaim(exts)
+        adapt(exts)
 
         vms = profile1.vm_set.filter(status=models.VM.PENDING)
 

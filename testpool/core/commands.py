@@ -112,7 +112,7 @@ class Testsuite(unittest.TestCase):
         cmd = "profile add localhost bad bad.profile bad.template 10"
         args = arg_parser.parse_args(cmd.split())
         with self.assertRaises(ValueError):
-            args_process(args)
+            args_process(None, args)
 
     def test_vm_incr(self):
         """ Test that bad profiles are prevented. """
@@ -121,8 +121,8 @@ class Testsuite(unittest.TestCase):
 
         cmd = "profile add localhost fake fake.profile fake.template 10"
         args = arg_parser.parse_args(cmd.split())
-        self.assertEqual(args_process(args), 0)
+        self.assertEqual(args_process(None, args), 0)
 
         cmd = "vm incr localhost fake fake.profile 1"
         args = arg_parser.parse_args(cmd.split())
-        self.assertEqual(args_process(args), 0)
+        self.assertEqual(args_process(None, args), 0)

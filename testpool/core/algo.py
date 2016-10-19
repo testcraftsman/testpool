@@ -4,7 +4,6 @@
 import sys
 import logging
 import traceback
-import datetime
 from testpooldb import models
 import testpool.core.api
 
@@ -92,8 +91,8 @@ def adapt(vmpool, profile):
             changes += 1
             vm_name = profile.template_name + ".%d" % count
 
-            (vm1, created) = models.VM.objects.get_or_create(profile=profile,
-                                                             name=vm_name)
+            (vm1, _) = models.VM.objects.get_or_create(profile=profile,
+                                                       name=vm_name)
             vm_state = vmpool.vm_state_get(vm_name)
             if vm_state == testpool.core.api.VMPool.STATE_NONE:
                 logging.debug("%s expanding pool VM with %s ", profile.name,
@@ -103,22 +102,25 @@ def adapt(vmpool, profile):
 
 
 def clone(vmpool, vm1):
+    """ Clone a VM. """
+
     vmpool.clone(vm1.profile.template_name, vm1.name)
-    vm_state = vmpool.start(vm_name)
-    logging.debug("%s VM clone state %s", profile.name, vm_state)
+    vm_state = vmpool.start(vm1.name)
+    logging.debug("%s VM clone state %s", vm1.profile.name, vm_state)
 
     if vm_state != testpool.core.api.VMPool.STATE_RUNNING:
-        logging.error("%s VM clone %s failed", profile.name, vm_name)
+        logging.error("%s VM clone %s failed", vm1.profile.name, vm1.name)
         vm1.transition(models.VM.BAD, ACTION_DESTROY, 1)
     else:
-        logging.debug("%s VM cloned %s", profile.name, vm_name)
+        logging.debug("%s VM cloned %s", vm1.profile.name, vm1.name)
         vm1.transition(models.VM.PENDING, ACTION_ATTR, 1)
 
 
 def attr(vmpool, vm1):
-    
+    """ Retrieve VM attributes. """
+
     vm1.ip_addr = vmpool.ip_get(vm1.name)
-    for (key, value) in vmpool.vm_attr_get(vm_name).iteritems():
+    for (key, value) in vmpool.vm_attr_get(vm1.name).iteritems():
         (kvp, _) = models.KVP.get_or_create(key, value)
         models.VMKVP.objects.create(vm=vm1, kvp=kvp)
         vm1.transition(models.VM.READY, ACTION_STATUS, 10*60)

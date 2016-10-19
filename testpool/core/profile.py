@@ -66,8 +66,8 @@ def _do_profile_remove(args):
 
     logging.info("remove a profile %s", args.profile)
     try:
-        profile = models.Profile.objects.get(name=profile,
-                                             hv__hostname=hostname)
+        profile = models.Profile.objects.get(name=args.profile,
+                                             hv__hostname=args.hostname)
         profile.vm_max = 0
         profile.save()
     except models.Profile.DoesNotExist:

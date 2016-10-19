@@ -4,7 +4,6 @@ API for KVM hypervisors.
 import sys
 import os
 import logging
-import datetime
 from xml.etree import ElementTree
 import libvirt
 import testpool.core.api
@@ -196,7 +195,7 @@ class VMPool(testpool.core.api.VMPool):
         try:
             dom = self.conn.lookupByName(vm_name)
             logging.debug("%s: ip_get dom %s", vm_name, dom)
-        except libvirt.libvirtError, earg:
+        except libvirt.libvirtError:
             return None
 
         try:
@@ -207,7 +206,7 @@ class VMPool(testpool.core.api.VMPool):
             return None
 
         try:
-            for (key, values) in ifc.iteritems():
+            for (_, values) in ifc.iteritems():
                 return values["addrs"][source]["addr"]
         except KeyError:
             logging.debug("%s: ip address not set", vm_name)
