@@ -28,9 +28,11 @@ RESERVED destroy   clone  PENDING  N attempts then mark BAD
 import datetime
 import unittest
 import time
+import logging
 import testpool.settings
-import testpool.core.ext
-import testpool.core.algo
+from testpool.core import ext
+from testpool.core import algo
+from testpool.core import api
 from testpool.core import logger
 from testpool.core import commands
 from testpool.core import profile
@@ -53,8 +55,10 @@ def argparser():
     parser.add_argument('--count', type=int, default=FOREVER,
                         help="The numnber events to process and then quit."
                         "Used for debugging.")
-    parser.add_argument('--sleep-time', type=int, default=60,
-                        help="Time between checking for changes.")
+    parser.add_argument('--max-sleep-time', type=int, default=60,
+                        help="Maximum time between checking for changes.")
+    parser.add_argument('--min-sleep-time', type=int, default=60,
+                        help="Minimum time between checking for changes.")
     return parser
 
 
@@ -64,9 +68,9 @@ def adapt(exts):
     LOGGER.info("adapt started")
 
     for profile1 in models.Profile.objects.all():
-        ext = exts[profile1.hv.product]
-        vmpool = ext.vmpool_get(profile1)
-        testpool.core.algo.adapt(vmpool, profile1)
+        ext1 = exts[profile1.hv.product]
+        vmpool = ext1.vmpool_get(profile1)
+        algo.adapt(vmpool, profile1)
 
     LOGGER.info("adapt ended")
 
@@ -78,12 +82,12 @@ def action_destroy(exts, vmh):
                 vmh.profile.name, vmh.profile.hv.hostname,
                 vmh.profile.hv.product, vmh.name)
 
-    ext = exts[vmh.profile.hv.product]
-    vmpool = ext.vmpool_get(vmh.profile)
+    ext1 = exts[vmh.profile.hv.product]
+    vmpool = ext1.vmpool_get(vmh.profile)
 
     try:
-        testpool.core.algo.vm_destroy(vmpool, vmh)
-        testpool.core.algo.adapt(vmpool, vmh.profile)
+        algo.vm_destroy(vmpool, vmh)
+        algo.adapt(vmpool, vmh.profile)
         LOGGER.info("%s: action_destroy %s done", vmh.profile.name,
                     vmh.name)
     except Exception:
@@ -99,11 +103,11 @@ def action_clone(exts, vmh):
                 vmh.profile.name, vmh.profile.hv.hostname,
                 vmh.profile.hv.product, vmh.name)
 
-    ext = exts[vmh.profile.hv.product]
-    vmpool = ext.vmpool_get(vmh.profile)
+    ext1 = exts[vmh.profile.hv.product]
+    vmpool = ext1.vmpool_get(vmh.profile)
     try:
-        testpool.core.algo.vm_clone(vmpool, vmh)
-        testpool.core.algo.adapt(vmpool, vmh.profile)
+        algo.vm_clone(vmpool, vmh)
+        algo.adapt(vmpool, vmh.profile)
         adapt(exts)
     except Exception:
         LOGGER.debug("%s: action_clone %s interrupted", vmh.profile.name,
@@ -113,7 +117,7 @@ def action_clone(exts, vmh):
     LOGGER.info("%s: action_clone done", vmh.profile.name)
 
 
-def setup(_):
+def setup(exts):
     """ Run the setup of each hypervisor.
 
     VMs are reset to pending with the action to destroy them.
@@ -127,11 +131,15 @@ def setup(_):
         ##
         # Quickly go through all of the VMs to reclaim them by transitioning.
         # them to PENDING and action destroy
+        ext1 = exts[profile1.hv.product]
+        vmpool = ext1.vmpool_get(profile1)
+
+        algo.adapt(vmpool, profile1)
+
         delta = 0
         for vmh in profile1.vm_set.all():
-            vmh.transition(models.VM.RESERVED,
-                           testpool.core.algo.ACTION_DESTROY, delta)
-            delta += 60
+            vmh.transition(models.VM.RESERVED, algo.ACTION_DESTROY, delta)
+            delta += vmpool.timing_get(api.VMPool.TIMING_REQUEST_DESTROY)
         ##
     LOGGER.info("setup ended")
 
@@ -145,13 +153,13 @@ def action_attr(exts, vmh):
 
     ##
     #  If VM expires reclaim it.
-    ext = exts[vmh.profile.hv.product]
-    vmpool = ext.vmpool_get(vmh.profile)
+    ext1 = exts[vmh.profile.hv.product]
+    vmpool = ext1.vmpool_get(vmh.profile)
     vmh.ip_addr = vmpool.ip_get(vmh.name)
     if vmh.ip_addr:
         LOGGER.info("%s: VM %s ip %s", vmh.profile.name, vmh.name,
                     vmh.ip_addr)
-        vmh.transition(models.VM.READY, testpool.core.algo.ACTION_NONE, 1)
+        vmh.transition(models.VM.READY, algo.ACTION_NONE, 1)
         adapt(exts)
     else:
         LOGGER.info("%s: VM %s waiting for ip addr", vmh.profile.name,
@@ -184,7 +192,7 @@ def main(args):
 
     ##
     # Restart the daemon if extensions change.
-    exts = testpool.core.ext.api_ext_list()
+    exts = ext.api_ext_list()
     #
     setup(exts)
     events_show("after setup")
@@ -199,29 +207,28 @@ def main(args):
             status=models.VM.READY).order_by("action_time").first()
 
         if not vmh:
-            sleep_time = 60
             LOGGER.info("testpool no actions sleeping %s (seconds)",
-                        sleep_time)
-            time.sleep(sleep_time)
-        elif vmh.action_time < current:
+                        args.max_sleep_time)
+            time.sleep(args.max_sleep_time)
+        elif vmh.action_time < current or args.max_sleep_time == 0:
             LOGGER.info("%s: status %s action %s at %s", vmh.name,
                         models.VM.status_to_str(vmh.status), vmh.action,
                         vmh.action_time)
             LOGGER.info("%s: %s at %s", vmh.name, vmh.action, vmh.action_time)
-            if vmh.action == testpool.core.algo.ACTION_DESTROY:
+            if vmh.action == algo.ACTION_DESTROY:
                 action_destroy(exts, vmh)
-            elif vmh.action == testpool.core.algo.ACTION_CLONE:
+            elif vmh.action == algo.ACTION_CLONE:
                 action_clone(exts, vmh)
-            elif vmh.action == testpool.core.algo.ACTION_ATTR:
+            elif vmh.action == algo.ACTION_ATTR:
                 action_attr(exts, vmh)
-            elif vmh.action == testpool.core.algo.ACTION_NONE:
+            elif vmh.action == algo.ACTION_NONE:
                 pass
             else:
                 LOGGER.error("%s: unknown action %s", vmh.name, vmh.action)
         else:
             action_delay = abs(vmh.action_time - current).seconds
-            sleep_time = min(60, action_delay)
-            sleep_time = max(1, sleep_time)
+            sleep_time = min(args.max_sleep_time, action_delay)
+            sleep_time = max(args.min_sleep_time, sleep_time)
             LOGGER.info("testpool sleeping %s (seconds)", sleep_time)
             time.sleep(sleep_time)
 
@@ -236,8 +243,12 @@ def main(args):
 class FakeArgs(object):
     """ Used in testing to pass values to server.main. """
     def __init__(self):
-        self.count = 1
+        self.count = 100
         self.sleep_time = 0
+        self.max_sleep_time = 0
+        self.min_sleep_time = 0
+
+        LOGGER.setLevel(logging.DEBUG)
 
 
 class ModelTestCase(unittest.TestCase):
@@ -256,20 +267,20 @@ class ModelTestCase(unittest.TestCase):
 
         defaults = {"vm_max": 1, "template_name": "fake.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name="fake.profile.1", hv=hv1, defaults=defaults)
+            name="test.server.profile", hv=hv1, defaults=defaults)
 
         args = ModelTestCase.fake_args()
         self.assertEqual(main(args), 0)
         profile1.delete()
 
     def tearDown(self):
-        profile.profile_remove("localhost", "fake.profile.1")
+        profile.profile_remove("localhost", "test.server.profile", True)
 
     def test_shrink(self):
         """ test_shrink. """
 
         product = "fake"
-        profile_name = "fake.profile.2"
+        profile_name = "test.server.profile"
         hostname = "localhost"
 
         (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
@@ -278,20 +289,20 @@ class ModelTestCase(unittest.TestCase):
         (profile1, _) = models.Profile.objects.update_or_create(
             name="fake.profile.2", hv=hv1, defaults=defaults)
 
-        args = ModelTestCase.fake_args()
-        self.assertEqual(main(args), 0)
-        exts = testpool.core.ext.api_ext_list()
-
-        vmpool = exts[product].vmpool_get(hostname, profile_name)
-
         ##
         # Now shrink the pool to two
         profile1.vm_max = 2
         profile1.save()
+        ##
 
-        adapt(exts)
+        args = ModelTestCase.fake_args()
+        self.assertEqual(main(args), 0)
+        exts = testpool.core.ext.api_ext_list()
 
-        vmpool = exts[product].vmpool_get(hostname, profile_name)
+        vmpool = exts[product].vmpool_get(profile1)
+
+
+        vmpool = exts[product].vmpool_get(profile1)
         self.assertEqual(len(vmpool.vm_list()), 2)
 
     def test_expand(self):
@@ -299,7 +310,7 @@ class ModelTestCase(unittest.TestCase):
 
         product = "fake"
         hostname = "localhost"
-        profile_name = "fake.profile.3"
+        profile_name = "test.server.profile"
 
         (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
                                                    product=product)
@@ -307,18 +318,17 @@ class ModelTestCase(unittest.TestCase):
         (profile1, _) = models.Profile.objects.update_or_create(
             name=profile_name, hv=hv1, defaults=defaults)
 
+        ##
+        # Now expand to 12
+        profile1.vm_max = 12
+        profile1.save()
+        ##
+
         args = ModelTestCase.fake_args()
         self.assertEqual(main(args), 0)
 
-        ##
-        # Now shrink the pool to two
-        profile1.vm_max = 12
-        profile1.save()
-
         exts = testpool.core.ext.api_ext_list()
-        adapt(exts)
-
-        vmpool = exts[product].vmpool_get(hostname, profile_name)
+        vmpool = exts[product].vmpool_get(profile1)
         self.assertEqual(len(vmpool.vm_list()), 12)
 
     def test_expiration(self):
@@ -326,7 +336,7 @@ class ModelTestCase(unittest.TestCase):
 
         product = "fake"
         hostname = "localhost"
-        profile_name = "fake.profile.4"
+        profile_name = "test.server.profile"
 
         (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
                                                    product=product)
@@ -341,7 +351,7 @@ class ModelTestCase(unittest.TestCase):
         vmh = vms[0]
         ##
         # Acquire for 3 seconds.
-        vmh.acquire(3)
+        vmh.transition(vmh.status, vmh.action, 3)
         ##
         time.sleep(5)
 

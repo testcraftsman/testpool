@@ -20,6 +20,8 @@
 class VMPool(object):
     """ VM Pool API. """
 
+    TIMING_REQUEST_DESTROY = "timing.request.destroy"
+
     STATE_RUNNING = 1
     """ The VM is running. """
     STATE_NONE = 2
@@ -39,6 +41,10 @@ class VMPool(object):
 
     def __init__(self, context):
         self.context = context
+
+    def timing_get(self, request):
+        """ Return the time in seconds for the request. """
+        raise NotImplementedError("timing_get unsupported")
 
     def type_get(self):
         """ Return the pool type. """

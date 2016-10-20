@@ -5,7 +5,7 @@ import unittest
 import logging
 import testpool.core.database
 import testpool.core.ext
-import testpool.core.algo
+from testpool.core import algo
 import testpool.core.server
 from testpool.libexec.fake import api
 from testpooldb import models
@@ -24,8 +24,8 @@ class Testsuite(unittest.TestCase):
             vm_max=10)
 
         vmpool = api.VMPool("memory")
-        testpool.core.algo.remove(vmpool, profile1)
-        rtc = testpool.core.algo.adapt(vmpool, profile1)
+        algo.destroy(vmpool, profile1)
+        rtc = algo.adapt(vmpool, profile1)
         self.assertEqual(rtc, 10)
 
     def test_pop(self):
@@ -38,17 +38,17 @@ class Testsuite(unittest.TestCase):
             vm_max=10)
         vmpool = api.VMPool("memory")
 
-        testpool.core.algo.remove(vmpool, profile1)
-        rtc = testpool.core.algo.adapt(vmpool, profile1)
+        algo.destroy(vmpool, profile1)
+        rtc = algo.adapt(vmpool, profile1)
         self.assertEqual(rtc, 10)
 
         for count in range(10):
             logging.debug("pop count %d", count)
-            vm1 = testpool.core.algo.pop("localhost", "fake", "test.profile1")
+            vm1 = algo.pop("localhost", "fake", "test.profile1")
             self.assertTrue(vm1)
 
-        with self.assertRaises(testpool.core.algo.NoResources):
-            testpool.core.algo.pop("localhost", "fake", "test.profile1")
+        with self.assertRaises(algo.NoResources):
+            algo.pop("localhost", "fake", "test.profile1")
 
     def test_push(self):
         """ test_push"""
@@ -62,19 +62,19 @@ class Testsuite(unittest.TestCase):
             template_name="test.template")
 
         vmpool = api.VMPool("memory")
-        testpool.core.algo.remove(vmpool, profile1)
-        rtc = testpool.core.algo.adapt(vmpool, profile1)
+        algo.destroy(vmpool, profile1)
+        rtc = algo.adapt(vmpool, profile1)
         self.assertEqual(rtc, 10)
 
         for count in range(10):
             logging.debug("pop count %d", count)
 
-            vm1 = testpool.core.algo.pop("localhost", "fake", profile_name)
+            vm1 = algo.pop("localhost", "fake", profile_name)
             self.assertTrue(vm1)
-            testpool.core.algo.push(vm1.id)
+            algo.push(vm1.id)
 
-        with self.assertRaises(testpool.core.algo.NoResources):
-            testpool.core.algo.pop("localhost", "fake", profile_name)
+        with self.assertRaises(algo.NoResources):
+            algo.pop("localhost", "fake", profile_name)
 
     def test_push_too_many(self):
         """ test_push_too_many"""
@@ -89,19 +89,19 @@ class Testsuite(unittest.TestCase):
 
         vmpool = api.vmpool_get(profile1)
         self.assertTrue(vmpool)
-        testpool.core.algo.remove(vmpool, profile1)
-        rtc = testpool.core.algo.adapt(vmpool, profile1)
+        algo.destroy(vmpool, profile1)
+        rtc = algo.adapt(vmpool, profile1)
         self.assertEqual(rtc, 10)
 
-        vm1 = testpool.core.algo.pop("localhost", "fake", profile_name)
+        vm1 = algo.pop("localhost", "fake", profile_name)
         self.assertTrue(vm1)
 
-        testpool.core.algo.push(vm1.id)
-        with self.assertRaises(testpool.core.algo.ResourceReleased):
-            testpool.core.algo.push(vm1.id)
+        algo.push(vm1.id)
+        with self.assertRaises(algo.ResourceReleased):
+            algo.push(vm1.id)
 
         api_exts = testpool.core.ext.api_ext_list()
-        testpool.core.server.reclaim(api_exts)
+        testpool.core.server.adapt(api_exts)
 
     def tearDown(self):
         """ Remove any previous test profiles1. """

@@ -96,6 +96,14 @@ class VMPool(testpool.core.api.VMPool):
         self.url_name = url_name
         self.conn = libvirt.open(url_name)
 
+    def timing_get(self, request):
+        """ Return algorithm timing based on the request. """
+
+        if request == testpool.core.api.VMPool.TIMING_REQUEST_DESTROY:
+            return 60
+        else:
+            raise ValueError("unknown timing request %s", request)
+
     def type_get(self):
         """ Return the type of the interface. """
         return "kvm"

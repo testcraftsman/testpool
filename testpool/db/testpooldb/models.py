@@ -149,7 +149,7 @@ class VM(models.Model):
     def release(self):
         """ Acquire VM. """
 
-        self.status = VM.RELEASED
+        self.status = VM.PENDING
         self.save()
 
     @staticmethod

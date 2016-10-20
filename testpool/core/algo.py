@@ -76,7 +76,8 @@ def adapt(vmpool, profile):
         return changes
     elif vm_current > profile.vm_max:
         how_many = vm_current - profile.vm_max
-        for vm_name in vm_list.reverse():
+        vm_list.reverse()
+        for vm_name in vm_list:
             vm1 = models.VM.objects.get(profile=profile, name=vm_name)
             if vm1.status == models.VM.READY:
                 vm1.transition(models.VM.PENDING, ACTION_DESTROY, 1)
@@ -169,8 +170,7 @@ def push(vm_id):
     logging.info("push %d", vm_id)
     try:
         vm1 = models.VM.objects.get(id=vm_id, status=models.VM.RESERVED)
-        vm1.status = models.VM.RELEASED
-        vm1.save()
+        vm1.release()
         return 0
     except models.VM.DoesNotExist:
         raise ResourceReleased(vm_id)

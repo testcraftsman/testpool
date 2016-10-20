@@ -13,7 +13,6 @@ def main():
     """ main entry point. """
 
     from testpool.core import server
-    from testpool.core import logger
     import testpool.settings
 
     arg_parser = server.argparser()

@@ -56,10 +56,12 @@ def db_ctx(context):
     vms = db_vm_read(context)
 
     yield vms
+
     ##
     # Now store the vms content into the file.
     with open(store_path, "w") as stream:
         stream.write(yaml.dump(vms, default_flow_style=True))
+    ##
 
 
 class VMPool(testpool.core.api.VMPool):
@@ -68,6 +70,14 @@ class VMPool(testpool.core.api.VMPool):
     def __init__(self, context):
         """ Constructor. """
         testpool.core.api.VMPool.__init__(self, context)
+
+    def timing_get(self, request):
+        """ Return algorithm timing based on the request. """
+
+        if request == testpool.core.api.VMPool.TIMING_REQUEST_DESTROY:
+            return 1
+        else:
+            raise ValueError("unknown timing request %s", request)
 
     def type_get(self):
         """ Return the type of the interface. """

@@ -22,25 +22,41 @@ VMS which do not exist.
 """
 import logging
 import testpool.core.ext
+import testpool.core.algo
 from testpooldb import models
 
+LOGGER = logging.getLogger("testpool.core.profile")
 
-def profile_remove(hostname, profile):
-    """ Remove a profile. """
 
+def profile_remove(hostname, profile, immediate):
+    """ Remove a profile.
+
+    Profiles can't be removed immediately, VMs are marked for purge
+    and when all VMs are gone the profile will be removed.
+    """
+    LOGGER.debug("profile_remove %s %s", hostname, profile)
     try:
         profile = models.Profile.objects.get(name=profile,
                                              hv__hostname=hostname)
-        profile.delete()
-    except models.Profile.DoesNotExist:
-        pass
+        LOGGER.debug("found profile %s %s", hostname, profile)
+        profile.vm_max = 0
+        profile.save()
 
-    try:
-        hv1 = models.HV.objects.get(hostname=hostname)
-        if hv1.profile_set.count() == 0:
-            hv1.delete()
-    except models.HV.DoesNotExist:
+        delta = 0
+        for vmh in profile.vm_set.all():
+            if immediate:
+                vmh.delete()
+            else:
+                vmh.transition(models.VM.RESERVED,
+                               testpool.core.algo.ACTION_DESTROY, delta)
+                delta += 60
+
+        if immediate:
+            profile.delete()
         return 0
+    except models.Profile.DoesNotExist:
+        LOGGER.debug("profile %s on %s not found", profile, hostname)
+        return 1
 
 
 def profile_add(hostname, product, profile, vm_max, template):
@@ -56,7 +72,7 @@ def profile_add(hostname, product, profile, vm_max, template):
     ##
     # Check to see if the number of VMs should change.
     exts = testpool.core.ext.api_ext_list()
-    vmpool = exts[product].vmpool_get(hostname, profile1)
+    vmpool = exts[product].vmpool_get(profile1)
     testpool.core.algo.adapt(vmpool, profile1)
     ##
 
@@ -66,16 +82,7 @@ def profile_add(hostname, product, profile, vm_max, template):
 def _do_profile_remove(args):
     """ Remove a profile. """
 
-    logging.info("remove a profile %s", args.profile)
-    try:
-        profile = models.Profile.objects.get(name=args.profile,
-                                             hv__hostname=args.hostname)
-        profile.vm_max = 0
-        profile.save()
-    except models.Profile.DoesNotExist:
-        pass
-
-    return 0
+    return profile_remove(args.hostname, args.profile, args.immediate)
 
 
 def _do_profile_add(args):
@@ -85,14 +92,14 @@ def _do_profile_add(args):
     of VMS and the template name.
     """
 
-    logging.info("add a profile %s", args.profile)
+    LOGGER.info("add a profile %s", args.profile)
 
     extensions = testpool.core.ext.list_get()
 
     if args.product not in extensions:
-        logging.debug("acceptable extensions are:")
+        LOGGER.debug("acceptable extensions are:")
         for extension in extensions:
-            logging.debug("  " + extension)
+            LOGGER.debug("  " + extension)
         raise ValueError("product %s not supported" % args.profile)
 
     return profile_add(args.hostname, args.product, args.profile, args.max,
@@ -101,14 +108,14 @@ def _do_profile_add(args):
 
 def _do_profile_list(_):
     """ List all profiles. """
-    fmt = "%-16s %-8s %-20s %-3s %s"
+    fmt = "%-16s %-16s %-8s %-5s %s"
 
-    logging.info("list profiles")
+    LOGGER.info("list profiles")
 
-    print fmt % ("Hostname", "Product", "Name", "VMs", "Template")
+    print fmt % ("Hostname", "Name", "Product", "VMs", "Template")
     for profile in models.Profile.objects.all():
         current = profile.vm_set.count()
-        print fmt % (profile.hv.hostname, profile.hv.product, profile.name,
+        print fmt % (profile.hv.hostname, profile.name, profile.hv.product,
                      "%s/%s" % (current, profile.vm_max),
                      profile.template_name)
 
@@ -151,6 +158,9 @@ def add_subparser(subparser):
     parser.set_defaults(func=_do_profile_remove)
     parser.add_argument("hostname", type=str, help="location of the profile.")
     parser.add_argument("profile", type=str, help="Name of the fake profile.")
+    parser.add_argument("--immediate", action="store_true",
+                        help="Remove profile content from the database."
+                        "Do not wait for VMs to be purged")
     ##
 
     return subparser

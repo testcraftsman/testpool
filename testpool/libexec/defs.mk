@@ -1,1 +1,1 @@
-PYTHON_FILES:=fake
+PYTHON_FILES:=fake kvm
