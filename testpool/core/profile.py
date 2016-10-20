@@ -55,6 +55,8 @@ def profile_add(hostname, product, profile, vm_max, template):
 
     ##
     # Check to see if the number of VMs should change.
+    exts = testpool.core.ext.api_ext_list()
+    vmpool = exts[product].vmpool_get(hostname, profile1)
     testpool.core.algo.adapt(vmpool, profile1)
     ##
 

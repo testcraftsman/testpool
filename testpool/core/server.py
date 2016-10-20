@@ -104,6 +104,7 @@ def action_clone(exts, vmh):
     try:
         testpool.core.algo.vm_clone(vmpool, vmh)
         testpool.core.algo.adapt(vmpool, vmh.profile)
+        adapt(exts)
     except Exception:
         LOGGER.debug("%s: action_clone %s interrupted", vmh.profile.name,
                      vmh.name)
