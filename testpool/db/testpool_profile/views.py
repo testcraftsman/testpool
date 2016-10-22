@@ -37,13 +37,13 @@ class ProfileStats(object):
         self.vm_max = profile.vm_max
         self.vm_ready = 0
         self.vm_reserved = 0
-        self.vm_released = 0
+        self.vm_pending = 0
 
         for item in models.VM.objects.filter(profile=profile):
             if item.status == models.VM.RESERVED:
                 self.vm_reserved += 1
-            elif item.status == models.VM.RELEASED:
-                self.vm_released += 1
+            elif item.status == models.VM.PENDING:
+                self.vm_pending += 1
             elif item.status == models.VM.READY:
                 self.vm_ready += 1
 

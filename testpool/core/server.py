@@ -280,7 +280,6 @@ class ModelTestCase(unittest.TestCase):
         """ test_shrink. """
 
         product = "fake"
-        profile_name = "test.server.profile"
         hostname = "localhost"
 
         (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
@@ -298,9 +297,6 @@ class ModelTestCase(unittest.TestCase):
         args = ModelTestCase.fake_args()
         self.assertEqual(main(args), 0)
         exts = testpool.core.ext.api_ext_list()
-
-        vmpool = exts[product].vmpool_get(profile1)
-
 
         vmpool = exts[product].vmpool_get(profile1)
         self.assertEqual(len(vmpool.vm_list()), 2)
