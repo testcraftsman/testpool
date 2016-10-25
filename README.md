@@ -7,3 +7,5 @@ template.
 
 The goal is for VMs to always be available when tests need them and not 
 waiting for VMs to be cloned.
+
+To learn more http://testpool.readthedocs.io/en/latest/
