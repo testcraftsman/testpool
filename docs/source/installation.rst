@@ -23,7 +23,7 @@ interace on each client. For evaluation purposes a single system can be used to 
 
 
 Testpool Server Installation on Ubuntu 16.04
------------------------------------
+--------------------------------------------
 
 A single testpool server is required for store VM pool status. Here are the
 steps for installing testpool's server:
@@ -41,8 +41,10 @@ steps for installing testpool's server:
 
   **cd /usr/local/testbed**
   **cp examples/etc/mysql.cnf etc/mysql.cnf**
+
 #. Edit testbed configuration **/usr/local/testbed/etc/mysql.cnf** and change
    the password which was set in step 7.
+
 #. Populate testbed database.
 
    **/usr/local/bin/tbd-manage migrate**
@@ -65,15 +67,18 @@ version:
 #. Install several packages:
 
   **sudo apt-get install python-pip python-yaml libmysqlclient-dev python-dev**
+
 #. Install testbed from the github release area:
 
   **sudo pip install https://github.com/testbed/testbed/archive/v0.1-alpha.8.tar.gz**
+
 #. Edit the file testbed configuration file:
 
   **/usr/local/testbed/etc/mysql.cnf**
 
   Set host to the IP address of the testbed server. The user and passowrd 
   properties should also be changed appropriately.
+
 #. Validate proper configuration. confirm all checks pass.
 
    **tbd db check**
