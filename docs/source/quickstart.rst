@@ -6,12 +6,12 @@ Quick Start
 Normally Testpool is installed on a central server and configured to
 manager hypervisor content. Currently Testpool supports KVM which will be 
 required for demonstration purposes. Testpool client content is installed
-on satellite systems which interact with the Testpool server and hypvisors.
+on satellite systems which interact with the Testpool server and hypervisors.
 
 To expedite this guide, all Testpool content will be installed on a single
-host. This can be either the KVM hypervisor or a seperate system. The
+host. This can be either the KVM hypervisor or a separate system. The
 differences will be identified during the installation steps. Standalone mode 
-is functionaly rich and useful for evaluation purposes.
+is functionally rich and useful for evaluation purposes.
 
 
 KVM Installation 
@@ -30,7 +30,7 @@ information:
   - IP Address of the KVM hypervisor if Testpool is not running on the
     hypervisor
 
-For the rest of this quide, we'll assume the user is admin with password 
+For the rest of this guide, we'll assume the user is admin with password 
 as password. Testpool will be installed on the hypervisor, so the IP address
 used is localhost.
 
@@ -75,7 +75,7 @@ installed, starting with an Ubuntu 16.04 system:
        wget https://github.com/testcraftsman/testpool/archive/0.0.3.tar.gz
        tar -xf 0.0.3.tar.gz
 
-  #. Install several requried packages::
+  #. Install several required packages::
 
        cd testpool
        cat requirements.system | sudo xargs apt-get install

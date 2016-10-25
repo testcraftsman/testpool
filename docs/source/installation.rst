@@ -7,7 +7,7 @@ Getting Testpool
 ================
 
 If you want the latest code you'll need a `GitHub <http://www.github.com/>`_ account. This is also where we track issues and feature request. This code
-is commited into <http://guthub.com/testcraftsman/testpool>.
+is committed into <http://guthub.com/testcraftsman/testpool>.
 
 What is Installed
 =================
@@ -19,7 +19,7 @@ Testpool consists of:
 
 Actually the last item is optional in that the client API is a thin
 wrapper around the server's REST interface.  One could simply use the REST
-interace on each client. For evaluation purposes a single system can be used to install both the server and client packages. Actual deployments would install the server on a single system and the client packages on each client system.
+interface on each client. For evaluation purposes a single system can be used to install both the server and client packages. Actual deployments would install the server on a single system and the client packages on each client system.
 
 
 Testpool Server Installation on Ubuntu 16.04
@@ -50,7 +50,7 @@ steps for installing testpool's server:
    **/usr/local/bin/tbd-manage migrate**
 #. Create admin account for testbed database not to be confused with the 
    mysql admin account. This is a user that had full edit access in the 
-   testbed database. Run the following command and answer the promps
+   testbed database. Run the following command and answer the prompts
 
    **/usr/local/bin/tbd-manage migrate**
 #. Validate proper configuration **tbd db check** to confirm all checks pass.
@@ -76,7 +76,7 @@ version:
 
   **/usr/local/testbed/etc/mysql.cnf**
 
-  Set host to the IP address of the testbed server. The user and passowrd 
+  Set host to the IP address of the testbed server. The user and password 
   properties should also be changed appropriately.
 
 #. Validate proper configuration. confirm all checks pass.

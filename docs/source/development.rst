@@ -28,7 +28,7 @@ creates three fake VMs from template1.::
   ./bin/tpl profile add localhost fake profile1 template1 3
 
 The tpl-daemon will over time generate 5 VMs in the ready state. In other
-words, fake VMs are transitioned from pending to reservered over a short
+words, fake VMs are transitioned from pending to reserved over a short
 period of time. Testpool web content showing overall VM pool statistics can 
 be found::
 
