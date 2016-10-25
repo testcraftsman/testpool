@@ -114,7 +114,7 @@ def _do_profile_list(_):
 
     print fmt % ("Hostname", "Name", "Product", "VMs", "Template")
     for profile in models.Profile.objects.all():
-        current = profile.vm_set.count()
+        current = profile.vm_set.filter(status=models.VM.READY).count()
         print fmt % (profile.hv.hostname, profile.name, profile.hv.product,
                      "%s/%s" % (current, profile.vm_max),
                      profile.template_name)
