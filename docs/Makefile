@@ -51,10 +51,6 @@ help:
 clean:
 	rm -rf $(BUILDDIR)/*
 
-.PHONY: spelling
-spelling:
-	$(SPHINXBUILD) -b spelling $(ALLSPHINXOPTS) $(BUILDDIR)/spelling
-	@echo
 	@echo "Build finished. The spelling pages are in $(BUILDDIR)/spelling."
 
 .PHONY: html
@@ -220,3 +216,8 @@ pseudoxml:
 	$(SPHINXBUILD) -b pseudoxml $(ALLSPHINXOPTS) $(BUILDDIR)/pseudoxml
 	@echo
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
+
+.PHONY: spelling
+spelling:
+	$(SPHINXBUILD) -b spelling $(ALLSPHINXOPTS) $(BUILDDIR)/spelling
+	@echo
