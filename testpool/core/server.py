@@ -57,7 +57,7 @@ def argparser():
                         "Used for debugging.")
     parser.add_argument('--max-sleep-time', type=int, default=60,
                         help="Maximum time between checking for changes.")
-    parser.add_argument('--min-sleep-time', type=int, default=60,
+    parser.add_argument('--min-sleep-time', type=int, default=1,
                         help="Minimum time between checking for changes.")
     return parser
 
@@ -86,8 +86,18 @@ def action_destroy(exts, vmh):
     vmpool = ext1.vmpool_get(vmh.profile)
 
     try:
+        profile1 = vmh.profile
         algo.vm_destroy(vmpool, vmh)
-        algo.adapt(vmpool, vmh.profile)
+        algo.adapt(vmpool, profile1)
+
+        ##
+        # If all of the VMs have been removed and the max is zero then
+        # remove the VM.
+        if profile.deleteable():
+            LOGGER.info("%s: action_destroy profile deleated",
+                        vmh.profile.name)
+            profile.delete()
+        ##
         LOGGER.info("%s: action_destroy %s done", vmh.profile.name,
                     vmh.name)
     except Exception:
@@ -141,6 +151,14 @@ def setup(exts):
             vmh.transition(models.VM.RESERVED, algo.ACTION_DESTROY, delta)
             delta += vmpool.timing_get(api.VMPool.TIMING_REQUEST_DESTROY)
         ##
+
+        ##
+        # If the profile is already empty then delete the profile.
+        if profile1.deleteable():
+            LOGGER.info("%s: deleting profile", profile1.name)
+            profile1.delete()
+        ##
+
     LOGGER.info("setup ended")
 
 
@@ -171,6 +189,7 @@ def action_attr(exts, vmh):
 
 def events_show(banner):
     """ Show all of the pending events. """
+
     for vmh in models.VM.objects.exclude(
             status=models.VM.READY).order_by("action_time"):
         action_delay = vmh.action_time - datetime.datetime.now()
@@ -194,6 +213,7 @@ def main(args):
     # Restart the daemon if extensions change.
     exts = ext.api_ext_list()
     #
+
     setup(exts)
     events_show("after setup")
     adapt(exts)
@@ -227,8 +247,10 @@ def main(args):
                 LOGGER.error("%s: unknown action %s", vmh.name, vmh.action)
         else:
             action_delay = abs(vmh.action_time - current).seconds
+
             sleep_time = min(args.max_sleep_time, action_delay)
             sleep_time = max(args.min_sleep_time, sleep_time)
+
             LOGGER.info("testpool sleeping %s (seconds)", sleep_time)
             time.sleep(sleep_time)
 

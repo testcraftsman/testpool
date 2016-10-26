@@ -100,7 +100,8 @@ def _do_profile_add(args):
         LOGGER.debug("acceptable extensions are:")
         for extension in extensions:
             LOGGER.debug("  " + extension)
-        raise ValueError("product %s not supported" % args.profile)
+
+        raise ValueError("product %s not supported" % args.product)
 
     return profile_add(args.hostname, args.product, args.profile, args.max,
                        args.template)
@@ -108,17 +109,16 @@ def _do_profile_add(args):
 
 def _do_profile_list(_):
     """ List all profiles. """
-    fmt = "%-16s %-16s %-8s %-5s %s"
+    fmt = "%-16s %-16s %-8s %-20s %-5s"
 
     LOGGER.info("list profiles")
 
-    print fmt % ("Hostname", "Name", "Product", "VMs", "Template")
+    print fmt % ("Hostname", "Name", "Product", "Template", "VMs")
     for profile in models.Profile.objects.all():
         current = profile.vm_set.filter(status=models.VM.READY).count()
         print fmt % (profile.hv.hostname, profile.name, profile.hv.product,
-                     "%s/%s" % (current, profile.vm_max),
-                     profile.template_name)
-
+                     profile.template_name,
+                     "%s/%s" % (current, profile.vm_max))
     return 0
 
 

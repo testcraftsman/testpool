@@ -225,6 +225,16 @@ class Profile(models.Model):
     vm_max = models.IntegerField(default=1)
     expiration = models.IntegerField(default=10*60)
 
+    def deleteable(self):
+        """ Return true if the model should be deleted.
+        Profiles can only be deleted if all of the VMs have been
+        deleted. Deleting a VM takes time. Only when maximum number
+        is zero and all of the VMs have been actualy been deleted will
+        the profile be deleted.
+        """
+
+        return self.vm_max == 0 and self.vm_set.count() == 0
+
     def __str__(self):
         """ User representation. """
 
