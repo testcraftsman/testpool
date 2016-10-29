@@ -44,11 +44,11 @@ class Testsuite(unittest.TestCase):
 
         for count in range(10):
             logging.debug("pop count %d", count)
-            vm1 = algo.pop("localhost", "fake", "test.profile1")
+            vm1 = algo.pop("localhost", "fake", "test.profile1", 1)
             self.assertTrue(vm1)
 
         with self.assertRaises(algo.NoResources):
-            algo.pop("localhost", "fake", "test.profile1")
+            algo.pop("localhost", "fake", "test.profile1", 1)
 
     def test_push(self):
         """ test_push. """
@@ -69,12 +69,12 @@ class Testsuite(unittest.TestCase):
         for count in range(10):
             logging.debug("pop count %d", count)
 
-            vm1 = algo.pop("localhost", "fake", profile_name)
+            vm1 = algo.pop("localhost", "fake", profile_name, 1)
             self.assertTrue(vm1)
             algo.push(vm1.id)
 
         with self.assertRaises(algo.NoResources):
-            algo.pop("localhost", "fake", profile_name)
+            algo.pop("localhost", "fake", profile_name, 1)
 
     def test_push_too_many(self):
         """ test_push_too_many"""
@@ -93,7 +93,7 @@ class Testsuite(unittest.TestCase):
         rtc = algo.adapt(vmpool, profile1)
         self.assertEqual(rtc, 10)
 
-        vm1 = algo.pop("localhost", "fake", profile_name)
+        vm1 = algo.pop("localhost", "fake", profile_name, 1)
         self.assertTrue(vm1)
 
         algo.push(vm1.id)

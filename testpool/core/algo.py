@@ -159,7 +159,7 @@ def pop(hostname, product, profile_name, expiration_seconds):
         raise NoResources("%s: all VMs taken" % profile_name)
 
     vm1 = vms[0]
-    vm1.transition(models.VM.RESERVED, algo.ACTION_DESTROY, expiration_seconds)
+    vm1.transition(models.VM.RESERVED, ACTION_DESTROY, expiration_seconds)
     vm1.status = models.VM.RESERVED
     vm1.save()
 
