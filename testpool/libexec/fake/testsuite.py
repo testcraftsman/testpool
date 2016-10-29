@@ -51,7 +51,7 @@ class Testsuite(unittest.TestCase):
             algo.pop("localhost", "fake", "test.profile1")
 
     def test_push(self):
-        """ test_push"""
+        """ test_push. """
 
         profile_name = "test.profile1"
 

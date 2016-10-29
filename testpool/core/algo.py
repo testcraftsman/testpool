@@ -145,7 +145,7 @@ def destroy(vmpool, profile):
             pass
 
 
-def pop(hostname, product, profile_name):
+def pop(hostname, product, profile_name, expiration_seconds):
     """ Pop one VM from the VMPool. """
 
     logging.info("algo.pop VM from %s", profile_name)
@@ -154,10 +154,12 @@ def pop(hostname, product, profile_name):
     profile1 = models.Profile.objects.get(hv=hv1, name=profile_name)
 
     vms = models.VM.objects.filter(profile=profile1, status=models.VM.PENDING)
+
     if vms.count() == 0:
         raise NoResources("%s: all VMs taken" % profile_name)
 
     vm1 = vms[0]
+    vm1.transition(models.VM.RESERVED, algo.ACTION_DESTROY, expiration_seconds)
     vm1.status = models.VM.RESERVED
     vm1.save()
 
