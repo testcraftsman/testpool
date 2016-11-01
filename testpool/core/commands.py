@@ -103,7 +103,7 @@ def main():
 
 
 class Testsuite(unittest.TestCase):
-    """ Profile tests. """
+    """ Test commands. """
 
     def test_bad_profile(self):
         """ Test that bad profiles are prevented. """
@@ -119,10 +119,14 @@ class Testsuite(unittest.TestCase):
 
         arg_parser = main()
 
-        cmd = "profile add localhost fake fake.profile fake.template 10"
+        cmd = "profile add localhost fake test.profile test.template 10"
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)
 
-        cmd = "vm incr localhost fake fake.profile 1"
+        cmd = "vm incr localhost fake test.profile 1"
+        args = arg_parser.parse_args(cmd.split())
+        self.assertEqual(args_process(None, args), 0)
+
+        cmd = "profile remove localhost test.profile"
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)

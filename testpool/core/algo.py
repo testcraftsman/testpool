@@ -78,7 +78,8 @@ def adapt(vmpool, profile):
         how_many = vm_current - profile.vm_max
         vm_list.reverse()
         for vm_name in vm_list:
-            vm1 = models.VM.objects.get(profile=profile, name=vm_name)
+            (vm1, _) = models.VM.objects.get_or_create(profile=profile,
+                                                       name=vm_name)
             if vm1.status == models.VM.READY:
                 vm1.transition(models.VM.PENDING, ACTION_DESTROY, 1)
                 how_many -= 1

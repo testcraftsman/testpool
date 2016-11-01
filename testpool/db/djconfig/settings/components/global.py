@@ -1,4 +1,5 @@
 import logging
+import os
 
 ##
 # Provides location of plain text file that defines the mysql connection

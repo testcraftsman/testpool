@@ -71,7 +71,6 @@ class Testsuite(unittest.TestCase):
 
             vm1 = algo.pop("localhost", "fake", profile_name, 1)
             self.assertTrue(vm1)
-            algo.push(vm1.id)
 
         with self.assertRaises(algo.NoResources):
             algo.pop("localhost", "fake", profile_name, 1)

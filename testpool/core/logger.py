@@ -29,7 +29,8 @@ def create():
     logger.propagate = False
 
     if len(logger.handlers) == 0:
-        formatter = logging.Formatter(testpool.settings.FMT)
+        formatter = logging.Formatter(testpool.settings.FMT,
+                                      "%Y-%m-%d %H:%M:%S")
         console = logging.StreamHandler()
         console.setFormatter(formatter)
         logger.addHandler(console)

@@ -19,16 +19,17 @@
 Server algorithm. VMs, given a current state, can be assigned an action
 and when the action should fire.
 
-STATE    ACTION    SUCCESS   STATE    FAILURE
-PENDING  destroy   clone  PENDING  N attempts then mark BAD
-PENDING  clone     attr   PENDING  N attempst then mark BAD
-PENDING  attr      ready  READY    N attempst then mark BAD
-RESERVED destroy   clone  PENDING  N attempts then mark BAD
+STATE    ACTION    STATE    NEXT ACTION   FAILURE
+PENDING  destroy   PENDING  clone         N attempts then mark BAD
+PENDING  clone     PENDING  attr          N attempst then mark BAD
+PENDING  attr      READY    ready         N attempst then mark BAD
+READY    acquire   RESERVED pushed,  timeout or renew
+RESERVED pushed    PENDING  destroy
+RESERVED timeout   PENDING  destroy       N attempts then mark BAD
 """
 import datetime
 import unittest
 import time
-import logging
 import testpool.settings
 from testpool.core import ext
 from testpool.core import algo
@@ -42,6 +43,7 @@ FOREVER = None
 LOGGER = logger.create()
 
 
+# pylint: disable=R0912
 # pylint: disable=W0703
 def args_process(args):
     """ Process any generic parameters. """
@@ -59,6 +61,10 @@ def argparser():
                         help="Maximum time between checking for changes.")
     parser.add_argument('--min-sleep-time', type=int, default=1,
                         help="Minimum time between checking for changes.")
+    parser.add_argument('--no-setup', type=bool, dest="setup", default=True,
+                        action="store_false",
+                        help="Skip system setup. Assume database content"
+                        "matches hypervisor")
     return parser
 
 
@@ -93,17 +99,18 @@ def action_destroy(exts, vmh):
         ##
         # If all of the VMs have been removed and the max is zero then
         # remove the VM.
-        if profile.deleteable():
-            LOGGER.info("%s: action_destroy profile deleated",
+        if profile1.deleteable():
+            LOGGER.info("%s: action_destroy profile deleted",
                         vmh.profile.name)
-            profile.delete()
+            profile1.delete()
         ##
-        LOGGER.info("%s: action_destroy %s done", vmh.profile.name,
-                    vmh.name)
-    except Exception:
-        LOGGER.debug("%s: action_destroy %s interrupted", vmh.profile.name,
+        LOGGER.info("%s: action_destroy %s done", profile1.name, vmh.name)
+    except Exception, arg:
+        LOGGER.debug("%s: action_destroy %s interrupted", profile1.name,
                      vmh.name)
-        vmh.transition(vmh.status, vmh.action, 60)
+        LOGGER.exception(arg)
+        delta = vmpool.timing_get(api.VMPool.TIMING_REQUEST_DESTROY)
+        vmh.transition(vmh.status, vmh.action, delta)
 
 
 def action_clone(exts, vmh):
@@ -122,7 +129,8 @@ def action_clone(exts, vmh):
     except Exception:
         LOGGER.debug("%s: action_clone %s interrupted", vmh.profile.name,
                      vmh.name)
-        vmh.transition(vmh.status, vmh.action, 60)
+        delta = vmpool.timing_get(api.VMPool.TIMING_REQUEST_DESTROY)
+        vmh.transition(vmh.status, vmh.action, delta)
 
     LOGGER.info("%s: action_clone done", vmh.profile.name)
 
@@ -130,26 +138,45 @@ def action_clone(exts, vmh):
 def setup(exts):
     """ Run the setup of each hypervisor.
 
-    VMs are reset to pending with the action to destroy them.
+    VMs are reset to pending with the action to destroy them. Setup
+    should be called only once before the event loop.
     """
 
     LOGGER.info("setup started")
 
     for profile1 in models.Profile.objects.all():
-        LOGGER.info("setup %s %s %s", profile1.name, profile1.template_name,
-                    profile1.vm_max)
+        vms = profile1.vm_set.all()
+        LOGGER.info("setup %s %s %d of %d", profile1.name,
+                    profile1.template_name, vms.count(), profile1.vm_max)
         ##
         # Quickly go through all of the VMs to reclaim them by transitioning.
         # them to PENDING and action destroy
         ext1 = exts[profile1.hv.product]
         vmpool = ext1.vmpool_get(profile1)
 
-        algo.adapt(vmpool, profile1)
+        ##
+        # Check the hypervisor. Create Database entries for each existing
+        # VM. Then mark them to be destroyed. Before that mark any
+        # VMs in the database as BAD so that they can be deleted if they
+        # do not correspond to an actual VM. Actual VMS, will be destroyed
+        # through the normal event engine.
+        vm_list = vmpool.vm_list()
+        for vmh in vms:
+            # Mark bad just to figure out which to delete immediately.
+            vmh.status = models.VM.BAD
+            vmh.save()
 
         delta = 0
-        for vmh in profile1.vm_set.all():
-            vmh.transition(models.VM.RESERVED, algo.ACTION_DESTROY, delta)
+        for vm_name in vm_list:
+            (vmh, _) = models.VM.objects.get_or_create(profile=profile1,
+                                                       name=vm_name)
+            vmh.transition(models.VM.PENDING, algo.ACTION_DESTROY, delta)
+            LOGGER.info("setup mark VM %s to be destroyed", vmh.name)
             delta += vmpool.timing_get(api.VMPool.TIMING_REQUEST_DESTROY)
+
+        for vmh in profile1.vm_set.filter(status=models.VM.BAD):
+            LOGGER.info("setup deleted VM data %s", vmh.name)
+            vmh.delete()
         ##
 
         ##
@@ -190,14 +217,13 @@ def action_attr(exts, vmh):
 def events_show(banner):
     """ Show all of the pending events. """
 
-    for vmh in models.VM.objects.exclude(
-            status=models.VM.READY).order_by("action_time"):
+    for vmh in models.VM.objects.all().order_by("action_time"):
         action_delay = vmh.action_time - datetime.datetime.now()
         action_delay = action_delay.seconds
 
         LOGGER.info("%s: %s %s action %s at %s", vmh.name, banner,
                     models.VM.status_to_str(vmh.status), vmh.action,
-                    vmh.action_time)
+                    vmh.action_time.strftime("%Y-%m-%d %H:%M:%S"))
 
 
 def main(args):
@@ -212,15 +238,15 @@ def main(args):
     ##
     # Restart the daemon if extensions change.
     exts = ext.api_ext_list()
-    #
-
-    setup(exts)
-    events_show("after setup")
+    if args.setup:
+        setup(exts)
+    else:
+        LOGGER.info("testpool server setup skipped")
     adapt(exts)
-    events_show("after adapt")
+    ##
 
     while count == FOREVER or count > 0:
-        events_show("while loop")
+        events_show("VMs")
 
         current = datetime.datetime.now()
         vmh = models.VM.objects.exclude(
@@ -231,10 +257,11 @@ def main(args):
                         args.max_sleep_time)
             time.sleep(args.max_sleep_time)
         elif vmh.action_time < current or args.max_sleep_time == 0:
+            exts = ext.api_ext_list()
             LOGGER.info("%s: status %s action %s at %s", vmh.name,
                         models.VM.status_to_str(vmh.status), vmh.action,
-                        vmh.action_time)
-            LOGGER.info("%s: %s at %s", vmh.name, vmh.action, vmh.action_time)
+                        vmh.action_time.strftime("%Y-%m-%d %H:%M:%S"))
+
             if vmh.action == algo.ACTION_DESTROY:
                 action_destroy(exts, vmh)
             elif vmh.action == algo.ACTION_CLONE:
@@ -265,12 +292,13 @@ def main(args):
 class FakeArgs(object):
     """ Used in testing to pass values to server.main. """
     def __init__(self):
-        self.count = 100
+        self.count = 30
         self.sleep_time = 0
         self.max_sleep_time = 0
         self.min_sleep_time = 0
+        self.setup = True
 
-        LOGGER.setLevel(logging.DEBUG)
+        # LOGGER.setLevel(logging.DEBUG)
 
 
 class ModelTestCase(unittest.TestCase):
@@ -287,7 +315,7 @@ class ModelTestCase(unittest.TestCase):
         (hv1, _) = models.HV.objects.get_or_create(hostname="localhost",
                                                    product="fake")
 
-        defaults = {"vm_max": 1, "template_name": "fake.template"}
+        defaults = {"vm_max": 1, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
             name="test.server.profile", hv=hv1, defaults=defaults)
 
@@ -306,7 +334,7 @@ class ModelTestCase(unittest.TestCase):
 
         (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
                                                    product=product)
-        defaults = {"vm_max": 10, "template_name": "fake.template"}
+        defaults = {"vm_max": 10, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
             name="fake.profile.2", hv=hv1, defaults=defaults)
 
@@ -355,30 +383,41 @@ class ModelTestCase(unittest.TestCase):
         product = "fake"
         hostname = "localhost"
         profile_name = "test.server.profile"
+        vm_max = 3
 
         (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
                                                    product=product)
-        defaults = {"vm_max": 3, "template_name": "fake.template"}
+        defaults = {"vm_max": vm_max, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
             name=profile_name, hv=hv1, defaults=defaults)
 
         args = ModelTestCase.fake_args()
         self.assertEqual(main(args), 0)
 
-        vms = profile1.vm_set.filter(status=models.VM.PENDING)
+        vms = profile1.vm_set.filter(status=models.VM.READY)
+        self.assertEqual(len(vms), vm_max)
+
         vmh = vms[0]
+
         ##
         # Acquire for 3 seconds.
-        vmh.transition(vmh.status, vmh.action, 3)
-        ##
+        vmh.transition(models.VM.RESERVED, algo.ACTION_DESTROY, 3)
         time.sleep(5)
+        # LOGGER.setLevel(logging.DEBUG)
+        args.setup = False
+        args.count = 2
+        args.sleep_time = 1
+        args.max_sleep_time = 1
+        args.min_sleep_time = 1
+        self.assertEqual(main(args), 0)
+        ##
 
         exts = testpool.core.ext.api_ext_list()
         adapt(exts)
 
-        vms = profile1.vm_set.filter(status=models.VM.PENDING)
+        vms = profile1.vm_set.filter(status=models.VM.READY)
 
         ##
         # Check to see if the expiration happens.
-        self.assertEqual(vms.count(), 3)
+        self.assertEqual(vms.count(), 2)
         ##

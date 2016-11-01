@@ -1,3 +1,5 @@
+import os
+import sys
 
 sqllite_path = os.path.join("/var", "tmp", 'db.sqlite3')
 
@@ -12,8 +14,6 @@ DEFAULT = {
     # python ./manage.py init
     'NAME': sqllite_path,
 }
-
-import sys
 
 
 if "test" not in sys.argv:
