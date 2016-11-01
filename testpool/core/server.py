@@ -28,7 +28,9 @@ RESERVED pushed    PENDING  destroy
 RESERVED timeout   PENDING  destroy       N attempts then mark BAD
 """
 import datetime
+import os
 import unittest
+# import logging
 import time
 import testpool.settings
 from testpool.core import ext
@@ -325,6 +327,8 @@ class ModelTestCase(unittest.TestCase):
 
     def tearDown(self):
         profile.profile_remove("localhost", "test.server.profile", True)
+        if os.path.exists("/tmp/testpool/fake/localhost/test.server.profile"):
+            os.remove("/tmp/testpool/fake/localhost/test.server.profile")
 
     def test_shrink(self):
         """ test_shrink. """
