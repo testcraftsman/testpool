@@ -300,8 +300,6 @@ class FakeArgs(object):
         self.min_sleep_time = 0
         self.setup = True
 
-        # LOGGER.setLevel(logging.DEBUG)
-
 
 class ModelTestCase(unittest.TestCase):
     """ Test model output. """

@@ -206,8 +206,8 @@ class ProfileKVP(models.Model):
 class HV(models.Model):
     """ Hypervisor. """
 
-    hostname = models.CharField(max_length=128, unique=True)
-    product = models.CharField(max_length=128, unique=True)
+    hostname = models.CharField(max_length=128)
+    product = models.CharField(max_length=128)
 
     def __str__(self):
         """ User representation. """
