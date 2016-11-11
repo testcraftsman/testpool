@@ -14,7 +14,7 @@ from testpool.core import server
 from testpool.core import ext
 from testpool.core import algo
 
-TEST_HOST = "192.168.0.233"
+TEST_HOST = "192.168.0.222"
 TEST_PROFILE = "test.kvm.profile"
 TEST_TEMPLATE = "test.template"
 
@@ -49,7 +49,8 @@ class Testsuite(unittest.TestCase):
             pass
 
     def test_clone(self):
-        """ test clone """
+        """ test clone.
+        Clone three VMs. """
 
         fmt = "qemu+ssh://testpool@%s/system"
         url = fmt % TEST_HOST
