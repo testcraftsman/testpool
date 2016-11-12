@@ -49,6 +49,8 @@ LOGGER = logger.create()
 # pylint: disable=W0703
 def args_process(args):
     """ Process any generic parameters. """
+
+    print "MARK: process"
     testpool.core.logger.args_process(LOGGER, args)
 
 
@@ -118,6 +120,8 @@ def action_destroy(exts, vmh):
 def action_clone(exts, vmh):
     """ Clone a new VM. """
 
+    print "MARK: action clone"
+
     LOGGER.info("%s: action_clone started %s %s %s",
                 vmh.profile.name, vmh.profile.hv.hostname,
                 vmh.profile.hv.product, vmh.name)
@@ -125,12 +129,17 @@ def action_clone(exts, vmh):
     ext1 = exts[vmh.profile.hv.product]
     vmpool = ext1.vmpool_get(vmh.profile)
     try:
+        print "MARK: clone 1"
         algo.vm_clone(vmpool, vmh)
+        print "MARK: clone 2"
         algo.adapt(vmpool, vmh.profile)
+        print "MARK: clone 3"
         adapt(exts)
+        print "MARK: clone 4"
     except Exception:
-        LOGGER.debug("%s: action_clone %s interrupted", vmh.profile.name,
-                     vmh.name)
+        
+        LOGGER.exception("%s: action_clone %s interrupted", vmh.profile.name,
+                        vmh.name)
         delta = vmpool.timing_get(api.VMPool.TIMING_REQUEST_DESTROY)
         vmh.transition(vmh.status, vmh.action, delta)
 
@@ -150,11 +159,6 @@ def setup(exts):
         vms = profile1.vm_set.all()
         LOGGER.info("setup %s %s %d of %d", profile1.name,
                     profile1.template_name, vms.count(), profile1.vm_max)
-        ##
-        # Quickly go through all of the VMs to reclaim them by transitioning.
-        # them to PENDING and action destroy
-        ext1 = exts[profile1.hv.product]
-        vmpool = ext1.vmpool_get(profile1)
 
         ##
         # Check the hypervisor. Create Database entries for each existing
@@ -162,19 +166,29 @@ def setup(exts):
         # VMs in the database as BAD so that they can be deleted if they
         # do not correspond to an actual VM. Actual VMS, will be destroyed
         # through the normal event engine.
-        vm_list = vmpool.vm_list()
-        for vmh in vms:
+        for count in range(profile1.vm_max):
+            vm_name = algo.vm_name_create(profile1.template_name, count)
+            (vmh, _) = models.VM.objects.get_or_create(profile=profile1,
+                                                       name=vm_name)
             # Mark bad just to figure out which to delete immediately.
             vmh.status = models.VM.BAD
             vmh.save()
 
+        ##
+        # Quickly go through all of the VMs to reclaim them by transitioning.
+        # them to PENDING and action destroy
+        ext1 = exts[profile1.hv.product]
+        vmpool = ext1.vmpool_get(profile1)
         delta = 0
+        vm_list = vmpool.vm_list()
         for vm_name in vm_list:
-            (vmh, _) = models.VM.objects.get_or_create(profile=profile1,
-                                                       name=vm_name)
-            vmh.transition(models.VM.PENDING, algo.ACTION_DESTROY, delta)
-            LOGGER.info("setup mark VM %s to be destroyed", vmh.name)
-            delta += vmpool.timing_get(api.VMPool.TIMING_REQUEST_DESTROY)
+            try:
+                vmh = models.VM.objects.get(profile=profile1, name=vm_name)
+                vmh.transition(models.VM.PENDING, algo.ACTION_DESTROY, delta)
+                LOGGER.info("setup mark VM %s to be destroyed", vmh.name)
+                delta += vmpool.timing_get(api.VMPool.TIMING_REQUEST_DESTROY)
+            except models.VM.DoesNotExist:
+                pass
 
         for vmh in profile1.vm_set.filter(status=models.VM.BAD):
             LOGGER.info("setup deleted VM data %s", vmh.name)
@@ -230,6 +244,8 @@ def events_show(banner):
 
 def main(args):
     """ Main entry point for server. """
+
+    print "MARK: main 1"
 
     count = args.count
 

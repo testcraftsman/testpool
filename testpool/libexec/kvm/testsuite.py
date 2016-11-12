@@ -133,11 +133,12 @@ class Testsuite(unittest.TestCase):
 class FakeArgs(object):
     """ Used in testing to pass values to server.main. """
     def __init__(self):
-        self.count = 30
-        self.sleep_time = 0
-        self.max_sleep_time = 0
-        self.min_sleep_time = 0
+        self.count = 200
+        #self.sleep_time = 0
+        self.max_sleep_time = 60
+        self.min_sleep_time = 1
         self.setup = True
+        self.verbose = 1
 
 
 class TestsuiteServer(unittest.TestCase):
@@ -155,20 +156,26 @@ class TestsuiteServer(unittest.TestCase):
             name="test.kvm.profile", hv=hv1, defaults=defaults)
 
         args = FakeArgs()
+        print "MARK: 2"
+        server.args_process(args)
         self.assertEqual(server.main(args), 0)
+        print "MARK: 3"
+        
+
+        self.assertEqual(profile1.vm_set.all().count(), 1)
         profile1.delete()
 
     def test_shrink(self):
         """ test_shrinkg. test when the profile shrinks. """
 
-        product = "kvm"
-        hostname = TEST_HOST
-
-        (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
-                                                   product=product)
-        defaults = {"vm_max": 10, "template_name": "test.template"}
+        (hv1, _) = models.HV.objects.get_or_create(hostname=TEST_HOST,
+                                                   product="kvm")
+        defaults = {"vm_max": 3, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
             name="test.kvm.profile", hv=hv1, defaults=defaults)
+
+        args = FakeArgs()
+        self.assertEqual(server.main(args), 0)
 
         ##
         # Now shrink the pool to two
@@ -180,17 +187,16 @@ class TestsuiteServer(unittest.TestCase):
         self.assertEqual(server.main(args), 0)
         exts = ext.api_ext_list()
 
-        vmpool = exts[product].vmpool_get(profile1)
+        vmpool = exts["kvm"].vmpool_get(profile1)
         self.assertEqual(len(vmpool.vm_list()), 2)
 
     def test_expand(self):
         """ test_expand. """
 
         product = "kvm"
-        hostname = "localhost"
         profile_name = "test.server.profile"
 
-        (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
+        (hv1, _) = models.HV.objects.get_or_create(hostname=TEST_HOST,
                                                    product=product)
         defaults = {"vm_max": 3, "template_name": "kvm.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
@@ -198,7 +204,7 @@ class TestsuiteServer(unittest.TestCase):
 
         ##
         # Now expand to 12
-        profile1.vm_max = 12
+        profile1.vm_max = 4
         profile1.save()
         ##
 
@@ -213,11 +219,10 @@ class TestsuiteServer(unittest.TestCase):
         """ test_expiration. """
 
         product = "fake"
-        hostname = "localhost"
         profile_name = "test.server.profile"
         vm_max = 3
 
-        (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
+        (hv1, _) = models.HV.objects.get_or_create(hostname=TEST_HOST,
                                                    product=product)
         defaults = {"vm_max": vm_max, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(

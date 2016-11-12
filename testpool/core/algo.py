@@ -48,6 +48,10 @@ def onerror(name):
     _, _, trback = sys.exc_info()
     traceback.print_tb(trback)
 
+def vm_name_create(template, count):
+    """ Generate VM name based on template. """
+    return template + ".%d" % count
+
 
 def adapt(vmpool, profile):
     """ Adapt the pool to the profile size.
