@@ -144,6 +144,18 @@ class FakeArgs(object):
 class TestsuiteServer(unittest.TestCase):
     """ Test model output. """
 
+    def tearDown(self):
+        """ Make sure profile is removed. """
+        try:
+            hv1 = models.HV.objects.get(hostname="testpool@"+TEST_HOST,
+                                        product="kvm")
+            profile1 = models.Profile.objects.get(name="test.kvm.profile",
+                                                  hv=hv1)
+        except models.HV.DoesNotExist:
+            pass
+        except models.Profile.DoesNotExist:
+            pass
+
     def test_setup(self):
         """ test_setup. """
 
@@ -241,12 +253,12 @@ class TestsuiteServer(unittest.TestCase):
         # Acquire for 3 seconds.
         vmh.transition(models.VM.RESERVED, algo.ACTION_DESTROY, 3)
         time.sleep(5)
-        LOGGER.setLevel(logging.DEBUG)
         args.setup = False
         args.count = 2
         args.sleep_time = 1
         args.max_sleep_time = 1
         args.min_sleep_time = 1
+        server.args_process(args)
         self.assertEqual(server.main(args), 0)
         ##
 
