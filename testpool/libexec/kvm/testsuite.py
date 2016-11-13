@@ -134,11 +134,11 @@ class FakeArgs(object):
     """ Used in testing to pass values to server.main. """
     def __init__(self):
         self.count = 200
-        #self.sleep_time = 0
+        self.sleep_time = 1
         self.max_sleep_time = 60
         self.min_sleep_time = 1
         self.setup = True
-        self.verbose = 1
+        self.verbose = 0
 
 
 class TestsuiteServer(unittest.TestCase):
@@ -148,19 +148,16 @@ class TestsuiteServer(unittest.TestCase):
         """ test_setup. """
 
         # fmt = "qemu+ssh://testpool@%s/system"
-        (hv1, _) = models.HV.objects.get_or_create(hostname=TEST_HOST,
-                                                   product="kvm")
+        (hv1, _) = models.HV.objects.get_or_create(
+            hostname="testpool@"+TEST_HOST, product="kvm")
 
         defaults = {"vm_max": 1, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
             name="test.kvm.profile", hv=hv1, defaults=defaults)
 
         args = FakeArgs()
-        print "MARK: 2"
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
-        print "MARK: 3"
-        
 
         self.assertEqual(profile1.vm_set.all().count(), 1)
         profile1.delete()

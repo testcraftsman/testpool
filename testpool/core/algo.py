@@ -48,6 +48,7 @@ def onerror(name):
     _, _, trback = sys.exc_info()
     traceback.print_tb(trback)
 
+
 def vm_name_create(template, count):
     """ Generate VM name based on template. """
     return template + ".%d" % count
@@ -61,6 +62,8 @@ def adapt(vmpool, profile):
     """
     logging.debug("%s: adapt started", profile.name)
 
+    print "MARK: algo 1"
+
     changes = 0
 
     vm_list = vmpool.vm_list()
@@ -68,12 +71,15 @@ def adapt(vmpool, profile):
     ##
     # Do not include the template name.
     vm_list = [item for item in vm_list if item != profile.template_name]
+    vm_list = [item for item in vm_list if vmpool.vm_is_clone(profile, item)]
+    print "MARK: vm_list", vm_list
     ##
 
     ##
     # Now remove any extract VMs because the maximum VMs was reduced.
     # The first number used is 0.
     vm_current = len(vm_list)
+    print "MARK: algo 2", vm_current, profile.vm_max
 
     ##
     if vm_current == profile.vm_max:

@@ -41,8 +41,6 @@ def create():
 def args_process(logger, args):
     """ Process any generic parameters. """
 
-    print "MARK: args logger", args.verbose
-
     if args.verbose == 1:
         logger.setLevel(level=logging.INFO)
         logger.info("verbosity level set to INFO")

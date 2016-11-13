@@ -126,12 +126,16 @@ class VMPool(testpool.core.api.VMPool):
             else:
                 return testpool.core.api.VMPool.STATE_NONE
 
-    def vm_list(self):
+    def vm_list(self, profile1):
         """ Start VM. """
 
         logging.debug("fake vm_list")
 
-        return list(db_vm_read(self.context))
+        result = list(db_vm_read(self.context))
+
+        result = [item for item in result if self.vm_is_clone(profile1, item)]
+
+        return result
 
     # pylint: disable=W0613
     # pylint: disable=R0201
@@ -152,6 +156,11 @@ class VMPool(testpool.core.api.VMPool):
         """
 
         return {"ip": "127.0.0.1"}
+
+    def vm_is_clone(self, profile1, vm_name):
+        """ Return True if vm1 is a clone of profile1 template. """
+
+        return vm_name.startswith(profile1.template_name)
 
 
 def vmpool_get(profile1):

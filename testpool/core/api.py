@@ -62,6 +62,10 @@ class VMPool(object):
         """ Return the current vm_name. """
         raise NotImplementedError("state_get unsupported")
 
-    def vm_list(self):
-        """ Return the list of VMs. """
+    def vm_is_clone(self, profile1, vm_name):
+        """ Return True if vm1 is a clone for the profile1. """
+        raise NotImplementedError("is_clone unsupported")
+
+    def vm_list(self, profile1):
+        """ Return the list of VMs for the profile1. """
         raise NotImplementedError("state_list unsupported")

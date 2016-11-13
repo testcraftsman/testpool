@@ -220,13 +220,15 @@ class VMPool(testpool.core.api.VMPool):
             logging.debug("%s: ip address not set", vm_name)
         return None
 
-    def vm_list(self):
+    def vm_list(self, profile1):
         """ Return the list of VMs. """
 
         rtc = []
 
         for item in self.conn.listAllDomains():
-            rtc.append(item.name())
+            vm_name = item.name()
+            if self.vm_is_clone.vm_is_clone(profile1, vm_name):
+                rtc.append(vm_name)
         return rtc
 
     # pylint: disable=W0613
@@ -239,6 +241,11 @@ class VMPool(testpool.core.api.VMPool):
         """
 
         return {}
+
+    def vm_is_clone(self, profile1, vm_name):
+        """ Return True if vm1 is a clone of profile1 template. """
+
+        return vm_name.startswith(profile1.template_name)
 
 
 def vmpool_get(profile):
