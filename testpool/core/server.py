@@ -50,7 +50,6 @@ LOGGER = logger.create()
 def args_process(args):
     """ Process any generic parameters. """
 
-    print "MARK: process"
     testpool.core.logger.args_process(LOGGER, args)
 
 
@@ -75,7 +74,6 @@ def argparser():
 def adapt(exts):
     """ Check to see if the pools should change. """
 
-    print "MARK: adapt"
     LOGGER.info("adapt started")
 
     for profile1 in models.Profile.objects.all():
@@ -121,8 +119,6 @@ def action_destroy(exts, vmh):
 def action_clone(exts, vmh):
     """ Clone a new VM. """
 
-    print "MARK: action clone"
-
     LOGGER.info("%s: action_clone started %s %s %s",
                 vmh.profile.name, vmh.profile.hv.hostname,
                 vmh.profile.hv.product, vmh.name)
@@ -130,13 +126,9 @@ def action_clone(exts, vmh):
     ext1 = exts[vmh.profile.hv.product]
     vmpool = ext1.vmpool_get(vmh.profile)
     try:
-        print "MARK: clone 1"
         algo.vm_clone(vmpool, vmh)
-        print "MARK: clone 2"
         algo.adapt(vmpool, vmh.profile)
-        print "MARK: clone 3"
         adapt(exts)
-        print "MARK: clone 4"
     except Exception:
         LOGGER.exception("%s: action_clone %s interrupted", vmh.profile.name,
                          vmh.name)
@@ -168,7 +160,6 @@ def setup(exts):
         # through the normal event engine.
         for count in range(profile1.vm_max):
             vm_name = algo.vm_name_create(profile1.template_name, count)
-            print "MARK: vm_name", vm_name
             (vmh, _) = models.VM.objects.get_or_create(profile=profile1,
                                                        name=vm_name)
             # Mark bad just to figure out which to delete immediately.
@@ -181,18 +172,13 @@ def setup(exts):
         ext1 = exts[profile1.hv.product]
         vmpool = ext1.vmpool_get(profile1)
         delta = 0
-        vm_list = vmpool.vm_list()
-        vm_list = [item for item in vm_list
-                   if vmpool.vm_is_clone(profile1, item)]
+        vm_list = vmpool.vm_list(profile1)
         for vm_name in vm_list:
-            print "MARK: checking ", vm_name
             try:
                 vmh = models.VM.objects.get(profile=profile1, name=vm_name)
-                print "MARK: vmh", vmh
                 vmh.transition(models.VM.PENDING, algo.ACTION_DESTROY, delta)
                 LOGGER.info("setup mark VM %s to be destroyed", vmh.name)
                 delta += vmpool.timing_get(api.VMPool.TIMING_REQUEST_DESTROY)
-                print "MARK: marked for removal", vm_name
             except models.VM.DoesNotExist:
                 pass
 
@@ -239,8 +225,6 @@ def action_attr(exts, vmh):
 def events_show(banner):
     """ Show all of the pending events. """
 
-    print "MARK: events"
-
     for vmh in models.VM.objects.all().order_by("action_time"):
         action_delay = vmh.action_time - datetime.datetime.now()
         action_delay = action_delay.seconds
@@ -248,10 +232,6 @@ def events_show(banner):
         LOGGER.info("%s: %s %s action %s at %s", vmh.name, banner,
                     models.VM.status_to_str(vmh.status), vmh.action,
                     vmh.action_time.strftime("%Y-%m-%d %H:%M:%S"))
-
-        print("%s: %s %s action %s at %s", vmh.name, banner,
-              models.VM.status_to_str(vmh.status), vmh.action,
-              vmh.action_time.strftime("%Y-%m-%d %H:%M:%S"))
 
 
 def main(args):
@@ -279,7 +259,6 @@ def main(args):
         current = datetime.datetime.now()
         vmh = models.VM.objects.exclude(
             status=models.VM.READY).order_by("action_time").first()
-        print "MARK vm", vmh
 
         if not vmh:
             LOGGER.info("testpool no actions sleeping %s (seconds)",
@@ -379,7 +358,7 @@ class ModelTestCase(unittest.TestCase):
         exts = testpool.core.ext.api_ext_list()
 
         vmpool = exts[product].vmpool_get(profile1)
-        self.assertEqual(len(vmpool.vm_list()), 2)
+        self.assertEqual(len(vmpool.vm_list(profile1)), 2)
 
     def test_expand(self):
         """ test_expand. """
@@ -405,7 +384,7 @@ class ModelTestCase(unittest.TestCase):
 
         exts = testpool.core.ext.api_ext_list()
         vmpool = exts[product].vmpool_get(profile1)
-        self.assertEqual(len(vmpool.vm_list()), 12)
+        self.assertEqual(len(vmpool.vm_list(profile1)), 12)
 
     def test_expiration(self):
         """ test_expiration. """
