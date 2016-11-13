@@ -222,6 +222,22 @@ def action_attr(exts, vmh):
     LOGGER.info("%s: action_attr ended", vmh.profile.name)
 
 
+def test_mode_stop(args):
+    """ Check to see if when in test mode to stop running. """
+
+    if args.count == FOREVER:
+        return False
+
+    for vmh in models.VM.objects.all().order_by("action_time"):
+        action_delay = vmh.action_time - datetime.datetime.now()
+        action_delay = action_delay.seconds
+
+        if models.VM.status_to_str(vmh.status) != "ready":
+            return False
+
+    return True
+
+
 def events_show(banner):
     """ Show all of the pending events. """
 
@@ -255,6 +271,8 @@ def main(args):
 
     while count == FOREVER or count > 0:
         events_show("VMs")
+        if test_mode_stop(args):
+            return 0
 
         current = datetime.datetime.now()
         vmh = models.VM.objects.exclude(

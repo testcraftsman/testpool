@@ -160,7 +160,8 @@ class VMPool(testpool.core.api.VMPool):
     def vm_is_clone(self, profile1, vm_name):
         """ Return True if vm1 is a clone of profile1 template. """
 
-        return vm_name.startswith(profile1.template_name)
+        return (vm_name.startswith(profile1.template_name) and
+                vm_name != profile1.template_name)
 
 
 def vmpool_get(profile1):

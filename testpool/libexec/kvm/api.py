@@ -227,7 +227,7 @@ class VMPool(testpool.core.api.VMPool):
 
         for item in self.conn.listAllDomains():
             vm_name = item.name()
-            if self.vm_is_clone.vm_is_clone(profile1, vm_name):
+            if self.vm_is_clone(profile1, vm_name):
                 rtc.append(vm_name)
         return rtc
 
@@ -245,7 +245,9 @@ class VMPool(testpool.core.api.VMPool):
     def vm_is_clone(self, profile1, vm_name):
         """ Return True if vm1 is a clone of profile1 template. """
 
-        return vm_name.startswith(profile1.template_name)
+        return (vm_name.startswith(profile1.template_name) and
+                vm_name != profile1.template_name)
+    
 
 
 def vmpool_get(profile):

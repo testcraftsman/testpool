@@ -14,7 +14,7 @@ from testpool.core import server
 from testpool.core import ext
 from testpool.core import algo
 
-TEST_HOST = "192.168.0.222"
+TEST_HOST = "192.168.0.13"
 TEST_PROFILE = "test.kvm.profile"
 TEST_TEMPLATE = "test.template"
 
@@ -138,7 +138,7 @@ class FakeArgs(object):
         self.max_sleep_time = 60
         self.min_sleep_time = 1
         self.setup = True
-        self.verbose = 0
+        self.verbose = 2
 
 
 class TestsuiteServer(unittest.TestCase):
@@ -165,13 +165,14 @@ class TestsuiteServer(unittest.TestCase):
     def test_shrink(self):
         """ test_shrinkg. test when the profile shrinks. """
 
-        (hv1, _) = models.HV.objects.get_or_create(hostname=TEST_HOST,
-                                                   product="kvm")
+        (hv1, _) = models.HV.objects.get_or_create(
+            hostname="testpool@"+TEST_HOST, product="kvm")
         defaults = {"vm_max": 3, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
             name="test.kvm.profile", hv=hv1, defaults=defaults)
 
         args = FakeArgs()
+        server.args_process(args)
         self.assertEqual(server.main(args), 0)
 
         ##
@@ -181,51 +182,54 @@ class TestsuiteServer(unittest.TestCase):
         ##
 
         args = FakeArgs()
+        server.args_process(args)
         self.assertEqual(server.main(args), 0)
         exts = ext.api_ext_list()
 
         vmpool = exts["kvm"].vmpool_get(profile1)
-        self.assertEqual(len(vmpool.vm_list()), 2)
+        self.assertEqual(len(vmpool.vm_list(profile1)), 2)
 
     def test_expand(self):
         """ test_expand. """
 
         product = "kvm"
-        profile_name = "test.server.profile"
+        profile_name = "test.kvm.profile"
 
-        (hv1, _) = models.HV.objects.get_or_create(hostname=TEST_HOST,
-                                                   product=product)
-        defaults = {"vm_max": 3, "template_name": "kvm.template"}
+        (hv1, _) = models.HV.objects.get_or_create(
+            hostname="testpool@"+TEST_HOST, product="kvm")
+        defaults = {"vm_max": 2, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
             name=profile_name, hv=hv1, defaults=defaults)
 
         ##
-        # Now expand to 12
-        profile1.vm_max = 4
+        # Now expand to 3 
+        profile1.vm_max = 3
         profile1.save()
         ##
 
         args = FakeArgs()
+        server.args_process(args)
         self.assertEqual(server.main(args), 0)
 
         exts = ext.api_ext_list()
         vmpool = exts[product].vmpool_get(profile1)
-        self.assertEqual(len(vmpool.vm_list()), 12)
+        self.assertEqual(len(vmpool.vm_list(profile1)), 3)
 
     def test_expiration(self):
         """ test_expiration. """
 
         product = "fake"
-        profile_name = "test.server.profile"
+        profile_name = "test.kvm.profile"
         vm_max = 3
 
-        (hv1, _) = models.HV.objects.get_or_create(hostname=TEST_HOST,
-                                                   product=product)
+        (hv1, _) = models.HV.objects.get_or_create(
+            hostname="testpool@"+TEST_HOST, product="kvm")
         defaults = {"vm_max": vm_max, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
             name=profile_name, hv=hv1, defaults=defaults)
 
         args = FakeArgs()
+        server.args_process(args)
         self.assertEqual(server.main(args), 0)
 
         vms = profile1.vm_set.filter(status=models.VM.READY)
@@ -237,7 +241,7 @@ class TestsuiteServer(unittest.TestCase):
         # Acquire for 3 seconds.
         vmh.transition(models.VM.RESERVED, algo.ACTION_DESTROY, 3)
         time.sleep(5)
-        # LOGGER.setLevel(logging.DEBUG)
+        LOGGER.setLevel(logging.DEBUG)
         args.setup = False
         args.count = 2
         args.sleep_time = 1
