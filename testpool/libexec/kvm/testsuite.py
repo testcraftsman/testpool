@@ -25,8 +25,8 @@ class Testsuite(unittest.TestCase):
     def setUp(self):
         """ Create KVM profile. """
 
-        (hv1, _) = models.HV.objects.get_or_create(hostname=TEST_HOST,
-                                                   product="kvm")
+        (hv1, _) = models.HV.objects.get_or_create(
+            hostname="testpool@"+TEST_HOST, product="kvm")
         models.Profile.objects.get_or_create(name=TEST_PROFILE, hv=hv1,
                                              template_name=TEST_TEMPLATE,
                                              vm_max=3)
@@ -101,8 +101,6 @@ class Testsuite(unittest.TestCase):
         cmd = fmt % TEST_HOST
         hndl = libvirt.open(cmd)
         self.assertTrue(hndl)
-        for item in hndl.listDefinedDomains():
-            print "VM: defined", item
 
         for item in hndl.listDomainsID():
             dom = hndl.lookupByID(item)
@@ -138,7 +136,7 @@ class FakeArgs(object):
         self.max_sleep_time = 60
         self.min_sleep_time = 1
         self.setup = True
-        self.verbose = 2
+        self.verbose = 0
 
 
 class TestsuiteServer(unittest.TestCase):
