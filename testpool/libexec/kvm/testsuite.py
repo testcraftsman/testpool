@@ -27,9 +27,9 @@ class Testsuite(unittest.TestCase):
 
         (hv1, _) = models.HV.objects.get_or_create(
             hostname="testpool@"+TEST_HOST, product="kvm")
-        models.Profile.objects.get_or_create(name=TEST_PROFILE, hv=hv1,
-                                             template_name=TEST_TEMPLATE,
-                                             vm_max=3)
+        defaults = {"vm_max": 3, "template_name": TEST_TEMPLATE}
+        (profile1, _) = models.Profile.objects.update_or_create(
+            name=TEST_PROFILE, hv=hv1, defaults=defaults)
 
     def tearDown(self):
         """ Remove any previous test profiles1. """

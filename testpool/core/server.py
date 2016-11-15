@@ -222,7 +222,7 @@ def action_attr(exts, vmh):
     LOGGER.info("%s: action_attr ended", vmh.profile.name)
 
 
-def test_mode_stop(args):
+def mode_test_stop(args):
     """ Check to see if when in test mode to stop running. """
 
     if args.count == FOREVER:
@@ -271,7 +271,7 @@ def main(args):
 
     while count == FOREVER or count > 0:
         events_show("VMs")
-        if test_mode_stop(args):
+        if mode_test_stop(args):
             return 0
 
         current = datetime.datetime.now()
