@@ -14,7 +14,7 @@ from testpool.core import server
 from testpool.core import ext
 from testpool.core import algo
 
-TEST_HOST = "192.168.0.13"
+TEST_HOST = "192.168.0.7"
 TEST_PROFILE = "test.kvm.profile"
 TEST_TEMPLATE = "test.template"
 
@@ -149,6 +149,10 @@ class TestsuiteServer(unittest.TestCase):
                                         product="kvm")
             profile1 = models.Profile.objects.get(name="test.kvm.profile",
                                                   hv=hv1)
+            vmpool = kvm.api.vmpool_get(profile1)
+            algo.destroy(vmpool, profile1)
+
+            profile1.delete()
         except models.HV.DoesNotExist:
             pass
         except models.Profile.DoesNotExist:
@@ -170,7 +174,6 @@ class TestsuiteServer(unittest.TestCase):
         self.assertEqual(server.main(args), 0)
 
         self.assertEqual(profile1.vm_set.all().count(), 1)
-        profile1.delete()
 
     def test_shrink(self):
         """ test_shrinkg. test when the profile shrinks. """
