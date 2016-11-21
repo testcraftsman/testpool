@@ -64,9 +64,9 @@ def argparser():
                         help="Maximum time between checking for changes.")
     parser.add_argument('--min-sleep-time', type=int, default=1,
                         help="Minimum time between checking for changes.")
-    parser.add_argument('--no-setup', type=bool, dest="setup", default=True,
+    parser.add_argument('--no-setup', dest="setup", default=True,
                         action="store_false",
-                        help="Skip system setup. Assume database content"
+                        help="Skip system setup. Assume database content "
                         "matches hypervisor")
     return parser
 

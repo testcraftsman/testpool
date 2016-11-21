@@ -24,6 +24,7 @@ from testpooldb import models
 # pylint: disable=R0903
 class ProfileStats(object):
     """ Provides individual profile stats used in the profile view. """
+
     def __init__(self, profile):
         """Contruct a profile view. """
 

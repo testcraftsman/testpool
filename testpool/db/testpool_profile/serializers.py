@@ -62,7 +62,7 @@ class VMSerializer(serializers.ModelSerializer):
         """ Define what is in a serialize response. """
 
         model = VM
-        fields = ('id', 'name', "status", 'reserved', 'kvps')
+        fields = ('id', 'name', "status", 'ip_addr', 'action_time', 'kvps')
 
 
 # pylint: disable=C0103
@@ -73,6 +73,6 @@ class ProfileStatsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField(max_length=128)
     vm_max = serializers.IntegerField()
-    vm_free = serializers.IntegerField()
+    vm_ready = serializers.IntegerField()
     vm_reserved = serializers.IntegerField()
-    vm_released = serializers.IntegerField()
+    vm_pending = serializers.IntegerField()

@@ -20,33 +20,11 @@ VM_COUNT = 10
 class Testsuite(unittest.TestCase):
     """ Demonstrate each REST interface. """
 
-    def setUp(self):
-        """ Create a fake profile with 10 VMs for the tests. """
-
-        ##
-        # Add a fake.profile to the database.
-        arg_parser = testpool.core.commands.main()
-        cmd = "profile add localhost fake fake.profile " \
-              "fake.template %d" % VM_COUNT
-        args = arg_parser.parse_args(cmd.split())
-        assert testpool.core.commands.args_process(None, args) == 0
-        ##
-
-        ##
-        # Use the existing core server code to create all of the VMs for the
-        # above fake profile.
-        arg_parser = testpool.core.server.argparser()
-        cmd = "--count 1 --verbose --sleep-time 0"
-        args = arg_parser.parse_args(cmd.split())
-        testpool.core.server.args_process(args)
-        testpool.core.server.main(args)
-        ##
-
     def tearDown(self):
         """ Delete the fake test profile. """
 
         arg_parser = testpool.core.commands.main()
-        cmd = "profile remove localhost fake.profile"
+        cmd = "profile remove localhost test.profile"
         args = arg_parser.parse_args(cmd.split())
         assert testpool.core.commands.args_process(None, args) == 0
 
@@ -59,15 +37,15 @@ class Testsuite(unittest.TestCase):
         profiles = json.loads(resp.text)
 
         self.assertEqual(len(profiles), 1)
-        self.assertEqual(profiles[0]["name"], "fake.profile")
+        self.assertEqual(profiles[0]["name"], "test.profile")
 
         self.assertTrue("vm_max" in profiles[0])
-        self.assertTrue("vm_free" in profiles[0])
+        self.assertTrue("vm_ready" in profiles[0])
 
     def test_profile_acquire(self):
         """ test_profile_acquire acquire a VM. """
 
-        url = TEST_URL + "profile/acquire/fake.profile"
+        url = TEST_URL + "profile/acquire/test.profile"
         resp = requests.get(url)
         resp.raise_for_status()
         vm1 = json.loads(resp.text)
@@ -94,7 +72,7 @@ class Testsuite(unittest.TestCase):
         """ test_profile_acquire_too_many attempt to acquire more than 10."""
 
         prev_vms = set()
-        url = TEST_URL + "profile/acquire/fake.profile"
+        url = TEST_URL + "profile/acquire/test.profile"
 
         ##
         # Take all of the VMs
@@ -115,7 +93,7 @@ class Testsuite(unittest.TestCase):
     def test_acquire_renew(self):
         """ test_acquire_renew renew an acquired VM. """
 
-        url = TEST_URL + "profile/acquire/fake.profile"
+        url = TEST_URL + "profile/acquire/test.profile"
 
         resp = requests.get(url)
         resp.raise_for_status()

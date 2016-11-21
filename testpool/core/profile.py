@@ -59,6 +59,20 @@ def profile_remove(hostname, profile, immediate):
         return 1
 
 
+def find(hostname, product, profile):
+    """ Find and profiles that match the content provided. """
+
+    results = models.Profile.objects.all()
+    if profile:
+        results = results.filter(name=profile)
+    if hostname:
+        results = results.filter(hv__hostname=hostname)
+    if product:
+        results = results.filter(hv__product=product)
+
+    return results
+
+
 def profile_add(hostname, product, profile, vm_max, template):
     """ Add a profile. """
 

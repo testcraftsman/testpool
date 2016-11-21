@@ -86,10 +86,11 @@ def profile_acquire(request, profile_name):
 
     LOGGER.info("profile_acquire %s", profile_name)
     if request.method == 'GET':
+        expiration_seconds = request.GET.get("expiration", 10*60)
+        expiration_seconds = int(expiration_seconds)
         ##
         # todo add check for illegal parameters.
         ##
-        expiration_seconds = int(request.GET.get("expiration", 10*60))
         LOGGER.debug("expiration in seconds %s", expiration_seconds)
 
         try:
@@ -100,7 +101,7 @@ def profile_acquire(request, profile_name):
         LOGGER.info("profile_acquire found %s", profile_name)
 
         try:
-            vms = profile.vm_set.filter(status=VM.PENDING)
+            vms = profile.vm_set.filter(status=VM.READY)
 
             if vms.count() == 0:
                 LOGGER.info("profile_acquire %s all VMs taken", profile_name)
@@ -118,6 +119,7 @@ def profile_acquire(request, profile_name):
         ##
         # assert vm1 defined.
         vm1.transition(VM.RESERVED, algo.ACTION_DESTROY, expiration_seconds)
+
         ##
         LOGGER.info("profile %s VM acquired %s", profile_name, vm1.name)
         serializer = VMSerializer(vm1)
@@ -125,6 +127,7 @@ def profile_acquire(request, profile_name):
         ##
     else:
         logging.error("profile_acquire method %s unsupported", request.method)
+        raise Http404("profile acquire only get supported")
 
 
 @csrf_exempt

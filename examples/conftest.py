@@ -29,16 +29,25 @@ import pytest
 import testpool.core.database
 import testpool.core.commands
 import testpool.core.server
+import testpool.core.profile
+
+##
+# In order to run the examples against a real hypervisor, change this
+# IP address.
+GLOBAL = {"hypervisor": "localhost",
+          "profile": "test.profile"}
+##
 
 
 def teardown_db():
     """ REmove the fake profile used by testing. """
 
-    logging.info("teardown database")
-    arg_parser = testpool.core.commands.main()
-    cmd = "profile remove localhost fake.profile"
-    args = arg_parser.parse_args(cmd.split())
-    assert testpool.core.commands.args_process(None, args) == 0
+    # logging.info("teardown database")
+    # arg_parser = testpool.core.commands.main()
+    # cmd = "profile remove %(hypervisor)s %(profile)s --immediate" % GLOBAL
+    # args = arg_parser.parse_args(cmd.split())
+    # assert testpool.core.commands.args_process(None, args) == 0
+    pass
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -47,9 +56,16 @@ def setup_db(request):
 
     logging.info("setup database")
     ##
+    # Check to see if the user has created a test.profile, if not
+    # create a fake test.profile. This code would normally not be
+    # required. Refer to the quick start guide or installation instruction
+    # for setting up a KVM hypervisor
+
+    ##
     # Add a fake.profile to the database.
     arg_parser = testpool.core.commands.main()
-    cmd = "profile add localhost fake fake.profile fake.template 10"
+    fmt = "profile add %(hypervisor)s fake %(profile)s test.template 10"
+    cmd = fmt % GLOBAL
     args = arg_parser.parse_args(cmd.split())
     assert testpool.core.commands.args_process(None, args) == 0
     ##
@@ -58,7 +74,7 @@ def setup_db(request):
     # Use the existing core server code to create all of the VMs for the
     # above fake profile.
     arg_parser = testpool.core.server.argparser()
-    cmd = "--count 1 --verbose --sleep-time 0"
+    cmd = "--count 100 --verbose --max-sleep-time 0 --min-sleep-time 0"
     args = arg_parser.parse_args(cmd.split())
     testpool.core.server.args_process(args)
     testpool.core.server.main(args)
