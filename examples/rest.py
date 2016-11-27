@@ -50,15 +50,15 @@ class Testsuite(unittest.TestCase):
         resp.raise_for_status()
         vm1 = json.loads(resp.text)
 
-        self.assertTrue(vm1["name"].startswith("fake.template"))
-        self.assertTrue(len(vm1["name"]) > len("fake.template"))
+        self.assertTrue(vm1["name"].startswith("test.template"))
+        self.assertTrue(len(vm1["name"]) > len("test.template"))
 
         resp = requests.get(url)
         resp.raise_for_status()
         vm2 = json.loads(resp.text)
 
-        self.assertTrue(vm2["name"].startswith("fake.template"))
-        self.assertTrue(len(vm2["name"]) > len("fake.template"))
+        self.assertTrue(vm2["name"].startswith("test.template"))
+        self.assertTrue(len(vm2["name"]) > len("test.template"))
 
         url = TEST_URL + "profile/release/%d" % vm1["id"]
         resp = requests.get(url)
@@ -81,7 +81,7 @@ class Testsuite(unittest.TestCase):
             resp.raise_for_status()
             vm1 = json.loads(resp.text)
 
-            self.assertTrue(vm1["name"].startswith("fake.template"))
+            self.assertTrue(vm1["name"].startswith("test.template"))
             self.assertFalse(vm1["name"] in prev_vms)
 
             prev_vms.add(vm1["name"])
@@ -114,9 +114,9 @@ class Testsuite(unittest.TestCase):
 
         ##
         # Check to see if the expiration is roughly 100 seconds.
-        timestamp = datetime.datetime.strptime(vm1["reserved"],
+        timestamp = datetime.datetime.strptime(vm1["action_time"],
                                                "%Y-%m-%dT%H:%M:%S.%f")
         expiration_time = timestamp - datetime.datetime.now()
-        self.assertTrue(expiration_time.seconds < 100)
-        self.assertTrue(expiration_time.seconds > 90)
+        self.assertTrue(expiration_time.seconds <= 100)
+        self.assertTrue(expiration_time.seconds >= 90)
         ##

@@ -74,7 +74,7 @@ def setup_db(request):
     # Use the existing core server code to create all of the VMs for the
     # above fake profile.
     arg_parser = testpool.core.server.argparser()
-    cmd = "--count 100 --verbose --max-sleep-time 0 --min-sleep-time 0"
+    cmd = "--count 100 --max-sleep-time 0 --min-sleep-time 0"
     args = arg_parser.parse_args(cmd.split())
     testpool.core.server.args_process(args)
     testpool.core.server.main(args)
