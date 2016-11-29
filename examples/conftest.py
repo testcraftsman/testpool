@@ -35,12 +35,13 @@ import testpool.core.profile
 # In order to run the examples against a real hypervisor, change this
 # IP address.
 GLOBAL = {"hypervisor": "localhost",
-          "profile": "test.profile"}
+          "profile": "test.profile",
+          "count": 10}
 ##
 
 
 def teardown_db():
-    """ REmove the fake profile used by testing. """
+    """ Remove the fake profile used by testing. """
 
     # logging.info("teardown database")
     # arg_parser = testpool.core.commands.main()
@@ -64,7 +65,7 @@ def setup_db(request):
     ##
     # Add a fake.profile to the database.
     arg_parser = testpool.core.commands.main()
-    fmt = "profile add %(hypervisor)s fake %(profile)s test.template 10"
+    fmt = "profile add %(hypervisor)s fake %(profile)s test.template %(count)d"
     cmd = fmt % GLOBAL
     args = arg_parser.parse_args(cmd.split())
     assert testpool.core.commands.args_process(None, args) == 0
@@ -74,7 +75,7 @@ def setup_db(request):
     # Use the existing core server code to create all of the VMs for the
     # above fake profile.
     arg_parser = testpool.core.server.argparser()
-    cmd = "--count 100 --max-sleep-time 0 --min-sleep-time 0"
+    cmd = "--verbose --count 100 --max-sleep-time 0 --min-sleep-time 0"
     args = arg_parser.parse_args(cmd.split())
     testpool.core.server.args_process(args)
     testpool.core.server.main(args)

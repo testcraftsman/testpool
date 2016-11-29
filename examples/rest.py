@@ -12,21 +12,18 @@ import testpool.core.commands
 import testpool.core.server
 
 
+
 TEST_URL = "http://127.0.0.1:8000/testpool/api/"
-
-VM_COUNT = 10
-
-
 class Testsuite(unittest.TestCase):
     """ Demonstrate each REST interface. """
 
-    def tearDown(self):
-        """ Delete the fake test profile. """
-
-        arg_parser = testpool.core.commands.main()
-        cmd = "profile remove localhost test.profile"
-        args = arg_parser.parse_args(cmd.split())
-        assert testpool.core.commands.args_process(None, args) == 0
+#    def tearDown(self):
+#        """ Delete the fake test profile. """
+#
+#        arg_parser = testpool.core.commands.main()
+#        cmd = "profile remove localhost test.profile --immediate"
+#        args = arg_parser.parse_args(cmd.split())
+#        assert testpool.core.commands.args_process(None, args) == 0
 
     def test_profile_list(self):
         """ test_profile_list. """
@@ -69,14 +66,14 @@ class Testsuite(unittest.TestCase):
         resp.raise_for_status()
 
     def test_acquire_too_many(self):
-        """ test_profile_acquire_too_many attempt to acquire more than 10."""
+        """ test_acquire_too_many attempt to acquire too many VMs."""
 
         prev_vms = set()
         url = TEST_URL + "profile/acquire/test.profile"
 
         ##
         # Take all of the VMs
-        for _ in range(VM_COUNT):
+        for _ in range(conftest.GLOBAL["count"]):
             resp = requests.get(url)
             resp.raise_for_status()
             vm1 = json.loads(resp.text)
@@ -84,7 +81,7 @@ class Testsuite(unittest.TestCase):
             self.assertTrue(vm1["name"].startswith("test.template"))
             self.assertFalse(vm1["name"] in prev_vms)
 
-            prev_vms.add(vm1["name"])
+            prev_vms.add(vm1["id"])
         ##
 
         resp = requests.get(url)
