@@ -22,6 +22,10 @@ class Testsuite(unittest.TestCase):
     def setUp(self):
         """ setup results. """
 
+        ##
+        # Use the core server code to update fake profike content after
+        # each test. For example, a test could release a VM but the
+        # VM will not be actually released until the server core is done.
         arg_parser = testpool.core.server.argparser()
         cmd = "--count 100 --max-sleep-time 0 --min-sleep-time 0"
         args = arg_parser.parse_args(cmd.split())
