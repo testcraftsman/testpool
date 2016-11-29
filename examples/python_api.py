@@ -57,14 +57,15 @@ class Testsuite(unittest.TestCase):
         ##
         # The ip attribute provides the IP address of the VM. The testsuite
         # uses a fake profile where all VMs use 127.0.0.1.
-        self.assertEqual(GLOBAL["resource"].ip_addr, conftest.HYPERVISOR)
+        self.assertEqual(GLOBAL["resource"].ip_addr,
+                         conftest.GLOBAL["hypervisor"])
 
     def test_vm_context_manager(self):
         """ show an example of the client contact manager. """
 
         ##
         # Shows an example of the context manager.
-        with testpool.client.VMHndl(conftest.HYPERVISOR,
+        with testpool.client.VMHndl(conftest.GLOBAL["hypervisor"],
                                     "test.profile") as hndl:
             ##
             # This assert is to show that a different VM was picked.
