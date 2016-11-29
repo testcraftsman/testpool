@@ -8,26 +8,29 @@ import datetime
 import urllib
 import unittest
 import requests
+import conftest
 import testpool.core.commands
 import testpool.core.server
 
 
-
 TEST_URL = "http://127.0.0.1:8000/testpool/api/"
+
+
 class Testsuite(unittest.TestCase):
     """ Demonstrate each REST interface. """
 
-#    def tearDown(self):
-#        """ Delete the fake test profile. """
-#
-#        arg_parser = testpool.core.commands.main()
-#        cmd = "profile remove localhost test.profile --immediate"
-#        args = arg_parser.parse_args(cmd.split())
-#        assert testpool.core.commands.args_process(None, args) == 0
+    def setUp(self):
+        """ setup results. """
+
+        arg_parser = testpool.core.server.argparser()
+        cmd = "--count 100 --max-sleep-time 0 --min-sleep-time 0"
+        args = arg_parser.parse_args(cmd.split())
+        testpool.core.server.args_process(args)
+        testpool.core.server.main(args)
+        ##
 
     def test_profile_list(self):
         """ test_profile_list. """
-
         url = TEST_URL + "profile/list"
         resp = requests.get(url)
         resp.raise_for_status()
@@ -67,7 +70,6 @@ class Testsuite(unittest.TestCase):
 
     def test_acquire_too_many(self):
         """ test_acquire_too_many attempt to acquire too many VMs."""
-
         prev_vms = set()
         url = TEST_URL + "profile/acquire/test.profile"
 
@@ -87,9 +89,13 @@ class Testsuite(unittest.TestCase):
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 403)
 
+        for vm_id in prev_vms:
+            url = TEST_URL + "profile/release/%d" % vm_id
+            resp = requests.get(url)
+            resp.raise_for_status()
+
     def test_acquire_renew(self):
         """ test_acquire_renew renew an acquired VM. """
-
         url = TEST_URL + "profile/acquire/test.profile"
 
         resp = requests.get(url)
@@ -117,3 +123,7 @@ class Testsuite(unittest.TestCase):
         self.assertTrue(expiration_time.seconds <= 100)
         self.assertTrue(expiration_time.seconds >= 90)
         ##
+
+        url = TEST_URL + "profile/release/%d" % vm_id
+        resp = requests.get(url)
+        resp.raise_for_status()
