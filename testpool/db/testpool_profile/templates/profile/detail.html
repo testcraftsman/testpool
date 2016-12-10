@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<H1>VMs</H1>
+<table>
+ <tr>
+  <th>Name</th><th>IP Addr</th><th>Status</th>
+ </tr>
+ {% for vm in vms %}
+  <tr>
+   <td>{{vm.name}}</td>
+   <td>{{vm.ip_addr}}</td>
+   <td>{{vm.status_as_str}}</td>
+  </tr>
+ {% endfor %}
+</table>
+{% endblock %}

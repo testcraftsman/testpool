@@ -143,7 +143,6 @@ class VM(models.Model):
 
     def __str__(self):
         """ User representation. """
-
         return str(self.name)
 
     def release(self):
@@ -151,6 +150,10 @@ class VM(models.Model):
 
         self.status = VM.PENDING
         self.save()
+
+    def status_as_str(self):
+        """ Return status as string. """
+        return VM.status_to_str(self.status)
 
     @staticmethod
     def status_to_str(status):

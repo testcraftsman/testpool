@@ -329,6 +329,8 @@ class FakeArgs(object):
 class ModelTestCase(unittest.TestCase):
     """ Test model output. """
 
+    profile_name = "test.server.profile"
+
     @staticmethod
     def fake_args():
         """ Return fake args to pass to main. """
@@ -342,7 +344,7 @@ class ModelTestCase(unittest.TestCase):
 
         defaults = {"vm_max": 1, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name="test.server.profile", hv=hv1, defaults=defaults)
+            name=self.profile_name, hv=hv1, defaults=defaults)
 
         args = ModelTestCase.fake_args()
         self.assertEqual(main(args), 0)
@@ -363,7 +365,7 @@ class ModelTestCase(unittest.TestCase):
                                                    product=product)
         defaults = {"vm_max": 10, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name="fake.profile.2", hv=hv1, defaults=defaults)
+            name=self.profile_name, hv=hv1, defaults=defaults)
 
         ##
         # Now shrink the pool to two
@@ -383,13 +385,12 @@ class ModelTestCase(unittest.TestCase):
 
         product = "fake"
         hostname = "localhost"
-        profile_name = "test.server.profile"
 
         (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
                                                    product=product)
         defaults = {"vm_max": 3, "template_name": "fake.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=profile_name, hv=hv1, defaults=defaults)
+            name=self.profile_name, hv=hv1, defaults=defaults)
 
         ##
         # Now expand to 12
@@ -409,14 +410,13 @@ class ModelTestCase(unittest.TestCase):
 
         product = "fake"
         hostname = "localhost"
-        profile_name = "test.server.profile"
         vm_max = 3
 
         (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
                                                    product=product)
         defaults = {"vm_max": vm_max, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=profile_name, hv=hv1, defaults=defaults)
+            name=self.profile_name, hv=hv1, defaults=defaults)
 
         args = ModelTestCase.fake_args()
         self.assertEqual(main(args), 0)

@@ -249,7 +249,6 @@ class VMPool(testpool.core.api.VMPool):
                 vm_name != profile1.template_name)
     
 
-
 def vmpool_get(profile):
     """ Return a handle to the KVM API. """
     context = "%s/%s" % (profile.hv.hostname, profile.name)

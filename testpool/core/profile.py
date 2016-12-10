@@ -103,7 +103,9 @@ def _do_profile_add(args):
     """ Add or modify a profile.
 
     If the profile exists, calling this again will change the maximum number
-    of VMS and the template name.
+    of VMS and the template name. The connection parameter supported format:
+    account@hypervisor account and hostname of the hypervisor.
+
     """
 
     LOGGER.info("add a profile %s", args.profile)
@@ -117,7 +119,7 @@ def _do_profile_add(args):
 
         raise ValueError("product %s not supported" % args.product)
 
-    return profile_add(args.hostname, args.product, args.profile, args.max,
+    return profile_add(args.connection, args.product, args.profile, args.max,
                        args.template)
 
 
@@ -149,7 +151,9 @@ def add_subparser(subparser):
     parser = rootparser.add_parser("add", description=_do_profile_add.__doc__,
                                    help="Add a profile")
     parser.set_defaults(func=_do_profile_add)
-    parser.add_argument("hostname", type=str, help="location of the profile.")
+    parser.add_argument("connection", type=str,
+                        help="How to connect to the hypervisor. Format "
+                        "depends on how to connect to the hypervisor")
     parser.add_argument("product", type=str, help="The type of product.")
     parser.add_argument("profile", type=str, help="Name of the fake profile.")
     parser.add_argument("template", type=str, help="Number of VM to manage.")

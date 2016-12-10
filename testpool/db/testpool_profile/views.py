@@ -17,10 +17,14 @@
 """
 View profile information.
 """
+import logging
 from django.shortcuts import render_to_response
 from testpooldb import models
 
+LOGGER = logging.getLogger("django.testpool")
 
+
+# pylint: disable=R0902
 # pylint: disable=R0903
 class ProfileStats(object):
     """ Provides individual profile stats used in the profile view. """
@@ -39,6 +43,7 @@ class ProfileStats(object):
         self.vm_ready = 0
         self.vm_reserved = 0
         self.vm_pending = 0
+        self.vm_bad = 0
 
         for item in models.VM.objects.filter(profile=profile):
             if item.status == models.VM.RESERVED:
@@ -47,13 +52,28 @@ class ProfileStats(object):
                 self.vm_pending += 1
             elif item.status == models.VM.READY:
                 self.vm_ready += 1
+            elif item.status == models.VM.BAD:
+                self.vm_bad += 1
 
 
 def index(_):
     """ Summarize product information. """
+    LOGGER.debug("profile")
 
     profiles = models.Profile.objects.all()
     profiles = [ProfileStats(item) for item in profiles]
 
     html_data = {"profiles": profiles}
     return render_to_response("profile/index.html", html_data)
+
+
+def detail(_, connection, profile):
+    """ Provide profile details. """
+
+    LOGGER.debug("profile/detail/%s/%s", connection, profile)
+
+    profile = models.Profile.objects.filter(name=profile,
+                                            hv__hostname=connection)
+    vms = [item for item in models.VM.objects.filter(profile=profile)]
+    html_data = {"vms": vms}
+    return render_to_response("profile/detail.html", html_data)
