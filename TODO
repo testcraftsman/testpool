@@ -1,4 +1,4 @@
-add requirements to setup.py
-tpl-db figure out auto setup
-DEBUG=False when testpool is installed
-Support acquire to push out expiration.
+-Figure out best way to connect to KVM, ssh password is cumbersome.
+-add requirements to setup.py
+-tpl-db figure out auto setup
+-DEBUG=False when testpool is installed
