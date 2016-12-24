@@ -46,7 +46,10 @@ if __name__ == "__main__":
         from testpool.core import database
 
         database.init()
-        sys.exit(parse())
+
+        from testpool.core import exceptions
+        RTC = exceptions.try_catch(parse)
+        sys.exit(RTC)
     except Exception, arg:
         logging.exception(arg)
         sys.exit(1)

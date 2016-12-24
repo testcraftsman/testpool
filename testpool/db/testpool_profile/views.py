@@ -72,8 +72,12 @@ def detail(_, connection, profile):
 
     LOGGER.debug("profile/detail/%s/%s", connection, profile)
 
-    profile = models.Profile.objects.filter(name=profile,
-                                            hv__hostname=connection)
-    vms = [item for item in models.VM.objects.filter(profile=profile)]
-    html_data = {"vms": vms}
+    profile1 = models.Profile.objects.get(name=profile,
+                                          hv__hostname=connection)
+    vms = [item for item in models.VM.objects.filter(profile=profile1)]
+    html_data = {
+        "vms": vms,
+        "profile": profile1
+    }
+
     return render_to_response("profile/detail.html", html_data)

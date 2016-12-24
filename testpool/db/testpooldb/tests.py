@@ -17,6 +17,8 @@
 """
   Create your tests here.
 """
+import sys
+
 from django.test import TestCase
 from .models import Profile
 from .models import Key
@@ -26,7 +28,7 @@ from .models import VM
 from .models import VMKVP
 
 
-class ModelTestCase(TestCase):
+class Testsuite(TestCase):
     """ Test model output. """
 
     def test_profile(self):
@@ -81,3 +83,22 @@ class ModelTestCase(TestCase):
         self.assertTrue(vm1)
         (kvp, _) = KVP.get_or_create("key1", "value1")
         VMKVP.objects.create(vm=vm1, kvp=kvp)
+
+    def test_exception(self):
+        """ Test storing an exception in a profile. """
+
+        hv1 = HV.objects.create(hostname="localhost")
+        self.assertTrue(hv1)
+        profile1 = Profile.objects.create(name="profile1", hv=hv1, vm_max=3,
+                                          template_name="template.ubuntu1404",
+                                          expiration=10*60*60)
+        self.assertTrue(profile1)
+
+        try:
+            1/0
+        except ZeroDivisionError, arg:
+            stack_trace = sys.exc_info()[2]
+            profile1.stacktrace_set(str(arg), stack_trace)
+
+        levels = profile1.traceback_set.order_by("level")
+        self.assertTrue(len(levels), 1)

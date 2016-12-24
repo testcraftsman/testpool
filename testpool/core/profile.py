@@ -65,8 +65,10 @@ def find(hostname, product, profile):
     results = models.Profile.objects.all()
     if profile:
         results = results.filter(name=profile)
+
     if hostname:
         results = results.filter(hv__hostname=hostname)
+
     if product:
         results = results.filter(hv__product=product)
 
@@ -105,7 +107,6 @@ def _do_profile_add(args):
     If the profile exists, calling this again will change the maximum number
     of VMS and the template name. The connection parameter supported format:
     account@hypervisor account and hostname of the hypervisor.
-
     """
 
     LOGGER.info("add a profile %s", args.profile)
@@ -123,18 +124,31 @@ def _do_profile_add(args):
                        args.template)
 
 
+def _do_profile_detail(args):
+    """ show details of a profile. """
+
+    for profile in models.Profile.objects.all():
+        contains = [profile.contains(srch) for srch in args.srch]
+
+        if all(contains):
+            print "name:     ", profile.name
+            print "template: ", profile.template_name
+            print "status:   ", profile.status_str()
+
+
 def _do_profile_list(_):
     """ List all profiles. """
-    fmt = "%-16s %-16s %-8s %-20s %-5s"
+    fmt = "%-24s %-16s %-7s %-16s %-5s %-5s"
 
     LOGGER.info("list profiles")
 
-    print fmt % ("Hostname", "Name", "Product", "Template", "VMs")
+    print fmt % ("Hostname", "Name", "Product", "Template", "VMs", "Status")
     for profile in models.Profile.objects.all():
         current = profile.vm_set.filter(status=models.VM.READY).count()
         print fmt % (profile.hv.hostname, profile.name, profile.hv.product,
                      profile.template_name,
-                     "%s/%s" % (current, profile.vm_max))
+                     "%s/%s" % (current, profile.vm_max),
+                     profile.status_str())
     return 0
 
 
@@ -166,6 +180,16 @@ def add_subparser(subparser):
                                    description=_do_profile_list.__doc__,
                                    help="List profiles")
     parser.set_defaults(func=_do_profile_list)
+    ##
+
+    ##
+    # Details
+    parser = rootparser.add_parser("detail",
+                                   description=_do_profile_detail.__doc__,
+                                   help="Show profile details.")
+    parser.add_argument("srch", type=str, nargs="*",
+                        help="Show profiles that match the srch.")
+    parser.set_defaults(func=_do_profile_detail)
     ##
 
     ##

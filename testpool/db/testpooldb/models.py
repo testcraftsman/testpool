@@ -17,6 +17,7 @@
 """
    Test schema for tracking tests and their results.
 """
+import traceback
 import logging
 import datetime
 from django.db import models
@@ -195,6 +196,26 @@ class VM(models.Model):
         self.save()
 
 
+class Traceback(models.Model):
+    """ Holds exception.  """
+
+    profile = models.ForeignKey("Profile", on_delete=models.CASCADE)
+    level = models.IntegerField(default=0, null=True)
+    file_name = models.CharField(max_length=128, null=True)
+    lineno = models.IntegerField(default=0, null=True)
+    func_name = models.CharField(max_length=32, null=True)
+    text = models.CharField(max_length=128)
+
+    def __str__(self):
+        """ User representation. """
+
+        if self.file_name and self.lineno and self.func_name:
+            return "File %s, line %d, in %s\n    %s" % \
+                   (self.file_name, self.lineno, self.func_name, self.text)
+        else:
+            return self.text
+
+
 class ProfileKVP(models.Model):
     """ Key value pair for profile. """
 
@@ -212,6 +233,15 @@ class HV(models.Model):
     hostname = models.CharField(max_length=128)
     product = models.CharField(max_length=128)
 
+    def __contains__(self, key):
+        """ Return True if srch is in this object. """
+
+        if key in str(self.hostname):
+            return True
+        if key in str(self.product):
+            return True
+        return False
+
     def __str__(self):
         """ User representation. """
         return "%s.%s" % (self.product, self.hostname)
@@ -221,12 +251,60 @@ class HV(models.Model):
 class Profile(models.Model):
     """ A Testsuite holds a set of tests. """
 
+    READY = 1
+    BAD = 0
+
     name = models.CharField(max_length=128, unique=True)
-    hv = models.ForeignKey(HV)
+    hv = models.ForeignKey(HV, on_delete=models.CASCADE)
     template_name = models.CharField(max_length=128)
     kvps = models.ManyToManyField(KVP, through="ProfileKVP")
     vm_max = models.IntegerField(default=1)
     expiration = models.IntegerField(default=10*60)
+
+    status = models.IntegerField(default=READY)
+
+    action = models.CharField(max_length=36, default="none")
+    action_time = models.DateTimeField(auto_now_add=True)
+
+    def stacktrace_set(self, msg, stack_trace):
+        """ Store the exception received while operating on a profile. """
+
+        self.save()
+
+        for exception in self.traceback_set.all():
+            exception.delete()
+
+        self.traceback_set.create(level=0, file_name=None, lineno=None,
+                                  func_name=None, text=msg)
+        level = 1
+        for frame in traceback.extract_tb(stack_trace):
+            fname, lineno, fn, text = frame
+            self.traceback_set.create(level=level, file_name=fname,
+                                      lineno=lineno, func_name=fn, text=text)
+            level += 1
+
+    def __contains__(self, srch):
+        """ Return True if srch can be found in this object. """
+
+        if srch in str(self.name):
+            return True
+        if self.hv.__contains__(srch):
+            return True
+        if srch in str(self.template_name):
+            return True
+        if srch in self.status_str():
+            return True
+        return False
+
+    def status_str(self):
+        """ Return status as a string. """
+
+        if self.status == Profile.READY:
+            return "ready"
+        elif self.status == Profile.BAD:
+            return "bad"
+        else:
+            raise ValueError("unknown value %d" % self.status)
 
     def deleteable(self):
         """ Return true if the model should be deleted.
@@ -245,10 +323,12 @@ class Profile(models.Model):
 
     def kvp_get_or_create(self, kvp):
         """ Add kvp to profile. """
+
         return self.profilekvp_set.get_or_create(kvp=kvp)
 
     def kvp_value_get(self, key, default=None):
         """ Return value given key. """
+
         try:
             kvp = self.profilekvp_set.get(kvp__key__value=key)
             return kvp.kvp.value

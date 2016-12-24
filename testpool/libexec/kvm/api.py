@@ -3,10 +3,13 @@ API for KVM hypervisors.
 """
 import sys
 import os
-import logging
 from xml.etree import ElementTree
 import libvirt
 import testpool.core.api
+from testpool.core import exceptions
+from testpool.core import logger
+
+logger = logger.create()
 
 
 ##
@@ -56,7 +59,7 @@ def get_clone_diskfile(design):
         if origpath is None:
             newpath = None
 
-        logging.debug("cloning disk %s to %s", origpath, newpath)
+        logger.debug("cloning disk %s to %s", origpath, newpath)
         clonepaths.append(newpath)
         newidx += 1
     design.clone_paths = clonepaths
@@ -65,7 +68,7 @@ def get_clone_diskfile(design):
         _, errmsg = disk.is_size_conflict()
         # The isfatal case should have already caused us to fail
         if errmsg:
-            logging.warning("disk size limit exceeded")
+            logger.warning("disk size limit exceeded")
 
 
 def vm_state_to_str(dom):
@@ -123,13 +126,13 @@ class VMPool(testpool.core.api.VMPool):
         Shutdown the VM if necessary.
         """
 
-        logging.debug("%s vm_destroy", vm_name)
+        logger.debug("%s vm_destroy", vm_name)
         try:
             vm_hndl = self.conn.lookupByName(vm_name)
         except (AttributeError, libvirt.libvirtError):
             return testpool.core.api.VMPool.STATE_NONE
 
-        logging.debug("%s vm_destroy VM state %s", vm_name,
+        logger.debug("%s vm_destroy VM state %s", vm_name,
                       vm_state_to_str(vm_hndl))
         vm_xml = vm_hndl.XMLDesc()
 
@@ -139,15 +142,15 @@ class VMPool(testpool.core.api.VMPool):
 
         [state, _, _, _, _] = vm_hndl.info()
         if state != libvirt.VIR_DOMAIN_SHUTOFF:
-            logging.debug("%s destroy VM", vm_name)
+            logger.debug("%s destroy VM", vm_name)
             vm_hndl.destroy()
 
         [state, _, _, _, _] = vm_hndl.info()
         if state == libvirt.VIR_DOMAIN_SHUTOFF:
-            logging.debug("%s undefine VM", vm_name)
+            logger.debug("%s undefine VM", vm_name)
             vm_hndl.undefineFlags(libvirt.VIR_DOMAIN_UNDEFINE_MANAGED_SAVE)
 
-        logging.debug("%s destroy volume %s", vm_name, volume_in_use)
+        logger.debug("%s destroy volume %s", vm_name, volume_in_use)
         vm_vol = self.conn.storageVolLookupByPath(volume_in_use)
         vm_vol.wipe(0)
         vm_vol.delete(0)
@@ -181,7 +184,7 @@ class VMPool(testpool.core.api.VMPool):
         design.setup_clone()
         # start cloning
         design.start_duplicate(None)
-        logging.debug("end clone")
+        logger.debug("end clone")
 
     def start(self, vm_name):
         """ Start VM. """
@@ -198,18 +201,18 @@ class VMPool(testpool.core.api.VMPool):
         """ Return IP address of VM.
         IP address may not be found if the VM is not fully running.
         """
-        logging.debug("%s: ip_get called", vm_name)
+        logger.debug("%s: ip_get called", vm_name)
 
         try:
             dom = self.conn.lookupByName(vm_name)
-            logging.debug("%s: ip_get dom %s", vm_name, dom)
+            logger.debug("%s: ip_get dom %s", vm_name, dom)
         except libvirt.libvirtError:
             return None
 
         try:
-            logging.debug("%s: domain not found", vm_name)
+            logger.debug("%s: domain not found", vm_name)
             ifc = dom.interfaceAddresses(0)
-            logging.debug("%s: ip_get dom ifc %s", vm_name, ifc)
+            logger.debug("%s: ip_get dom ifc %s", vm_name, ifc)
         except libvirt.libvirtError:
             return None
 
@@ -217,7 +220,7 @@ class VMPool(testpool.core.api.VMPool):
             for (_, values) in ifc.iteritems():
                 return values["addrs"][source]["addr"]
         except KeyError:
-            logging.debug("%s: ip address not set", vm_name)
+            logger.debug("%s: ip address not set", vm_name)
         return None
 
     def vm_list(self, profile1):
@@ -255,4 +258,8 @@ def vmpool_get(profile):
     ##
     # User qemu+ssh://hostname/system list --all
     url_name = "qemu+ssh://%s/system" % profile.hv.hostname
-    return VMPool(url_name, context)
+    try:
+        return VMPool(url_name, context)
+    except libvirt.libvirtError, arg:
+        # logger.exception(arg)
+        raise exceptions.ProfileError(str(arg), profile)

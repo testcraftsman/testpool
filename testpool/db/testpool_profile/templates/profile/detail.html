@@ -2,16 +2,36 @@
 
 {% block content %}
 
-<H1>VMs</H1>
+<H1>Profile</H1>
 <table>
+ <tr>
+  <th>Name</th><td>{{ profile.name }}</td>
+ </tr><tr>
+  <th>Template</th><td>{{ profile.template_name}}</td>
+ </tr><tr>
+  <th>Status</th><td>{{ profile.status_str }}</td>
+ </tr><tr>
+  <th>VMs</th><td>{{profile.vm_set.count}}/{{ profile.vm_max}}</td>
+ </tr>
+</table>
+
+{% if profile.traceback_set.all %}
+<h1>Bad Status Details</h1>
+ {% for level in profile.traceback_set.all %}
+  <pre>{{ level }}</pre>
+ {% endfor %}
+{% endif %}
+
+<H1>VMs</H1>
+<table width="100%">
  <tr>
   <th>Name</th><th>IP Addr</th><th>Status</th>
  </tr>
  {% for vm in vms %}
   <tr>
-   <td>{{vm.name}}</td>
-   <td>{{vm.ip_addr}}</td>
-   <td>{{vm.status_as_str}}</td>
+   <td>{{ vm.name }}</td>
+   <td>{{ vm.ip_addr }}</td>
+   <td>{{ vm.status_as_str }}</td>
   </tr>
  {% endfor %}
 </table>
