@@ -1,4 +1,6 @@
 -Figure out best way to connect to KVM, ssh password is cumbersome.
+-Add kibana support
+-Add Graphana support
 -Create a style for the web pages
 -Look at Graphana
 -add requirements to setup.py
