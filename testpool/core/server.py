@@ -30,7 +30,6 @@ RESERVED timeout   PENDING  destroy       N attempts then mark BAD
 import datetime
 import os
 import unittest
-# import logging
 import time
 import testpool.settings
 from testpool.core import ext
@@ -39,6 +38,8 @@ from testpool.core import api
 from testpool.core import logger
 from testpool.core import commands
 from testpool.core import profile
+from testpool.core import exceptions
+from testpool.core import coding
 from testpooldb import models
 
 FOREVER = None
@@ -250,6 +251,24 @@ def events_show(banner):
                     vmh.action_time.strftime("%Y-%m-%d %H:%M:%S"))
 
 
+def action_vm(vmh):
+    """ Handle VM actions. """
+
+    exts = ext.api_ext_list()
+    LOGGER.info("%s: status %s action %s at %s", vmh.name,
+                models.VM.status_to_str(vmh.status), vmh.action,
+                vmh.action_time.strftime("%Y-%m-%d %H:%M:%S"))
+
+    if vmh.action == algo.ACTION_DESTROY:
+        action_destroy(exts, vmh)
+    elif vmh.action == algo.ACTION_CLONE:
+        action_clone(exts, vmh)
+    elif vmh.action == algo.ACTION_ATTR:
+        action_attr(exts, vmh)
+    elif vmh.action == algo.ACTION_NONE:
+        pass
+
+
 def main(args):
     """ Main entry point for server. """
 
@@ -283,21 +302,7 @@ def main(args):
                         args.max_sleep_time)
             time.sleep(args.max_sleep_time)
         elif vmh.action_time < current or args.max_sleep_time == 0:
-            exts = ext.api_ext_list()
-            LOGGER.info("%s: status %s action %s at %s", vmh.name,
-                        models.VM.status_to_str(vmh.status), vmh.action,
-                        vmh.action_time.strftime("%Y-%m-%d %H:%M:%S"))
-
-            if vmh.action == algo.ACTION_DESTROY:
-                action_destroy(exts, vmh)
-            elif vmh.action == algo.ACTION_CLONE:
-                action_clone(exts, vmh)
-            elif vmh.action == algo.ACTION_ATTR:
-                action_attr(exts, vmh)
-            elif vmh.action == algo.ACTION_NONE:
-                pass
-            else:
-                LOGGER.error("%s: unknown action %s", vmh.name, vmh.action)
+            exceptions.try_catch(coding.curry(action_vm, vmh))
         else:
             action_delay = abs(vmh.action_time - current).seconds
 
@@ -430,7 +435,6 @@ class ModelTestCase(unittest.TestCase):
         # Acquire for 3 seconds.
         vmh.transition(models.VM.RESERVED, algo.ACTION_DESTROY, 3)
         time.sleep(5)
-        # LOGGER.setLevel(logging.DEBUG)
         args.setup = False
         args.count = 2
         args.sleep_time = 1

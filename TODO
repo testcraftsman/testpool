@@ -1,4 +1,5 @@
 -Figure out best way to connect to KVM, ssh password is cumbersome.
+-Make sure disks get cleaned up
 -Add kibana support
 -Add Graphana support
 -Create a style for the web pages
