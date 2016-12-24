@@ -55,7 +55,7 @@ def profile_remove(hostname, profile, immediate):
             profile.delete()
         return 0
     except models.Profile.DoesNotExist:
-        LOGGER.debug("profile %s on %s not found", profile, hostname)
+        LOGGER.warning("profile %s on %s not found", profile, hostname)
         return 1
 
 
