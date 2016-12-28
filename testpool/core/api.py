@@ -16,6 +16,17 @@
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
 """ VM Pool API. """
 
+class HostInfo(object):
+    def __init__(self):
+        self.model = None
+        self.memory_size = None
+        self.cpus = None
+        self.cpu_mhz = None
+        self.numa_nodes = None
+        self.cpu_sockets = None
+        self.cores_per_socket = None
+        self.threads_per_core = None
+
 
 class VMPool(object):
     """ VM Pool API. """

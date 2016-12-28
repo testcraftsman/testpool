@@ -41,9 +41,3 @@ def try_catch(func):
         stack_trace = sys.exc_info()[2]
         arg.profile.stacktrace_set(str(arg), stack_trace)
         return 1
-    except Exception, arg:
-        if LOG.isEnabledFor(logging.DEBUG):
-            LOG.exception(arg)
-        else:
-            LOG.error(arg)
-        return 1

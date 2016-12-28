@@ -88,6 +88,19 @@ def vm_state_to_str(dom):
     return '%s is %s,' % (dom.name(), states.get(state, state))
 
 
+class HostInfo(testpool.core.api.HostInfo):
+    def __init__(self, kvm_info):
+        testpool.core.api.HostInfo.__init__(self)
+        self.model = str(kvm_info[0])
+        self.memory_size = kvm_info[1]
+        self.cpus = kvm_info[2]
+        self.cpu_mhz = kvm_info[3]
+        self.numa_nodes = kvm_info[4]
+        self.cpu_sockets = kvm_info[5]
+        self.cores_per_socket = kvm_info[6]
+        self.threads_per_core = kvm_info[7]
+
+
 class VMPool(testpool.core.api.VMPool):
     """ Interface to KVM Pool manager. """
 
@@ -97,7 +110,10 @@ class VMPool(testpool.core.api.VMPool):
 
         self.context = context
         self.url_name = url_name
-        self.conn = libvirt.open(url_name)
+        print "MARK: context", context, url_name
+        auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE], None]
+        self.conn = libvirt.openAuth(url_name, auth, 0)
+        print "MARK: after the fact"
 
     def timing_get(self, request):
         """ Return algorithm timing based on the request. """
@@ -250,14 +266,25 @@ class VMPool(testpool.core.api.VMPool):
 
         return (vm_name.startswith(profile1.template_name) and
                 vm_name != profile1.template_name)
+
+    def info_get(self):
+        """ Return information about the hypervisor profile. """
+
+        host_info = self.conn.getInfo()
+
+        ret_value = HostInfo(host_info)
     
+	return ret_value
+        
 
 def vmpool_get(profile):
     """ Return a handle to the KVM API. """
     context = "%s/%s" % (profile.hv.hostname, profile.name)
     ##
     # User qemu+ssh://hostname/system list --all
-    url_name = "qemu+ssh://%s/system" % profile.hv.hostname
+    # or 
+    # User qemu+tcp://username@hostname/system list --all
+    url_name = "%s/system" % profile.hv.hostname
     try:
         return VMPool(url_name, context)
     except libvirt.libvirtError, arg:

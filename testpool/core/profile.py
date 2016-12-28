@@ -128,24 +128,41 @@ def _do_profile_detail(args):
     """ show details of a profile. """
 
     for profile in models.Profile.objects.all():
-        contains = [profile.contains(srch) for srch in args.srch]
+        contains = [srch in profile for srch in args.srch]
 
         if all(contains):
             print "name:     ", profile.name
             print "template: ", profile.template_name
             print "status:   ", profile.status_str()
 
+            ##
+            # Check to see if the number of VMs should change.
+            exts = testpool.core.ext.api_ext_list()
+            vmpool = exts[profile.hv.product].vmpool_get(profile)
+            info = vmpool.info_get()
+            
+            print "Model:          "+str(info.model)
+            print "Memory size:    "+str(info.memory_size)+'MB'
+            print "Number of CPUs: "+str(info.cpus)
+            print "MHz of CPUs:    "+str(info.cpu_mhz)
+            print "Number of NUMA nodes:  "+str(info.numa_nodes)
+            print "Number of CPU sockets: "+str(info.cpu_sockets)
+            print "Number of CPU cores per socket: "+str(info.cores_per_socket)
+            print "Number of CPU threads per core: "+str(info.threads_per_core)
+            ##
+
 
 def _do_profile_list(_):
     """ List all profiles. """
-    fmt = "%-24s %-16s %-7s %-16s %-5s %-5s"
+    fmt = "%-35s %-7s %-12s %-16s %-5s %-5s"
 
     LOGGER.info("list profiles")
 
-    print fmt % ("Hostname", "Name", "Product", "Template", "VMs", "Status")
+    # \todo provide a dynamically adjusting column width
+    print fmt % ("Connection", "Product", "Name", "Template", "VMs", "Status")
     for profile in models.Profile.objects.all():
         current = profile.vm_set.filter(status=models.VM.READY).count()
-        print fmt % (profile.hv.hostname, profile.name, profile.hv.product,
+        print fmt % (profile.hv.hostname, profile.hv.product, profile.name,
                      profile.template_name,
                      "%s/%s" % (current, profile.vm_max),
                      profile.status_str())

@@ -16,7 +16,14 @@ def parse():
 
     arg_parser = commands.main()
     args = arg_parser.parse_args()
-    return commands.args_process(logger, args)
+    try:
+        return commands.args_process(logger, args)
+    except Exception, arg:
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.exception(arg)
+        else:
+            logger.error(arg)
+        return 1
 
 
 def env_setup():
