@@ -1,14 +1,27 @@
-class curry:
-    def __init__(self, fun, *args, **kwargs):
-        self.fun = fun
+"""
+Coding concepts.
+"""
+
+
+# pylint: disable=R0903
+class Curry(object):
+    """ Supports curry algorithm.
+    defer calling a function with a specific set of parameters.
+    """
+
+    def __init__(self, func, *args, **kwargs):
+        """ Store arguments and function for later. """
+        self.func = func
         self.pending = args[:]
         self.kwargs = kwargs.copy()
 
     def __call__(self, *args, **kwargs):
-        if kwargs and self.kwargs:
-            kw = self.kwargs.copy()
-            kw.update(kwargs)
-        else:
-            kw = kwargs or self.kwargs
+        """ Call's the self.func with arguments now. """
 
-        return self.fun(*(self.pending + args), **kw)
+        if kwargs and self.kwargs:
+            kwarg = self.kwargs.copy()
+            kwarg.update(kwargs)
+        else:
+            kwarg = kwargs or self.kwargs
+
+        return self.func(*(self.pending + args), **kwarg)

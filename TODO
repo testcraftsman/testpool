@@ -1,5 +1,6 @@
 -Figure out best way to connect to KVM, ssh password is cumbersome.
--Make sure disks get cleaned up
+ -Look into openssh-askpass
+-Show actions in web pages and CLI
 -Add kibana support
 -Add Graphana support
 -Create a style for the web pages

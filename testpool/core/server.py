@@ -302,7 +302,7 @@ def main(args):
                         args.max_sleep_time)
             time.sleep(args.max_sleep_time)
         elif vmh.action_time < current or args.max_sleep_time == 0:
-            exceptions.try_catch(coding.curry(action_vm, vmh))
+            exceptions.try_catch(coding.Curry(action_vm, vmh))
         else:
             action_delay = abs(vmh.action_time - current).seconds
 
