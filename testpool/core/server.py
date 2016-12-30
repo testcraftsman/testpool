@@ -88,9 +88,8 @@ def adapt(exts):
 def action_destroy(exts, vmh):
     """ Reclaim any VMs released. """
 
-    LOGGER.info("%s: action_destroy started %s %s %s",
-                vmh.profile.name, vmh.profile.hv.hostname,
-                vmh.profile.hv.product, vmh.name)
+    LOGGER.info("%s: action_destroy started %s %s",
+                vmh.profile.name, vmh.profile.hv.product, vmh.name)
 
     ext1 = exts[vmh.profile.hv.product]
     vmpool = ext1.vmpool_get(vmh.profile)
@@ -120,9 +119,8 @@ def action_destroy(exts, vmh):
 def action_clone(exts, vmh):
     """ Clone a new VM. """
 
-    LOGGER.info("%s: action_clone started %s %s %s",
-                vmh.profile.name, vmh.profile.hv.hostname,
-                vmh.profile.hv.product, vmh.name)
+    LOGGER.info("%s: action_clone started %s %s",
+                vmh.profile.name, vmh.profile.hv.product, vmh.name)
 
     ext1 = exts[vmh.profile.hv.product]
     vmpool = ext1.vmpool_get(vmh.profile)
@@ -201,9 +199,8 @@ def setup(exts):
 def action_attr(exts, vmh):
     """ Retrieve attributes. """
 
-    LOGGER.info("%s: action_attr started %s %s %s",
-                vmh.profile.name, vmh.profile.hv.hostname,
-                vmh.profile.hv.product, vmh.name)
+    LOGGER.info("%s: action_attr started %s %s",
+                vmh.profile.name, vmh.profile.hv.product, vmh.name)
 
     ##
     #  If VM expires reclaim it.
@@ -344,7 +341,7 @@ class ModelTestCase(unittest.TestCase):
     def test_setup(self):
         """ test_setup. """
 
-        (hv1, _) = models.HV.objects.get_or_create(hostname="localhost",
+        (hv1, _) = models.HV.objects.get_or_create(connection="localhost",
                                                    product="fake")
 
         defaults = {"vm_max": 1, "template_name": "test.template"}
@@ -356,7 +353,7 @@ class ModelTestCase(unittest.TestCase):
         profile1.delete()
 
     def tearDown(self):
-        profile.profile_remove("localhost", "test.server.profile", True)
+        profile.profile_remove("test.server.profile", True)
         if os.path.exists("/tmp/testpool/fake/localhost/test.server.profile"):
             os.remove("/tmp/testpool/fake/localhost/test.server.profile")
 
@@ -364,9 +361,9 @@ class ModelTestCase(unittest.TestCase):
         """ test_shrink. """
 
         product = "fake"
-        hostname = "localhost"
+        connection = "localhost"
 
-        (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
+        (hv1, _) = models.HV.objects.get_or_create(connection=connection,
                                                    product=product)
         defaults = {"vm_max": 10, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
@@ -389,9 +386,9 @@ class ModelTestCase(unittest.TestCase):
         """ test_expand. """
 
         product = "fake"
-        hostname = "localhost"
+        connection = "localhost"
 
-        (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
+        (hv1, _) = models.HV.objects.get_or_create(connection=connection,
                                                    product=product)
         defaults = {"vm_max": 3, "template_name": "fake.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
@@ -414,10 +411,10 @@ class ModelTestCase(unittest.TestCase):
         """ test_expiration. """
 
         product = "fake"
-        hostname = "localhost"
+        connection = "localhost"
         vm_max = 3
 
-        (hv1, _) = models.HV.objects.get_or_create(hostname=hostname,
+        (hv1, _) = models.HV.objects.get_or_create(connection=connection,
                                                    product=product)
         defaults = {"vm_max": vm_max, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(

@@ -190,7 +190,7 @@ class VMPool(testpool.core.api.VMPool):
 def vmpool_get(profile1):
     """ Return a handle to the KVM API. """
 
-    context = "%s/%s" % (profile1.hv.hostname, profile1.name)
+    context = "%s/%s" % (profile1.hv.connection, profile1.name)
     return VMPool(context)
 
 

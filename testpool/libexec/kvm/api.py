@@ -276,14 +276,13 @@ class VMPool(testpool.core.api.VMPool):
 
 def vmpool_get(profile):
     """ Return a handle to the KVM API. """
-    context = "%s/%s" % (profile.hv.hostname, profile.name)
     ##
     # User qemu+ssh://hostname/system list --all
     # or 
     # User qemu+tcp://username@hostname/system list --all
-    url_name = "%s/system" % profile.hv.hostname
+    url_name = "%s/system" % profile.hv.connection
     try:
-        return VMPool(url_name, context)
+        return VMPool(url_name, profile.name)
     except libvirt.libvirtError, arg:
         # logger.exception(arg)
         raise exceptions.ProfileError(str(arg), profile)

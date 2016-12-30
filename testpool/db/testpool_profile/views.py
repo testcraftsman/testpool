@@ -37,7 +37,7 @@ class ProfileStats(object):
         # The ID is needed for the JSON view.
         self.id = profile.id
         #
-        self.hostname = profile.hv.hostname
+        self.connection = profile.hv.connection
         self.name = profile.name
         self.vm_max = profile.vm_max
         self.vm_ready = 0
@@ -67,13 +67,12 @@ def index(_):
     return render_to_response("profile/index.html", html_data)
 
 
-def detail(_, connection, profile):
+def detail(_, profile):
     """ Provide profile details. """
 
-    LOGGER.debug("profile/detail/%s/%s", connection, profile)
+    LOGGER.debug("profile/detail/%s", profile)
 
-    profile1 = models.Profile.objects.get(name=profile,
-                                          hv__hostname=connection)
+    profile1 = models.Profile.objects.get(name=profile)
     vms = [item for item in models.VM.objects.filter(profile=profile1)]
     html_data = {
         "vms": vms,

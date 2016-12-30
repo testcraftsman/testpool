@@ -230,13 +230,13 @@ class ProfileKVP(models.Model):
 class HV(models.Model):
     """ Hypervisor. """
 
-    hostname = models.CharField(max_length=128)
+    connection = models.CharField(max_length=128)
     product = models.CharField(max_length=128)
 
     def __contains__(self, key):
         """ Return True if srch is in this object. """
 
-        if key in str(self.hostname):
+        if key in str(self.connection):
             return True
         if key in str(self.product):
             return True
@@ -244,7 +244,7 @@ class HV(models.Model):
 
     def __str__(self):
         """ User representation. """
-        return "%s.%s" % (self.product, self.hostname)
+        return "%s.%s" % (self.product, self.connection)
 
 
 # pylint: disable=C0103

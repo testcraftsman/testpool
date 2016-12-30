@@ -28,7 +28,7 @@ urlpatterns = patterns(
         api.profile_acquire),
     url(r'api/profile/(?P<pkey>[0-9]+$)', api.profile_detail),
     url(r'api/profile/list', api.profile_list),
-    url(r"profile/detail/(?P<connection>.+)/(?P<profile>.+)",
+    url(r"profile/detail/(?P<profile>.+)",
         views.detail),
     url(r"profile", views.index),
 )

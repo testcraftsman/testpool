@@ -22,21 +22,21 @@ VMS which do not exist.
 """
 import logging
 from django.db.models import Q
+from testpool.core import algo
 from testpooldb import models
 
 
-def _profile_get(hostname, product, profile):
+def _profile_get(connection, product, profile):
     """ Return the profile given the parameters. """
-    hv1 = models.HV.objects.get(hostname=hostname, product=product)
+    hv1 = models.HV.objects.get(connection=connection, product=product)
     return models.Profile.objects.get(name=profile, hv=hv1)
 
 
 def _do_vm_incr(args):
     """ Increment or decrement the number number of VMs. """
 
-    logging.info("incrementing VMs %s %s %s %d", args.hostname, args.product,
-                 args.profile, args.count)
-    profile1 = _profile_get(args.hostname, args.product, args.profile)
+    logging.info("%s: incrementing mx VMs %d", args.profile, args.count)
+    profile1 = models.Profile.objects.get(name=args.profile)
     profile1.vm_max += args.count
     profile1.save()
 
@@ -46,11 +46,9 @@ def _do_vm_incr(args):
 def _do_vm_release(args):
     """ Release VM. """
 
-    logging.info("release %s %s %s", args.hostname, args.profile, args.vmname)
-    vm1 = models.VM.objects.get(name=args.vmname,
-                                profile__hv__hostname=args.hostname,
-                                profile__name=args.profile)
-    vm1.status = models.VM.RELEASED
+    logging.info("release %s %s", args.profile, args.vmname)
+    vm1 = models.VM.objects.get(name=args.vmname, profile__name=args.profile)
+    vm1.transition(models.VM.PENDING, algo.ACTION_DESTROY, 0)
     vm1.save()
     return 0
 
@@ -58,31 +56,48 @@ def _do_vm_release(args):
 def _do_vm_reserve(args):
     """ Reserve VM. """
 
-    logging.info("reserve %s %s", args.hostname, args.vmname)
+    logging.info("reserve %s %s", args.profile, args.vmname)
     vm1 = models.VM.objects.get(name=args.vmname,
-                                profile__hv__hostname=args.hostname)
+                                profile__name=args.profile)
     vm1.status = models.VM.RESERVED
     vm1.save()
     return 0
 
 
 def _do_vm_list(args):
-    """ List all vms. """
+    """ List all vms which contains patterns. """
 
-    fmt = "%-13s %-13s %-16s %-8s %-16s %s"
+    fmt = "%-7s %-16s %-13s %-8s %-16s %s"
+
+    logging.info("%s: list vms", args.profile)
+    vms = models.VM.objects.filter(profile__name=args.profile)
+
+    print fmt % ("Profile", "Connection", "Name", "Status", "IP",
+                 "Reserved Time")
+    for vm1 in vms:
+        print fmt % (vm1.profile.name, vm1.profile.hv.connection, vm1.name,
+                     models.VM.status_to_str(vm1.status), vm1.ip_addr,
+                     vm1.action_time)
+
+
+def _do_vm_contain(args):
+    """ List all vms which contains patterns. """
+
+    fmt = "%-7s %-16s %-13s %-8s %-16s %s"
 
     logging.info("list vms by %s", args.patterns)
     vms = models.VM.objects.all()
     for pattern in args.patterns:
         vms = vms.filter(
             Q(name__contains=pattern) |
-            Q(profile__hv__hostname__contains=pattern) |
+            Q(profile__hv__connection__contains=pattern) |
             Q(profile__hv__product__contains=pattern) |
             Q(profile__name__contains=pattern)).order_by("name")
 
-    print fmt % ("Host", "Profile", "Name", "Status", "IP", "Reserved Time")
+    print fmt % ("Profile", "Connection", "Name", "Status", "IP",
+                 "Reserved Time")
     for vm1 in vms:
-        print fmt % (vm1.profile.hv.hostname, vm1.profile.name, vm1.name,
+        print fmt % (vm1.profile.name, vm1.profile.hv.connection, vm1.name,
                      models.VM.status_to_str(vm1.status), vm1.ip_addr,
                      vm1.action_time)
 
@@ -102,23 +117,20 @@ def add_subparser(subparser):
     parser = rootparser.add_parser("incr", description=_do_vm_incr.__doc__,
                                    help="Increment the number of VMs")
     parser.set_defaults(func=_do_vm_incr)
-    parser.add_argument("hostname", type=str, help="location of the vm.")
-    parser.add_argument("product", type=str, help="The type of product.")
     parser.add_argument("profile", type=str, help="The profile name to clone.")
-    parser.add_argument("count", type=int,
+    parser.add_argument("--count", type=int, default=1,
                         help="Increment/decrement the maximum number of VMs.")
     ##
 
     parser = rootparser.add_parser("release", description=_do_vm_incr.__doc__,
                                    help="Release VM to be reclaimed.")
-    parser.add_argument("hostname", type=str, help="location of the vm.")
     parser.add_argument("profile", type=str, help="The profile name to clone.")
     parser.add_argument("vmname", type=str, help="The VM name.")
     parser.set_defaults(func=_do_vm_release)
 
     parser = rootparser.add_parser("reserve", description=_do_vm_incr.__doc__,
                                    help="Reserve VM.")
-    parser.add_argument("hostname", type=str, help="location of the vm.")
+    parser.add_argument("profile", type=str, help="Profile name.")
     parser.add_argument("vmname", type=str, help="The VM name.")
     parser.set_defaults(func=_do_vm_reserve)
 
@@ -126,11 +138,20 @@ def add_subparser(subparser):
     # List
     parser = rootparser.add_parser("list",
                                    description=_do_vm_list.__doc__,
-                                   help="List vms")
+                                   help="List vms that contain pattern")
+    parser.add_argument("profile", type=str, help="list VMs that for profile")
+    parser.set_defaults(func=_do_vm_list)
+    ##
+
+    ##
+    # Contains
+    parser = rootparser.add_parser("contains",
+                                   description=_do_vm_contain.__doc__,
+                                   help="List vms that contain pattern")
     parser.add_argument("patterns", type=str, default=[], nargs="?",
                         help="list VMs that contain pattern term. "
                         "No pattern means everything.")
-    parser.set_defaults(func=_do_vm_list)
+    parser.set_defaults(func=_do_vm_contain)
     ##
 
     return subparser
