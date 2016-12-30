@@ -140,15 +140,15 @@ def _do_profile_detail(args):
             exts = testpool.core.ext.api_ext_list()
             vmpool = exts[profile.hv.product].vmpool_get(profile)
             info = vmpool.info_get()
-            
-            print "Model:          "+str(info.model)
-            print "Memory size:    "+str(info.memory_size)+'MB'
-            print "Number of CPUs: "+str(info.cpus)
-            print "MHz of CPUs:    "+str(info.cpu_mhz)
-            print "Number of NUMA nodes:  "+str(info.numa_nodes)
-            print "Number of CPU sockets: "+str(info.cpu_sockets)
-            print "Number of CPU cores per socket: "+str(info.cores_per_socket)
-            print "Number of CPU threads per core: "+str(info.threads_per_core)
+
+            print "Model:          " + str(info.model)
+            print "Memory size:    " + str(info.memory_size) + 'MB'
+            print "Number of CPUs: " + str(info.cpus)
+            print "MHz of CPUs:    " + str(info.cpu_mhz)
+            print "NUMA nodes:  " + str(info.numa_nodes)
+            print "CPU sockets: " + str(info.cpu_sockets)
+            print "CPU cores per socket: " + str(info.cores_per_socket)
+            print "CPU threads per core: " + str(info.threads_per_core)
             ##
 
 

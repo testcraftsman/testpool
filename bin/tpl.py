@@ -7,6 +7,7 @@ import sys
 import logging
 
 
+# pylint: disable=W0703
 def parse():
     """ main entry point. """
     from testpool.core import commands

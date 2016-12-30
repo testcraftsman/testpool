@@ -16,7 +16,11 @@
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
 """ VM Pool API. """
 
+
+# pylint: disable=R0902
+# pylint: disable=R0903
 class HostInfo(object):
+    """ Basic host information. """
     def __init__(self):
         self.model = None
         self.memory_size = None

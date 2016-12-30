@@ -110,10 +110,8 @@ class VMPool(testpool.core.api.VMPool):
 
         self.context = context
         self.url_name = url_name
-        print "MARK: context", context, url_name
         auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE], None]
         self.conn = libvirt.openAuth(url_name, auth, 0)
-        print "MARK: after the fact"
 
     def timing_get(self, request):
         """ Return algorithm timing based on the request. """
@@ -273,8 +271,7 @@ class VMPool(testpool.core.api.VMPool):
         host_info = self.conn.getInfo()
 
         ret_value = HostInfo(host_info)
-    
-	return ret_value
+        return ret_value
         
 
 def vmpool_get(profile):

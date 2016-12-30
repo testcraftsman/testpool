@@ -64,6 +64,23 @@ def db_ctx(context):
     ##
 
 
+# pylint: disable=R0902
+# pylint: disable=R0903
+class HostInfo(testpool.core.api.HostInfo):
+    """ Host info. """
+
+    def __init__(self):
+        testpool.core.api.HostInfo.__init__(self)
+        self.model = None
+        self.memory_size = 0
+        self.cpus = 0
+        self.cpu_mhz = 0
+        self.numa_nodes = 0
+        self.cpu_sockets = 0
+        self.cores_per_socket = 0
+        self.threads_per_core = 0
+
+
 class VMPool(testpool.core.api.VMPool):
     """ Interface to KVM Pool manager. """
 
@@ -162,6 +179,12 @@ class VMPool(testpool.core.api.VMPool):
 
         return (vm_name.startswith(profile1.template_name) and
                 vm_name != profile1.template_name)
+
+    def info_get(self):
+        """ Return information about the hypervisor profile. """
+
+        ret_value = HostInfo()
+        return ret_value
 
 
 def vmpool_get(profile1):
