@@ -154,15 +154,15 @@ def _do_profile_detail(args):
 
 def _do_profile_list(_):
     """ List all profiles. """
-    fmt = "%-35s %-7s %-12s %-16s %-5s %-5s"
+    fmt = "%-12s %-5s %-32s %-16s %-5s %-5s"
 
     LOGGER.info("list profiles")
 
     # \todo provide a dynamically adjusting column width
-    print fmt % ("Connection", "Product", "Name", "Template", "VMs", "Status")
+    print fmt % ("Name", "Prod", "Connection", "Template", "VMs", "Status")
     for profile in models.Profile.objects.all():
         current = profile.vm_set.filter(status=models.VM.READY).count()
-        print fmt % (profile.hv.hostname, profile.hv.product, profile.name,
+        print fmt % (profile.name, profile.hv.product, profile.hv.hostname,
                      profile.template_name,
                      "%s/%s" % (current, profile.vm_max),
                      profile.status_str())
@@ -182,11 +182,11 @@ def add_subparser(subparser):
     parser = rootparser.add_parser("add", description=_do_profile_add.__doc__,
                                    help="Add a profile")
     parser.set_defaults(func=_do_profile_add)
+    parser.add_argument("profile", type=str, help="Name of the fake profile.")
+    parser.add_argument("product", type=str, help="The type of product.")
     parser.add_argument("connection", type=str,
                         help="How to connect to the hypervisor. Format "
                         "depends on how to connect to the hypervisor")
-    parser.add_argument("product", type=str, help="The type of product.")
-    parser.add_argument("profile", type=str, help="Name of the fake profile.")
     parser.add_argument("template", type=str, help="Number of VM to manage.")
     parser.add_argument("max", type=int, help="Number of VM to manage.")
     ##
