@@ -242,7 +242,7 @@ class VMPool(testpool.core.api.VMPool):
 
         rtc = []
 
-        for item in self.conn.listAllDomains():
+        for item in self.conn.listAllDoains():
             vm_name = item.name()
             if self.vm_is_clone(profile1, vm_name):
                 rtc.append(vm_name)

@@ -23,6 +23,7 @@ VMS which do not exist.
 import logging
 from django.db.models import Q
 from testpool.core import algo
+from testpool.core import ext
 from testpooldb import models
 
 
@@ -64,20 +65,33 @@ def _do_vm_reserve(args):
     return 0
 
 
+def _do_vm_detail(args):
+    """ VM Detail content. """
+
+    fmt = "%-25s %-8s %-16s %s"
+
+    vm1 = models.VM.objects.get(profile__name=args.profile, name=args.vmname)
+
+    exts = ext.api_ext_list()
+    vmpool = exts[vm1.profile.hv.product].vmpool_get(vm1.profile)
+
+    print "Name: %s" % args.vmname
+    ip_address = vmpool.ip_get(args.vmname)
+    print "IP: %s" % ip_address
+
+
 def _do_vm_list(args):
     """ List all vms which contains patterns. """
 
-    fmt = "%-7s %-16s %-13s %-8s %-16s %s"
+    fmt = "%-25s %-8s %-16s %s"
 
     logging.info("%s: list vms", args.profile)
     vms = models.VM.objects.filter(profile__name=args.profile)
 
-    print fmt % ("Profile", "Connection", "Name", "Status", "IP",
-                 "Reserved Time")
+    print fmt % ("Name", "Status", "IP", "Reserved Time")
     for vm1 in vms:
-        print fmt % (vm1.profile.name, vm1.profile.hv.connection, vm1.name,
-                     models.VM.status_to_str(vm1.status), vm1.ip_addr,
-                     vm1.action_time)
+        print fmt % (vm1.name, models.VM.status_to_str(vm1.status),
+                     vm1.ip_addr, vm1.action_time)
 
 
 def _do_vm_contain(args):
@@ -152,6 +166,16 @@ def add_subparser(subparser):
                         help="list VMs that contain pattern term. "
                         "No pattern means everything.")
     parser.set_defaults(func=_do_vm_contain)
+    ##
+
+    ##
+    # List
+    parser = rootparser.add_parser("detail",
+                                   description=_do_vm_detail.__doc__,
+                                   help="Show VM details")
+    parser.add_argument("profile", type=str, help="Profile name")
+    parser.add_argument("vmname", type=str, help="VM name")
+    parser.set_defaults(func=_do_vm_detail)
     ##
 
     return subparser

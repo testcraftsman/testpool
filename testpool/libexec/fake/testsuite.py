@@ -34,7 +34,7 @@ class Testsuite(unittest.TestCase):
         (hv1, _) = models.HV.objects.get_or_create(hostname="localhost",
                                                    product="fake")
         (profile1, _) = models.Profile.objects.get_or_create(
-            name="test.profile1", hv=hv1, template_name="test.template",
+            name="test.profile1", hv1, template_name="test.template",
             vm_max=10)
         vmpool = api.VMPool("memory")
 
@@ -44,11 +44,11 @@ class Testsuite(unittest.TestCase):
 
         for count in range(10):
             logging.debug("pop count %d", count)
-            vm1 = algo.pop("localhost", "fake", "test.profile1", 1)
+            vm1 = algo.pop("test.profile1", 1)
             self.assertTrue(vm1)
 
         with self.assertRaises(algo.NoResources):
-            algo.pop("localhost", "fake", "test.profile1", 1)
+            algo.pop("fake", "test.profile1", 1)
 
     def test_push(self):
         """ test_push. """
@@ -69,11 +69,11 @@ class Testsuite(unittest.TestCase):
         for count in range(10):
             logging.debug("pop count %d", count)
 
-            vm1 = algo.pop("localhost", "fake", profile_name, 1)
+            vm1 = algo.pop(profile_name, 1)
             self.assertTrue(vm1)
 
         with self.assertRaises(algo.NoResources):
-            algo.pop("localhost", "fake", profile_name, 1)
+            algo.pop(profile_name, 1)
 
     def test_push_too_many(self):
         """ test_push_too_many"""
@@ -92,7 +92,7 @@ class Testsuite(unittest.TestCase):
         rtc = algo.adapt(vmpool, profile1)
         self.assertEqual(rtc, 10)
 
-        vm1 = algo.pop("localhost", "fake", profile_name, 1)
+        vm1 = algo.pop(profile_name, 1)
         self.assertTrue(vm1)
 
         algo.push(vm1.id)

@@ -4,8 +4,8 @@ Quick Start
 ===============
 
 Normally Testpool is installed on a central server and configured to
-manager hypervisor content. Currently Testpool supports KVM which will be 
-required for demonstration purposes. Testpool client content is installed
+manager hypervisor content. Testpool supports KVM which is required for 
+this demonstration. Testpool client content is installed
 on satellite systems which interact with the Testpool server and hypervisors.
 
 To expedite this guide, all Testpool content will be installed on a single

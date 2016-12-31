@@ -146,14 +146,12 @@ def destroy(vmpool, profile):
             pass
 
 
-def pop(hostname, product, profile_name, expiration_seconds):
+def pop(profile_name, expiration_seconds):
     """ Pop one VM from the VMPool. """
 
     logging.info("algo.pop VM from %s", profile_name)
 
-    hv1 = models.HV.objects.get(hostname=hostname, product=product)
-    profile1 = models.Profile.objects.get(hv=hv1, name=profile_name)
-
+    profile1 = models.Profile.objects.get(name=profile_name)
     vms = models.VM.objects.filter(profile=profile1, status=models.VM.PENDING)
 
     if vms.count() == 0:
