@@ -1,5 +1,7 @@
 -Figure out best way to connect to KVM, ssh password is cumbersome.
  -Look into openssh-askpass
+-If profile add fails do not create a profile
+-Check to see what happens when tpl-daemon starts but profile bogus
 -Show actions in web pages and CLI
 -Add kibana support
 -Add Graphana support

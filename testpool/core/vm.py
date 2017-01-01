@@ -68,8 +68,6 @@ def _do_vm_reserve(args):
 def _do_vm_detail(args):
     """ VM Detail content. """
 
-    fmt = "%-25s %-8s %-16s %s"
-
     vm1 = models.VM.objects.get(profile__name=args.profile, name=args.vmname)
 
     exts = ext.api_ext_list()

@@ -4,7 +4,7 @@ Quick Start
 ===============
 
 Normally Testpool is installed on a central server and configured to
-manager hypervisor content. Testpool supports KVM which is required for 
+manager several hypervisors. Testpool supports KVM which is required for 
 this demonstration. Testpool client content is installed
 on satellite systems which interact with the Testpool server and hypervisors.
 
@@ -17,10 +17,11 @@ is functionally rich and useful for evaluation purposes.
 KVM Installation 
 ----------------
 
-For this quick start guide, we'll need a single VM named test.template running
-on a KVM system. What the VM is running is not important and there are 
-good instructions on the internet for setting up a KVM hypervisor and 
-creating a VM. This section will provide references to these sites.
+For this quick start guide, we'll need a single VM named test.template on 
+the hypervisor off and ready to be cloned.  What the VM is running is not
+important and there are good instructions on the internet for setting up a
+KVM hypervisor and creating a VM. This section will provide references to
+these sites.
 
 For installing KVM on Ubuntu 16.04, refer to this site https://help.ubuntu.com/community/KVM/Installation. Once complete, you will need the following 
 information:
@@ -30,8 +31,8 @@ information:
   - IP Address of the KVM hypervisor if Testpool is not running on the
     hypervisor
 
-For the rest of this guide, we'll assume the user is admin with password 
-as password. Testpool will be installed on the hypervisor, so the IP address
+For the rest of this guide, we'll assume the user admin with password 
+as 'password'. Testpool will be installed on the hypervisor, so the IP address
 used is localhost.
 
 Now a single VM is required which represents the template that is managed
@@ -49,14 +50,15 @@ an Ubuntu 16.04 server VM.
   #. Select Hypervisor in the virt-manager,
   #. Choose **Create a new virtual manager**.
   #. Choose **Network Install (HTTP, FTP or NFS)** then Forward.
-  #. For URL, enter **http://us.archive.ubuntu.com/ubuntu/dists/wily/main/installer-amd64/**
+  #. For URL, enter **http://us.archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/** The URL changes periodically, check the ubuntu site for the 
+     latest valid links.
 
 
 Testpool Installation
 ---------------------
 
-We'll install Testpool from source, however prior the following must be
-installed, starting with an Ubuntu 16.04 system:
+We'll install Testpool from source, as well as the latest virt-manager
+in order to get the latest python bindings.
 
   #. Install the latest virt-manager in order to install the latest python
      bindings::
@@ -70,10 +72,10 @@ installed, starting with an Ubuntu 16.04 system:
 
        https://pypi.python.org/pypi/libvirt-python
 
-  #. Install testpool from the github release area::
+  #. Download testpool from github release area::
 
-       wget https://github.com/testcraftsman/testpool/archive/0.0.3.tar.gz
-       tar -xf 0.0.3.tar.gz
+       wget https://github.com/testcraftsman/testpool/archive/0.0.5.tar.gz
+       tar -xf testpool-0.0.5.tar.gz
 
   #. Install several required packages::
 
@@ -97,17 +99,26 @@ A Short Tour
 ------------
 
 In order for Testpool to manage VMs, Hypervisor information is registered
-with the Testpool along with a single VM template.
+with the Testpool along with a name of a single VM template.
 
 Create a VM on the KVM hypervisor called test.template and keep it shutdown. Now create a testpool profile given the IP address and name of the VM template.
 
-While running testpool on the hypervisor, use tpl CLI create a test pool 
+Where hypervisor-ip is replaced with the actual Hypervisor IP address.  While 
+running testpool on the hypervisor, use the tpl CLI to create a test pool 
 profile::
 
-  tpl profile add localhost kvm test.profile test.template 4
+  ./bin/tpl profile add test.profile kvm qemu:///system test.template 4
+
+Confirm the profile is valid::
+
+  ./bin/tpl profile detail test.profile
 
 The Testpool Daemon will clone 4 VMs from the test.template. This can take
-a while which is the point for this tool. Use **virt-manager** to see the 
-VMs being created.
+a while which is the point of this tool. In that Testpool, maintains a 
+pool of VMs which are immediatelly available.  Use **virt-manager** to see the 
+VMs being created. 
+
+From this point, Testpool is cloning VMs for use, the examples folder relies on
+this configuration to run. Refer to the example below to see how to use Testpool.
 
 .. literalinclude:: /../../examples/python_api.py

@@ -20,7 +20,7 @@ class Testsuite(unittest.TestCase):
         (hv1, _) = models.HV.objects.get_or_create(hostname="localhost",
                                                    product="fake")
         (profile1, _) = models.Profile.objects.get_or_create(
-            name="test.profile1", hv=hv1, template_name="test.template",
+            name="fake.profile1", hv=hv1, template_name="test.template",
             vm_max=10)
 
         vmpool = api.VMPool("memory")
@@ -34,7 +34,7 @@ class Testsuite(unittest.TestCase):
         (hv1, _) = models.HV.objects.get_or_create(hostname="localhost",
                                                    product="fake")
         (profile1, _) = models.Profile.objects.get_or_create(
-            name="test.profile1", hv1, template_name="test.template",
+            name="fake.profile1", hv=hv1, template_name="test.template",
             vm_max=10)
         vmpool = api.VMPool("memory")
 
@@ -44,21 +44,21 @@ class Testsuite(unittest.TestCase):
 
         for count in range(10):
             logging.debug("pop count %d", count)
-            vm1 = algo.pop("test.profile1", 1)
+            vm1 = algo.pop("fake.profile1", 1)
             self.assertTrue(vm1)
 
         with self.assertRaises(algo.NoResources):
-            algo.pop("fake", "test.profile1", 1)
+            algo.pop("fake.profile1", 1)
 
     def test_push(self):
         """ test_push. """
 
-        profile_name = "test.profile1"
+        profile_name = "fake.profile1"
 
         (hv1, _) = models.HV.objects.get_or_create(hostname="localhost",
                                                    product="fake")
         (profile1, _) = models.Profile.objects.get_or_create(
-            name="test.profile1", hv=hv1, vm_max=10,
+            name="fake.profile1", hv=hv1, vm_max=10,
             template_name="test.template")
 
         vmpool = api.VMPool("memory")
@@ -78,12 +78,12 @@ class Testsuite(unittest.TestCase):
     def test_push_too_many(self):
         """ test_push_too_many"""
 
-        profile_name = "test.profile1"
+        profile_name = "fake.profile1"
 
         (hv1, _) = models.HV.objects.get_or_create(hostname="localhost",
                                                    product="fake")
         (profile1, _) = models.Profile.objects.get_or_create(
-            name="test.profile1", hv=hv1, template_name="test.template",
+            name="fake.profile1", hv=hv1, template_name="test.template",
             vm_max=10)
 
         vmpool = api.vmpool_get(profile1)
@@ -103,10 +103,10 @@ class Testsuite(unittest.TestCase):
         testpool.core.server.adapt(api_exts)
 
     def tearDown(self):
-        """ Remove any previous test profiles1. """
+        """ Remove any previous fake profiles1. """
 
         try:
-            profile1 = models.Profile.objects.get(name="test.profile1")
+            profile1 = models.Profile.objects.get(name="fake.profile1")
             for vm1 in models.VM.objects.filter(profile=profile1):
                 vm1.delete()
             profile1.delete()

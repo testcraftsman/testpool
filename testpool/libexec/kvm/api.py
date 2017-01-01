@@ -110,8 +110,14 @@ class VMPool(testpool.core.api.VMPool):
 
         self.context = context
         self.url_name = url_name
-        auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE], None]
-        self.conn = libvirt.openAuth(url_name, auth, 0)
+        print "MARK: url_name", url_name
+        if url_name.startswith("qemu") or url_name.startswith("qemu+ssh"):
+            print "MARK: connection"
+            self.conn = libvirt.open(url_name)
+        elif url_name.startswith("qemu+tcp"):
+            auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE],
+                    None]
+            self.conn = libvirt.openAuth(url_name, auth, 0)
 
     def timing_get(self, request):
         """ Return algorithm timing based on the request. """
@@ -242,7 +248,7 @@ class VMPool(testpool.core.api.VMPool):
 
         rtc = []
 
-        for item in self.conn.listAllDoains():
+        for item in self.conn.listAllDomains():
             vm_name = item.name()
             if self.vm_is_clone(profile1, vm_name):
                 rtc.append(vm_name)
@@ -280,9 +286,8 @@ def vmpool_get(profile):
     # User qemu+ssh://hostname/system list --all
     # or 
     # User qemu+tcp://username@hostname/system list --all
-    url_name = "%s/system" % profile.hv.connection
     try:
-        return VMPool(url_name, profile.name)
+        return VMPool(profile.hv.connection, profile.name)
     except libvirt.libvirtError, arg:
         # logger.exception(arg)
         raise exceptions.ProfileError(str(arg), profile)

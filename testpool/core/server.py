@@ -279,10 +279,10 @@ def main(args):
     # Restart the daemon if extensions change.
     exts = ext.api_ext_list()
     if args.setup:
-        setup(exts)
+        exceptions.try_catch(coding.Curry(setup, exts))
     else:
         LOGGER.info("testpool server setup skipped")
-    adapt(exts)
+    exceptions.try_catch(coding.Curry(adapt, exts))
     ##
 
     while count == FOREVER or count > 0:
