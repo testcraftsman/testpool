@@ -110,9 +110,7 @@ class VMPool(testpool.core.api.VMPool):
 
         self.context = context
         self.url_name = url_name
-        print "MARK: url_name", url_name
         if url_name.startswith("qemu") or url_name.startswith("qemu+ssh"):
-            print "MARK: connection"
             self.conn = libvirt.open(url_name)
         elif url_name.startswith("qemu+tcp"):
             auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE],
