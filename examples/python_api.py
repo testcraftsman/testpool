@@ -1,5 +1,5 @@
 """
-Examples on how to call the REST interfaces.
+Examples on how to call the Testpool REST interfaces.
 
 To run this file type
 
@@ -16,7 +16,7 @@ this testsuite ends.  Once a VM is acquired, this test can login and use the
 VM throughout the entire testsuite.
 
 
-This example checks for a hypervisor profile named test.profile. If
+This example checks for a hypervisor profile named example . If
 one does not exist, then a fake profile is created.  A fake.profile is used
 to show examples without having to take the time to configure an actual
 hypervisor.
@@ -39,7 +39,7 @@ def vm_hndl():
     """ provide an example of a global RESOURCE for the entire test."""
 
     with testpool.client.VMHndl(conftest.GLOBAL["hypervisor"],
-                                "test.profile") as hndl:
+                                "example") as hndl:
         GLOBAL["resource"] = hndl
         yield hndl
 
@@ -55,8 +55,7 @@ class Testsuite(unittest.TestCase):
         """
 
         ##
-        # The ip attribute provides the IP address of the VM. The testsuite
-        # uses a fake profile where all VMs use 127.0.0.1.
+        # The ip attribute provides the IP address of the VM.
         self.assertEqual(GLOBAL["resource"].ip_addr,
                          conftest.GLOBAL["hypervisor"])
 
@@ -66,9 +65,8 @@ class Testsuite(unittest.TestCase):
         ##
         # Shows an example of the context manager.
         with testpool.client.VMHndl(conftest.GLOBAL["hypervisor"],
-                                    "test.profile") as hndl:
+                                    "example") as hndl:
             ##
             # This assert is to show that a different VM was picked.
-            # Normally vm.ip will point to another VM, but for the test.profile
-            # all VMs have 127.0.0.1 IP address.
             self.assertNotEqual(hndl.vm.id, GLOBAL["resource"].vm.id)
+            self.assertNotEqual(hndl.vm.ip_addr, GLOBAL["resource"].vm.ip_addr)
