@@ -1,4 +1,5 @@
 -Figure out best way to connect to KVM, ssh password is cumbersome.
+ -Catch exception in setup to mark profile as bad
  -Look into openssh-askpass
 -If profile add fails do not create a profile
 -Handle when a profile maps to the same template.
