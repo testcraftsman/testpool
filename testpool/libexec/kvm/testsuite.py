@@ -1,9 +1,31 @@
+# (c) 2015 Mark Hamilton, <mark.lee.hamilton@gmail.com>
+#
+# This file is part of testpool
+#
+# Testbed is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Testbed is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 Tests KVM API
 
-Change the TEST_HOST global variable to your hypervisor and create a
-test.template VM.
+In order to run these tests, either:
+  - change the TEST_HOST global variable to your hypervisor and create
+    a test.template VM.
+  - Use existing CONNECTION and use a localhost KVM hypvervisor and
+    create a test.template VM.
+Also, make sure tpl-daemon is NOT running.
 """
+
 import time
 import unittest
 import logging
@@ -14,9 +36,10 @@ from testpool.core import server
 from testpool.core import ext
 from testpool.core import algo
 
-TEST_HOST = "192.168.0.7"
+CONNECTION = "qemu:///system"
 TEST_PROFILE = "test.kvm.profile"
-TEST_TEMPLATE = "test.template"
+TEMPLATE = "test.template"
+PRODUCT = "kvm"
 
 
 class Testsuite(unittest.TestCase):
@@ -26,8 +49,8 @@ class Testsuite(unittest.TestCase):
         """ Create KVM profile. """
 
         (hv1, _) = models.HV.objects.get_or_create(
-            hostname="testpool@"+TEST_HOST, product="kvm")
-        defaults = {"vm_max": 3, "template_name": TEST_TEMPLATE}
+            connection=CONNECTION, product=PRODUCT)
+        defaults = {"vm_max": 3, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
             name=TEST_PROFILE, hv=hv1, defaults=defaults)
 
@@ -43,24 +66,25 @@ class Testsuite(unittest.TestCase):
             pass
 
         try:
-            hv1 = models.HV.objects.get(hostname=TEST_HOST, product="kvm")
+            hv1 = models.HV.objects.get(connection=CONNECTION,
+                                        product=PRODUCT)
             hv1.delete()
         except models.HV.DoesNotExist:
             pass
 
     def test_clone(self):
         """ test clone.
-        Clone three VMs. """
 
-        fmt = "qemu+ssh://testpool@%s/system"
-        url = fmt % TEST_HOST
-        hv1 = libvirt.open(url)
+        Clone three VMs. """
+        COUNT = 2
+
+        hv1 = libvirt.open(CONNECTION)
         self.assertTrue(hv1)
 
-        vmpool = kvm.api.VMPool(url, "test")
+        vmpool = kvm.api.VMPool(CONNECTION, "test")
         self.assertTrue(vmpool)
-        for item in range(3):
-            vm_name = TEST_TEMPLATE + ".%d" % item
+        for item in range(COUNT):
+            vm_name = TEMPLATE + ".%d" % item
             try:
                 vmpool.destroy(vm_name)
             except libvirt.libvirtError:
@@ -68,16 +92,16 @@ class Testsuite(unittest.TestCase):
 
         pool = [item for item in vmpool.conn.listAllDomains()]
         pool = [item.name() for item in pool]
-        pool = [item for item in pool if item.startswith(TEST_TEMPLATE)]
-        for item in range(3):
-            vm_name = TEST_TEMPLATE + ".%d" % item
+        pool = [item for item in pool if item.startswith(TEMPLATE)]
+        for item in range(COUNT):
+            vm_name = TEMPLATE + ".%d" % item
             if vm_name not in pool:
                 logging.debug("creating %s", vm_name)
-                vmpool.clone(TEST_TEMPLATE, vm_name)
+                vmpool.clone(TEMPLATE, vm_name)
                 vmpool.start(vm_name)
 
-        for item in range(3):
-            vm_name = "test.template.%d" % item
+        for item in range(COUNT):
+            vm_name = "%s.%d" % (TEMPLATE, item)
             try:
                 vmpool.destroy(vm_name)
             except libvirt.libvirtError:
@@ -86,10 +110,7 @@ class Testsuite(unittest.TestCase):
     def test_info(self):
         """ test_info """
 
-        fmt = "qemu+ssh://testpool@%s/system"
-        cmd = fmt % TEST_HOST
-
-        hndl = libvirt.open(cmd)
+        hndl = libvirt.open(CONNECTION)
         self.assertTrue(hndl)
 
         self.assertTrue(hndl.getInfo())
@@ -97,9 +118,7 @@ class Testsuite(unittest.TestCase):
 
     def test_storage(self):
         """ test_storage """
-        fmt = "qemu+ssh://testpool@%s/system"
-        cmd = fmt % TEST_HOST
-        hndl = libvirt.open(cmd)
+        hndl = libvirt.open(CONNECTION)
         self.assertTrue(hndl)
 
         for item in hndl.listDomainsID():
@@ -112,16 +131,14 @@ class Testsuite(unittest.TestCase):
 
         profile1 = models.Profile.objects.get(name=TEST_PROFILE)
 
-        fmt = "qemu+ssh://testpool@%s/system"
-        connect = fmt % TEST_HOST
         hv1 = kvm.api.vmpool_get(profile1)
         self.assertTrue(hv1)
 
-        hndl = libvirt.open(connect)
+        hndl = libvirt.open(CONNECTION)
         self.assertTrue(hndl)
 
         try:
-            vm_name = "test.template.destroy"
+            vm_name = "%s.destroy" % TEMPLATE
             hv1.start(vm_name)
         except libvirt.libvirtError:
             pass
@@ -145,10 +162,9 @@ class TestsuiteServer(unittest.TestCase):
     def tearDown(self):
         """ Make sure profile is removed. """
         try:
-            hv1 = models.HV.objects.get(hostname="testpool@"+TEST_HOST,
-                                        product="kvm")
-            profile1 = models.Profile.objects.get(name="test.kvm.profile",
-                                                  hv=hv1)
+            hv1 = models.HV.objects.get(connection=CONNECTION,
+                                        product=PRODUCT)
+            profile1 = models.Profile.objects.get(name=TEST_PROFILE, hv=hv1)
             vmpool = kvm.api.vmpool_get(profile1)
             algo.destroy(vmpool, profile1)
 
@@ -161,13 +177,12 @@ class TestsuiteServer(unittest.TestCase):
     def test_setup(self):
         """ test_setup. """
 
-        # fmt = "qemu+ssh://testpool@%s/system"
-        (hv1, _) = models.HV.objects.get_or_create(
-            hostname="testpool@"+TEST_HOST, product="kvm")
+        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
+                                                   product=PRODUCT)
 
-        defaults = {"vm_max": 1, "template_name": "test.template"}
+        defaults = {"vm_max": 1, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name="test.kvm.profile", hv=hv1, defaults=defaults)
+            name=TEST_PROFILE, hv=hv1, defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
@@ -176,13 +191,13 @@ class TestsuiteServer(unittest.TestCase):
         self.assertEqual(profile1.vm_set.all().count(), 1)
 
     def test_shrink(self):
-        """ test_shrinkg. test when the profile shrinks. """
+        """ test_shrink. test when the profile shrinks. """
 
-        (hv1, _) = models.HV.objects.get_or_create(
-            hostname="testpool@"+TEST_HOST, product="kvm")
-        defaults = {"vm_max": 3, "template_name": "test.template"}
+        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
+                                                   product=PRODUCT)
+        defaults = {"vm_max": 3, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name="test.kvm.profile", hv=hv1, defaults=defaults)
+            name=TEST_PROFILE, hv=hv1, defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
@@ -199,20 +214,18 @@ class TestsuiteServer(unittest.TestCase):
         self.assertEqual(server.main(args), 0)
         exts = ext.api_ext_list()
 
-        vmpool = exts["kvm"].vmpool_get(profile1)
+        vmpool = exts[PRODUCT].vmpool_get(profile1)
         self.assertEqual(len(vmpool.vm_list(profile1)), 2)
 
     def test_expand(self):
-        """ test_expand. """
+        """ test_expand. Check when profile increases. """
 
-        product = "kvm"
-        profile_name = "test.kvm.profile"
 
-        (hv1, _) = models.HV.objects.get_or_create(
-            hostname="testpool@"+TEST_HOST, product="kvm")
-        defaults = {"vm_max": 2, "template_name": "test.template"}
+        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
+                                                   product=PRODUCT)
+        defaults = {"vm_max": 2, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=profile_name, hv=hv1, defaults=defaults)
+            name=TEST_PROFILE, hv=hv1, defaults=defaults)
 
         ##
         # Now expand to 3 
@@ -225,21 +238,19 @@ class TestsuiteServer(unittest.TestCase):
         self.assertEqual(server.main(args), 0)
 
         exts = ext.api_ext_list()
-        vmpool = exts[product].vmpool_get(profile1)
+        vmpool = exts[PRODUCT].vmpool_get(profile1)
         self.assertEqual(len(vmpool.vm_list(profile1)), 3)
 
     def test_expiration(self):
         """ test_expiration. """
 
-        product = "fake"
-        profile_name = "test.kvm.profile"
         vm_max = 3
 
-        (hv1, _) = models.HV.objects.get_or_create(
-            hostname="testpool@"+TEST_HOST, product="kvm")
-        defaults = {"vm_max": vm_max, "template_name": "test.template"}
+        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
+                                                   product=PRODUCT)
+        defaults = {"vm_max": vm_max, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=profile_name, hv=hv1, defaults=defaults)
+            name=TEST_PROFILE, hv=hv1, defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
