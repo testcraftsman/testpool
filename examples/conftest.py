@@ -33,10 +33,12 @@ import testpool.core.profile
 
 ##
 # In order to run the examples against a real hypervisor, change this
-# IP address.
-GLOBAL = {"hypervisor": "localhost",
-          "profile": "test.profile",
-          "count": 10}
+# IP address. These values are identical to the quick start guide on
+# purpose.
+GLOBAL = {"hostname": "127.0.0.1",
+          "connection": "qemu:///system",
+          "profile": "example",
+          "count": 3}
 ##
 
 
@@ -65,7 +67,7 @@ def setup_db(request):
     ##
     # Add a fake.profile to the database.
     arg_parser = testpool.core.commands.main()
-    fmt = "profile add %(hypervisor)s fake %(profile)s test.template %(count)d"
+    fmt = "profile add %(profile)s kvm %(connection)s test.template %(count)d"
     cmd = fmt % GLOBAL
     args = arg_parser.parse_args(cmd.split())
     assert testpool.core.commands.args_process(None, args) == 0

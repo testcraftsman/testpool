@@ -22,6 +22,12 @@ import requests
 import urllib
 import threading
 from argparse import Namespace
+import testpool.core.exceptions
+
+
+class ResourceError(testpool.core.exceptions.TestpoolError):
+    def __init__(self, message):
+        super(testpool.core.exceptions.TestpoolError, self).__init__(message)
 
 
 def _renew(*args, **kwargs):
@@ -49,9 +55,14 @@ class VMHndl(object):
 
         params = {"expiration": expiration}
 
-        resp = requests.get(self._url_get("acquire"), urllib.urlencode(params))
-        resp.raise_for_status()
-        self.vm = json.loads(resp.text, object_hook=lambda d: Namespace(**d))
+        try:
+            resp = requests.get(self._url_get("acquire"),
+                                urllib.urlencode(params))
+            resp.raise_for_status()
+            self.vm = json.loads(resp.text,
+                                 object_hook=lambda d: Namespace(**d))
+        except HttpError:
+            raise ResourceError("all VMs busy or pending")
 
         interval = self.expiration/2
         self.threading = threading.Timer(interval, _renew, args=(self,))

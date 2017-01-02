@@ -107,7 +107,7 @@ Where hypervisor-ip is replaced with the actual Hypervisor IP address.  While
 running testpool on the hypervisor, use the tpl CLI to create a test pool 
 profile::
 
-  ./bin/tpl profile add example kvm qemu:///system test.template 4
+  ./bin/tpl profile add example kvm qemu:///system test.template 3
 
 Confirm the profile is valid::
 

@@ -38,8 +38,8 @@ GLOBAL = {"resource": None}
 def vm_hndl():
     """ provide an example of a global RESOURCE for the entire test."""
 
-    with testpool.client.VMHndl(conftest.GLOBAL["hypervisor"],
-                                "example") as hndl:
+    with testpool.client.VMHndl(conftest.GLOBAL["hostname"],
+                                conftest.GLOBAL["profile"]) as hndl:
         GLOBAL["resource"] = hndl
         yield hndl
 
@@ -56,16 +56,15 @@ class Testsuite(unittest.TestCase):
 
         ##
         # The ip attribute provides the IP address of the VM.
-        self.assertEqual(GLOBAL["resource"].ip_addr,
-                         conftest.GLOBAL["hypervisor"])
+        self.assertTrue(GLOBAL["resource"].ip_addr is not None)
 
     def test_vm_context_manager(self):
         """ show an example of the client contact manager. """
 
         ##
         # Shows an example of the context manager.
-        with testpool.client.VMHndl(conftest.GLOBAL["hypervisor"],
-                                    "example") as hndl:
+        with testpool.client.VMHndl(conftest.GLOBAL["hostname"],
+                                    conftest.GLOBAL["profile"]) as hndl:
             ##
             # This assert is to show that a different VM was picked.
             self.assertNotEqual(hndl.vm.id, GLOBAL["resource"].vm.id)
