@@ -26,7 +26,7 @@ urlpatterns = patterns(
     url(r'api/profile/release/(?P<vm_id>[\d]+$)', api.profile_release),
     url(r'api/profile/acquire/(?P<profile_name>[\.\w]+$)',
         api.profile_acquire),
-    url(r'api/profile/(?P<pkey>[0-9]+$)', api.profile_detail),
+    url(r'api/profile/detail/(?P<profile_name>[\.\w]+$)', api.profile_detail),
     url(r'api/profile/list', api.profile_list),
     url(r"profile/detail/(?P<profile>.+)",
         views.detail),

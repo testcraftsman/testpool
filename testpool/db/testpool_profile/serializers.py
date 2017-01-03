@@ -32,7 +32,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
         model = Profile
         fields = ('id', 'template_name', 'name', "vm_max", 'expiration',
-                  'kvps')
+                  'kvps', "vm_avaliable")
 
 
 class KeySerializer(serializers.ModelSerializer):

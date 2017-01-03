@@ -137,6 +137,7 @@ USE_L10N = True
 
 ##
 USE_TZ = False
+#USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

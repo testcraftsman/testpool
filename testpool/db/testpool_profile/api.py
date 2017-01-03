@@ -58,22 +58,26 @@ def profile_list(request):
         profiles = [ProfileStats(item) for item in Profile.objects.all()]
         serializer = ProfileStatsSerializer(profiles, many=True)
         return JSONResponse(serializer.data)
+    else:
+        raise Http404("profile_list %s unsupported" % request.method)
 
 
 @csrf_exempt
-def profile_detail(request, pkey):
+def profile_detail(request, profile_name):
     """ Retrieve specific profile.  """
 
     LOGGER.info("testpool_profile.api.profile_detail")
 
     try:
-        profile = Profile.objects.get(pk=pkey)
+        profile = Profile.objects.get(name=profile_name)
     except Profile.DoesNotExist:
-        raise Http404("profile %d not found" % pkey)
+        raise Http404("profile %d not found" % profile_name)
 
     if request.method == "GET":
         serializer = ProfileSerializer(profile)
         return JSONResponse(serializer.data)
+    else:
+        raise Http404("profile_detail %s unsupported" % request.method)
 
 
 @csrf_exempt
@@ -107,7 +111,6 @@ def profile_acquire(request, profile_name):
                 LOGGER.info("profile_acquire %s all VMs taken", profile_name)
                 raise PermissionDenied("all VMs taken for profile %s" %
                                        profile_name)
-
             ##
             # Pick the first VM.
             vm1 = vms[0]

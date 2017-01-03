@@ -32,6 +32,7 @@ class ResourceError(testpool.core.exceptions.TestpoolError):
 
 def _renew(*args, **kwargs):
     """ Renew VM acquisition. """
+
     hndl = args[0]
     hndl.renew()
     interval = hndl.expiration/2
@@ -43,44 +44,71 @@ class VMHndl(object):
 
     As long as the object exists, the VM acquired will be renewed.
     """
-
-    def __init__(self, ip_addr, profile_name, expiration=10):
+    def __init__(self, ip_addr, profile_name, expiration=60,
+                 blocking=False):
         """ Acquire a VM given the parameters.
 
         @param expiration The time in seconds.
+        @param blocking Wait for VM to be available.
         """
         self.profile_name = profile_name
         self.ip_addr = ip_addr
         self.expiration = expiration
-
-        params = {"expiration": expiration}
-
-        try:
-            resp = requests.get(self._url_get("acquire"),
-                                urllib.urlencode(params))
-            resp.raise_for_status()
-            self.vm = json.loads(resp.text,
-                                 object_hook=lambda d: Namespace(**d))
-        except HttpError:
-            raise ResourceError("all VMs busy or pending")
-
-        interval = self.expiration/2
-        self.threading = threading.Timer(interval, _renew, args=(self,))
-        self.threading.start()
+        self.blocking = blocking
+        self.vm = None
+        self.threading = None
 
     def __enter__(self):
         """ Operations are handled in the constructor. """
+        self.acquire(self.blocking)
         return self
 
     def __exit__(self, exception_type, exception_value, traceback):
         """ Operations are handled in the constructor. """
         self.release()
 
+    def acquire(self, blocking=None):
+        """ Acquire an available VM. """
+
+        self.release()
+
+        blocking = self.blocking if blocking is None else blocking
+        params = {"expiration": self.expiration}
+        interval = self.expiration/2
+
+        while True:
+            try:
+                resp = requests.get(self._url_get("acquire"),
+                                    urllib.urlencode(params))
+                resp.raise_for_status()
+                self.vm = json.loads(resp.text,
+                                     object_hook=lambda d: Namespace(**d))
+                self.threading = threading.Timer(interval, _renew,
+                                                 args=(self,))
+                self.threading.start()
+                return self
+            except Exception:
+                if blocking:
+                    time.sleep(interval)
+                    continue
+                raise ResourceError("all VMs busy or pending")
+        return None
+
+
     def release(self):
         """ Release VM resource. """
 
+        if self.threading is None:
+            return
+
+        if self.vm is None:
+            return
+
         self.threading.cancel()
+        self.threading = None
+
         requests.get(self._url_get("release"))
+        self.vm = None
 
     def renew(self):
         """ Return usage of the VM. """
@@ -96,3 +124,10 @@ class VMHndl(object):
         # This should be a config.
         url = "http://%s:8000/testpool/api/" % self.ip_addr
         return url + "profile/%s/%s" % (action, self.profile_name)
+
+    def detail_get(self):
+        """ Create URL for the given action. """
+
+        resp = requests.get(self._url_get("detail"))
+        resp.raise_for_status()
+        return json.loads(resp.text)

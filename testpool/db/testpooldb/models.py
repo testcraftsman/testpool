@@ -187,6 +187,7 @@ class VM(models.Model):
 
     def transition(self, status, action, action_time_delta):
         """ Transition VM through states. """
+
         LOGGER.info("%s: transition %s %s in %d (sec)", self.name,
                     VM.status_to_str(status), action, action_time_delta)
         self.status = status
@@ -265,6 +266,10 @@ class Profile(models.Model):
 
     action = models.CharField(max_length=36, default="none")
     action_time = models.DateTimeField(auto_now_add=True)
+
+    def vm_avaliable(self):
+        """ Current available VMs. """
+        return self.vm_set.filter(status=VM.READY).count()
 
     def stacktrace_set(self, msg, stack_trace):
         """ Store the exception received while operating on a profile. """
