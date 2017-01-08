@@ -18,12 +18,6 @@ TEST_URL = "http://%(hostname)s:8000/testpool/api/" % conftest.GLOBAL
 class Testsuite(unittest.TestCase):
     """ Demonstrate each REST interface. """
 
-    def tearDown(self):
-        ##
-        # This gives the daemon time to restart the VMs.
-        time.sleep(5 * 60)
-        ##
-
     def test_profile_list(self):
         """ test_profile_list. """
 
@@ -64,6 +58,12 @@ class Testsuite(unittest.TestCase):
         resp = requests.get(url)
         resp.raise_for_status()
 
+        ##
+        # This gives the daemon time to restart the VMs.
+        print "sleeping to allow daemon to rebuild VMs."
+        time.sleep(3 * 60)
+        ##
+
     def test_acquire_too_many(self):
         """ test_acquire_too_many attempt to acquire too many VMs."""
 
@@ -90,6 +90,12 @@ class Testsuite(unittest.TestCase):
             url = TEST_URL + "profile/release/%d" % vm_id
             resp = requests.get(url)
             resp.raise_for_status()
+
+        ##
+        # This gives the daemon time to restart the VMs.
+        print "sleeping to allow daemon to rebuild VMs."
+        time.sleep(7 * 60)
+        ##
 
     def test_acquire_renew(self):
         """ test_acquire_renew renew an acquired VM. """
