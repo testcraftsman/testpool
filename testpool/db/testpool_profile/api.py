@@ -90,13 +90,8 @@ def profile_acquire(request, profile_name):
 
     LOGGER.info("profile_acquire %s", profile_name)
     if request.method == 'GET':
-        expiration_seconds = request.GET.get("expiration", 10*60)
+        expiration_seconds = request.GET.get("expiration", 10 * 60)
         expiration_seconds = int(expiration_seconds)
-        ##
-        # todo add check for illegal parameters.
-        ##
-        LOGGER.debug("expiration in seconds %s", expiration_seconds)
-
         try:
             profile = Profile.objects.get(name=profile_name)
         except Profile.DoesNotExist:

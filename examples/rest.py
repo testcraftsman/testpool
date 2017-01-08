@@ -3,45 +3,37 @@
 
   The database needs to be running in order for these examples can run.
 """
+import time
 import json
 import datetime
 import urllib
 import unittest
 import requests
 import conftest
-import testpool.core.commands
-import testpool.core.server
 
 
-TEST_URL = "http://127.0.0.1:8000/testpool/api/"
+TEST_URL = "http://%(hostname)s:8000/testpool/api/" % conftest.GLOBAL
 
 
 class Testsuite(unittest.TestCase):
     """ Demonstrate each REST interface. """
 
-    def setUp(self):
-        """ setup results. """
-
+    def tearDown(self):
         ##
-        # Use the core server code to update fake profike content after
-        # each test. For example, a test could release a VM but the
-        # VM will not be actually released until the server core is done.
-        arg_parser = testpool.core.server.argparser()
-        cmd = "--count 100 --max-sleep-time 0 --min-sleep-time 0"
-        args = arg_parser.parse_args(cmd.split())
-        testpool.core.server.args_process(args)
-        testpool.core.server.main(args)
+        # This gives the daemon time to restart the VMs.
+        time.sleep(5 * 60)
         ##
 
     def test_profile_list(self):
         """ test_profile_list. """
+
         url = TEST_URL + "profile/list"
         resp = requests.get(url)
         resp.raise_for_status()
         profiles = json.loads(resp.text)
 
         self.assertEqual(len(profiles), 1)
-        self.assertEqual(profiles[0]["name"], "test.profile")
+        self.assertEqual(profiles[0]["name"], "example")
 
         self.assertTrue("vm_max" in profiles[0])
         self.assertTrue("vm_ready" in profiles[0])
@@ -49,7 +41,7 @@ class Testsuite(unittest.TestCase):
     def test_profile_acquire(self):
         """ test_profile_acquire acquire a VM. """
 
-        url = TEST_URL + "profile/acquire/test.profile"
+        url = TEST_URL + "profile/acquire/example"
         resp = requests.get(url)
         resp.raise_for_status()
         vm1 = json.loads(resp.text)
@@ -74,8 +66,9 @@ class Testsuite(unittest.TestCase):
 
     def test_acquire_too_many(self):
         """ test_acquire_too_many attempt to acquire too many VMs."""
+
         prev_vms = set()
-        url = TEST_URL + "profile/acquire/test.profile"
+        url = TEST_URL + "profile/acquire/example"
 
         ##
         # Take all of the VMs
@@ -100,7 +93,8 @@ class Testsuite(unittest.TestCase):
 
     def test_acquire_renew(self):
         """ test_acquire_renew renew an acquired VM. """
-        url = TEST_URL + "profile/acquire/test.profile"
+
+        url = TEST_URL + "profile/acquire/example"
 
         resp = requests.get(url)
         resp.raise_for_status()
