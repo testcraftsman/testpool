@@ -2,12 +2,14 @@ import sys
 import logging
 import structlog
 
-handler = logging.StreamHandler(sys.stdout)
 root_logger = logging.getLogger()
+
+#handler = logging.StreamHandler(sys.stdout)
+#root_logger.addHandler(handler)
+
+handler = logging.FileHandler("/var/log/testpool/logstash.log")
 root_logger.addHandler(handler)
 
-handler = logging.FileHandler("/var/tmp/testpool.log")
-root_logger = logging.getLogger()
 root_logger.setLevel(logging.INFO)
 
 
@@ -28,5 +30,5 @@ structlog.configure(
       )
 log = structlog.wrap_logger(root_logger)
 #PrintLogger())
-for count in range(100):
+for count in range(10000):
     log.info(profile="test.example", vm_count=count % 11, vm_max=10)
