@@ -1,1 +1,1 @@
-package_version="0.0.5"
+package_version="0.0.6"
