@@ -18,7 +18,9 @@ structlog.configure(
               structlog.stdlib.filter_by_level,
               structlog.stdlib.add_log_level,
               structlog.stdlib.PositionalArgumentsFormatter(),
-              structlog.processors.TimeStamper(fmt="iso"),
+              # structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S",
+              #structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S",
+              structlog.processors.TimeStamper(fmt="iso", utc=False),
               structlog.processors.StackInfoRenderer(),
               structlog.processors.format_exc_info,
               structlog.processors.JSONRenderer()
