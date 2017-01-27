@@ -1,0 +1,31 @@
+[
+  {
+    "_id": "testpool-profile-status",
+    "_type": "visualization",
+    "_source": {
+      "title": "testpool-profile-status",
+      "visState": "{\"type\":\"timelion\",\"title\":\"testpool-profile-status\",\"params\":{\"expression\":\".es(index=filebeat-*, split=\\\"profile:100\\\", metric=\\\"max:vm_count\\\").label(regex='.*profile:(.*) .*',label='$1').title(\\\"Testpool Avaliable VMs per Profile\\\")\",\"interval\":\"auto\"}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{}"
+      }
+    }
+  },
+  {
+    "_id": "testpool-profile-status-minimum",
+    "_type": "visualization",
+    "_source": {
+      "title": "testpool-profile-status-minimum",
+      "visState": "{\"title\":\"testpool-profile-status-minimum\",\"type\":\"table\",\"params\":{\"perPage\":10,\"showPartialRows\":false,\"showMeticsAtAllLevels\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"showTotal\":false,\"totalFunc\":\"sum\"},\"aggs\":[{\"id\":\"4\",\"enabled\":true,\"type\":\"max\",\"schema\":\"metric\",\"params\":{\"field\":\"vm_max\",\"customLabel\":\"Max VMs\"}},{\"id\":\"5\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"bucket\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{},\"customLabel\":\"Timestamp\"}},{\"id\":\"6\",\"enabled\":true,\"type\":\"min\",\"schema\":\"metric\",\"params\":{\"field\":\"vm_count\",\"customLabel\":\"Min Avaliable\"}}],\"listeners\":{}}",
+      "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":0,\"direction\":\"desc\"}}}}",
+      "description": "",
+      "savedSearchId": "testpool-profile-search",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"filter\":[]}"
+      }
+    }
+  }
+]
