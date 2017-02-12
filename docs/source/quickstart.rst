@@ -68,6 +68,13 @@ in order to get the latest python bindings.
        cd virt-manager-1.4.0
        sudo -H python ./setup.py install
 
+  #. install virtinst
+
+       wget https://releases.pagure.org/virt-manager/virtinst-0.600.4.tar.gz
+       tar -xf virtinst-0.600.4.tar.gz
+       cd virtinst-0.600.4
+       sudo -H python ./setup.py install
+
   #. Install the latest python bindings to libvirt from::
 
        https://pypi.python.org/pypi/libvirt-python
