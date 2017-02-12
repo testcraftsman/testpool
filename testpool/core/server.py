@@ -45,6 +45,8 @@ from testpooldb import models
 FOREVER = None
 LOGGER = logger.create()
 
+CFG = None
+
 
 # pylint: disable=R0912
 # pylint: disable=W0703

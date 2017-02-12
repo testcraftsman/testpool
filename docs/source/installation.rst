@@ -72,7 +72,7 @@ version:
 
   **sudo pip install https://github.com/testbed/testbed/archive/v0.1-alpha.8.tar.gz**
 
-#. Edit the file testbed configuration file:
+    #. Edit the file testbed configuration file:
 
   **/usr/local/testbed/etc/mysql.cnf**
 
