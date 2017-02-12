@@ -108,6 +108,8 @@ class VMPool(testpool.core.api.VMPool):
         """ Constructor. """
         testpool.core.api.VMPool.__init__(self, context)
 
+        print "MARK: VMPool called"
+
         self.context = context
         self.url_name = url_name
         if url_name.startswith("qemu") or url_name.startswith("qemu+ssh"):
@@ -116,6 +118,7 @@ class VMPool(testpool.core.api.VMPool):
             auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE],
                     None]
             self.conn = libvirt.openAuth(url_name, auth, 0)
+        print "MARK: ", self.conn
 
     def timing_get(self, request):
         """ Return algorithm timing based on the request. """
@@ -179,8 +182,8 @@ class VMPool(testpool.core.api.VMPool):
         def _do_creds_authname(_):
             return 0
 
-        conn = virtinst.connection.VirtualConnection(self.url_name)
-        conn.open(_do_creds_authname)
+        self.conn = virtinst.connection.VirtualConnection(self.url_name)
+        self.conn.open(_do_creds_authname)
 
         design = cloner.Cloner(conn)
 
