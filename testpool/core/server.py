@@ -49,6 +49,8 @@ FOREVER = None
 CFG = None
 LOGGER = logger.create()
 
+CFG = None
+
 
 class NullHandler(logging.Handler):
     """ Supress warning messages. """

@@ -16,6 +16,7 @@ def main():
 
     arg_parser = server.argparser()
     args = arg_parser.parse_args()
+    server.cfg_process()
     server.args_process(args)
     server.main(args)
 
