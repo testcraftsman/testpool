@@ -6,3 +6,6 @@ pytz>=2015.7
 djangorestframework>=3.4.1
 requests>=2.10.0
 libvirt-python>=2.2.0
+pycurl>=7.43.0
+ipaddr>=7.43.0
+virtinst>=0.600.4
