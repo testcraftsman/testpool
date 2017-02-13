@@ -119,14 +119,18 @@ class Testsuite(unittest.TestCase):
 
         arg_parser = main()
 
-        cmd = "profile add localhost fake test.profile test.template 10"
+        cmd = "profile add test.profile fake localhost test.template 10"
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)
 
-        cmd = "vm incr localhost fake test.profile 1"
+        cmd = "vm incr test.profile"
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)
 
-        cmd = "profile remove localhost test.profile"
+        cmd = "vm incr test.profile --count 2"
+        args = arg_parser.parse_args(cmd.split())
+        self.assertEqual(args_process(None, args), 0)
+
+        cmd = "profile remove test.profile"
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)
