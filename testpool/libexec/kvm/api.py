@@ -106,16 +106,19 @@ class VMPool(testpool.core.api.VMPool):
 
     def __init__(self, url_name, context):
         """ Constructor. """
+
         testpool.core.api.VMPool.__init__(self, context)
 
         self.context = context
         self.url_name = url_name
-        if url_name.startswith("qemu") or url_name.startswith("qemu+ssh"):
-            self.conn = libvirt.open(url_name)
-        elif url_name.startswith("qemu+tcp"):
+        if url_name.startswith("qemu+tcp"):
             auth = [[libvirt.VIR_CRED_AUTHNAME, libvirt.VIR_CRED_PASSPHRASE],
                     None]
             self.conn = libvirt.openAuth(url_name, auth, 0)
+        elif url_name.startswith("qemu") or url_name.startswith("qemu+ssh"):
+            self.conn = libvirt.open(url_name)
+        else:
+            raise ValueError("unsupported connection %s", url_name)
 
     def timing_get(self, request):
         """ Return algorithm timing based on the request. """
