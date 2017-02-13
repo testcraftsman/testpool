@@ -320,7 +320,7 @@ def main(args):
 class FakeArgs(object):
     """ Used in testing to pass values to server.main. """
     def __init__(self):
-        self.count = 30
+        self.count = 100
         self.sleep_time = 0
         self.max_sleep_time = 0
         self.min_sleep_time = 0
