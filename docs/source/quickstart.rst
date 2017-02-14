@@ -74,8 +74,8 @@ in order to get the latest python bindings.
 
   #. Download testpool from github release area::
 
-       wget https://github.com/testcraftsman/testpool/archive/0.0.5.tar.gz
-       tar -xf testpool-0.0.5.tar.gz
+       wget https://github.com/testcraftsman/testpool/archive/v0.0.7.tar.gz
+       tar -xf testpool-0.0.7.tar.gz
 
   #. Install several required packages::
 
