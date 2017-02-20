@@ -1,11 +1,13 @@
 -Figure out best way to connect to KVM, ssh password is cumbersome.
  -Catch exception in setup to mark profile as bad
  -Look into openssh-askpass
+-Look at integration with MAAS
 -action datetime should be local time
 -If profile add fails do not create a profile
 -Handle when a profile maps to the same template.
 -Check to see what happens when tpl-daemon starts but profile bogus
 -Show actions in web pages and CLI
+-Add elastic search support
 -Add kibana support
 -Add Graphana support
 -Create a style for the web pages
