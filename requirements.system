@@ -1,3 +1,4 @@
 apt-file
 git
 debhelper
+python-yaml
