@@ -3,6 +3,7 @@
  -Look into openssh-askpass
 -Look at integration with MAAS
 -action datetime should be local time
+-Container support
 -If profile add fails do not create a profile
 -Handle when a profile maps to the same template.
 -Check to see what happens when tpl-daemon starts but profile bogus
@@ -16,3 +17,4 @@
 -tpl-db figure out auto setup
 -DEBUG=False when testpool is installed
 -Change JSON output to named tuple
+-Create a testpool-beat
