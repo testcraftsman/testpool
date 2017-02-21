@@ -30,9 +30,6 @@ import testpool.client
 import conftest
 
 
-print "MARK: test 1"
-
-
 class Testsuite(unittest.TestCase):
     """ Demonstrate testpool.client API. """
 
@@ -41,7 +38,6 @@ class Testsuite(unittest.TestCase):
 
         Acquire a single VM. Demonstrate how to determine the VMs IP address.
         """
-        print "MARK: acquire"
         hndl = testpool.client.VMHndl(conftest.GLOBAL["hostname"],
                                       conftest.GLOBAL["profile"], 10, True)
         current_vms = hndl.detail_get()["vm_avaliable"]
