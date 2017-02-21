@@ -135,6 +135,15 @@ def _do_profile_detail(args):
             ##
 
 
+def profile_list():
+    """ Return a list of profiles. """
+
+    for profile in models.Profile.objects.all():
+        current = profile.vm_set.filter(status=models.VM.READY).count()
+        profile.current = current
+        yield profile
+
+
 def _do_profile_list(_):
     """ List all profiles. """
     fmt = "%-12s %-5s %-32s %-16s %-5s %-5s"
@@ -143,11 +152,10 @@ def _do_profile_list(_):
 
     # \todo provide a dynamically adjusting column width
     print fmt % ("Name", "Prod", "Connection", "Template", "VMs", "Status")
-    for profile in models.Profile.objects.all():
-        current = profile.vm_set.filter(status=models.VM.READY).count()
+    for profile in profile_list():
         print fmt % (profile.name, profile.hv.product, profile.hv.connection,
                      profile.template_name,
-                     "%s/%s" % (current, profile.vm_max),
+                     "%s/%s" % (profile.current, profile.vm_max),
                      profile.status_str())
     return 0
 

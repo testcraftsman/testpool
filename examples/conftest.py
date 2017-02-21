@@ -14,13 +14,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
+
 """ Populate test database for examples.
 
-The testpool database must be running in order to see the examples in action.
-Examples can run against an installed testpool instance or run the testpool
-database manually, like so:
+Check to see if the user has created an example test profile, if not
+create a fake example profile. A fake example profile uses an in memory
+pretent hypervisor. This is sufficient for seeing the Testpool client
+API in action and for debugging.
 
-  tpl-db runserver
+This code would normally not be required. Refer to the quick start guide or
+installation instruction for setting up a KVM hypervisor.
 
 """
 
@@ -50,7 +53,15 @@ def teardown_db():
     # cmd = "profile remove %(hypervisor)s %(profile)s --immediate" % GLOBAL
     # args = arg_parser.parse_args(cmd.split())
     # assert testpool.core.commands.args_process(None, args) == 0
-    pass
+    profiles = testpool.core.profile.profile_list()
+    for profile in profiles:
+        if profile.hv.product != "fake":
+            continue
+        if profile.name != GLOBAL["profile"]:
+            continue
+        if profile.hv.connection != GLOBAL["connection"]:
+            continue
+        testpool.core.profile.profile_remove(GLOBAL["profile"], True)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -59,18 +70,15 @@ def setup_db(request):
 
     logging.info("setup database")
     ##
-    # Check to see if the user has created a test.profile, if not
-    # create a fake test.profile. This code would normally not be
+    # Check to see if the user has created an example test profile, if not
+    # create a fake example profile. This code would normally not be
     # required. Refer to the quick start guide or installation instruction
-    # for setting up a KVM hypervisor
-
-    ##
-    # Add a fake.profile to the database.
-    arg_parser = testpool.core.commands.main()
-    fmt = "profile add %(profile)s kvm %(connection)s test.template %(count)d"
-    cmd = fmt % GLOBAL
-    args = arg_parser.parse_args(cmd.split())
-    assert testpool.core.commands.args_process(None, args) == 0
-    ##
+    # for setting up a KVM hypervisor.
+    profiles = testpool.core.profile.profile_list()
+    profiles = [item for item in profiles if item.name == GLOBAL["profile"]]
+    if len(profiles) == 0:
+        testpool.core.profile.profile_add(GLOBAL["connection"], "fake",
+                                          GLOBAL["profile"], GLOBAL["count"],
+                                          "test.template")
 
     request.addfinalizer(teardown_db)
