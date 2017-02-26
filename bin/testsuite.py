@@ -17,7 +17,7 @@ class Testsuite(unittest.TestCase):
         data = {
             "tpldaemon": {
                 "profile": {
-                    "log": "/etc/testpool/testpool.cfg"
+                    "log": "/etc/testpool/testpool.yml"
                 }
             }
         }
@@ -28,7 +28,7 @@ class Testsuite(unittest.TestCase):
         data = {
             "tpldaemon": {
                 "profile": {
-                    "log": "1"
+                    "log": 1.2
                 }
             }
         }
