@@ -58,11 +58,10 @@ class Testsuite(unittest.TestCase):
         resp = requests.get(url)
         resp.raise_for_status()
 
-        ##
-        # This gives the daemon time to restart the VMs.
-        print "sleeping to allow daemon to rebuild VMs."
-        time.sleep(3 * 60)
-        ##
+    def tearDown(self):
+        """ This gives the daemon time to restart the VMs. """
+
+        time.sleep(10 * 60)
 
     def test_acquire_too_many(self):
         """ test_acquire_too_many attempt to acquire too many VMs."""
@@ -91,11 +90,6 @@ class Testsuite(unittest.TestCase):
             resp = requests.get(url)
             resp.raise_for_status()
 
-        ##
-        # This gives the daemon time to restart the VMs.
-        print "sleeping to allow daemon to rebuild VMs."
-        time.sleep(7 * 60)
-        ##
 
     def test_acquire_renew(self):
         """ test_acquire_renew renew an acquired VM. """
