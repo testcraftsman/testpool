@@ -9,5 +9,5 @@ tpldaemon:
         # periodically status in regards to profile usage will be logged
         # with the given file.
         # "/var/log/tpldaemon/profile.log"
-        log: ""
+        log: "~/ws/testpool/profile.log"
         ##
