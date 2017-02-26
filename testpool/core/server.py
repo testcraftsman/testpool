@@ -249,7 +249,9 @@ def events_show(banner):
 
 
 def action_vm(vmh):
-    """ Handle VM actions. """
+    """ Handle VM actions.
+    A VM can be destroyed, cloned or its IP address determined.
+    """
 
     exts = ext.api_ext_list()
     LOGGER.info("%s: status %s action %s at %s", vmh.name,
