@@ -12,17 +12,15 @@ logging.getLogger("django.db.backends").setLevel(logging.CRITICAL)
 
 
 # pylint: disable=W0703
-def is_valid_path(_, value):
+def is_valid_path(key, value):
     """ Throw exception if arg is not a path.
 
     The path does not have to exist.
     """
-    if len(value) == 0:
-        return 0
-    if not value.startswith("/"):
-        raise ValueError("illegal path %s" % value)
-    os.path.split(value)
-    return 0
+
+    if not isinstance(value, str):
+        raise ValueError("%s: must be a string" % key)
+    return len(value) == 0:
 
 ##
 # Dictionary of valid content with functions that validate value.
