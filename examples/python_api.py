@@ -40,7 +40,7 @@ class Testsuite(unittest.TestCase):
         """
         hndl = testpool.client.VMHndl(conftest.GLOBAL["hostname"],
                                       conftest.GLOBAL["profile"], 10, True)
-        current_vms = hndl.detail_get()["vm_avaliable"]
+        current_vms = hndl.detail_get()["vm_available"]
         hndl.acquire()
         ##
         # The ip attribute provides the IP address of the VM.
@@ -59,11 +59,11 @@ class Testsuite(unittest.TestCase):
             time.sleep(5)
             details = hndl.detail_get()
             self.assertTrue(details)
-            if details["vm_avaliable"] == current_vms:
+            if details["vm_available"] == current_vms:
                 return
         details = hndl.detail_get()
         self.assertTrue(details)
-        self.assertEqual(details["vm_avaliable"], current_vms)
+        self.assertEqual(details["vm_available"], current_vms)
 
     def test_vm_context_manager(self):
         """ show using client context manager. """
@@ -92,7 +92,7 @@ class Testsuite(unittest.TestCase):
         ##
 
     def test_blocking(self):
-        """ test_blocking. show waiting for VM to be avaliable.
+        """ test_blocking. show waiting for VM to be available.
 
         There are at most 3 VMs available so take 4. With blocking
         there should never be an exception thrown.
@@ -121,7 +121,7 @@ class Testsuite(unittest.TestCase):
         count = 0
         for _ in range(100):
             details = hndl.detail_get()
-            count = details["vm_avaliable"]
+            count = details["vm_available"]
             if count == 3:
                 return
             time.sleep(20)
