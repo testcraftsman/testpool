@@ -31,6 +31,8 @@ import datetime
 import os
 import unittest
 import time
+import logging
+import structlog
 import testpool.settings
 from testpool.core import ext
 from testpool.core import algo
@@ -40,20 +42,70 @@ from testpool.core import commands
 from testpool.core import profile
 from testpool.core import exceptions
 from testpool.core import coding
+from testpool.core import cfgcheck
 from testpooldb import models
 
 FOREVER = None
+CFG = None
 LOGGER = logger.create()
 
-CFG = None
+
+class NullHandler(logging.Handler):
+    """ Supress warning messages. """
+    def emit(self, record):
+        pass
+
+
+PROFILE_LOGGER = None
+
+
+def profile_log_create(log_file):
+    """ Create structured log. """
+
+    if not log_file:
+        return None
+
+    log = logging.getLogger()
+    log.addHandler(logging.FileHandler(log_file))
+    log.setLevel(logging.INFO)
+    structlog.configure(
+        processors=[
+            structlog.stdlib.filter_by_level,
+            structlog.stdlib.add_log_level,
+            structlog.stdlib.PositionalArgumentsFormatter(),
+            structlog.processors.TimeStamper(fmt="iso", utc=False),
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.format_exc_info,
+            structlog.processors.JSONRenderer()
+        ],
+        context_class=dict,
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
+    )
+
+    return structlog.wrap_logger(log)
 
 
 # pylint: disable=R0912
 # pylint: disable=W0703
+# pylint: disable=W0603
 def args_process(args):
-    """ Process any generic parameters. """
+    """ Process any generic parameters.
+
+    Read configuration file /etc/testpool/testpool.yml. Check if configuration
+    file exists, if so load it and validate its content.
+    """
+
+    global CFG
+    global PROFILE_LOGGER
 
     testpool.core.logger.args_process(LOGGER, args)
+    LOGGER.info("checking configuration file %s", args.cfg)
+    ##
+    # After this we know that the configuration is valid.
+    CFG = cfgcheck.check(args.cfg)
+    PROFILE_LOGGER = profile_log_create(CFG.tpldaemon.profile.log)
 
 
 def argparser():
@@ -71,6 +123,9 @@ def argparser():
                         action="store_false",
                         help="Skip system setup. Assume database content "
                         "matches hypervisor")
+    parser.add_argument('--cfg', default=testpool.settings.CFG_FILE,
+                        help="Override default configuration location "
+                        "/etc/testpool/testpool.yml")
     return parser
 
 
@@ -80,6 +135,11 @@ def adapt(exts):
     LOGGER.info("adapt started")
 
     for profile1 in models.Profile.objects.all():
+
+        if PROFILE_LOGGER:
+            PROFILE_LOGGER.info(profile=profile1.name,
+                                vm_count=profile1.vm_available(),
+                                vm_max=profile1.vm_max)
         ext1 = exts[profile1.hv.product]
         vmpool = ext1.vmpool_get(profile1)
         algo.adapt(vmpool, profile1)

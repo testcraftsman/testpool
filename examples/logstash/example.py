@@ -1,3 +1,6 @@
+"""
+push structured content to logstash.
+"""
 import socket
 import json
 import sys
@@ -6,20 +9,19 @@ HOST = '127.0.0.1'
 PORT = 9563
 
 try:
-  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    SOCK = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 except socket.error, msg:
-  sys.stderr.write("[ERROR] %s\n" % msg[1])
-  sys.exit(1)
+    sys.stderr.write("[ERROR] %s\n" % msg[1])
+    sys.exit(1)
 
 try:
-  sock.connect((HOST, PORT))
+    SOCK.connect((HOST, PORT))
 except socket.error, msg:
-  sys.stderr.write("[ERROR] %s\n" % msg[1])
-  sys.exit(2)
+    sys.stderr.write("[ERROR] %s\n" % msg[1])
+    sys.exit(2)
 
-msg = {'@message': 'python test message', '@tags': ['python', 'test']}
+MSG = {'@message': 'python test message', '@tags': ['python', 'test']}
 
-sock.send(json.dumps(msg))
-
-sock.close()
+SOCK.send(json.dumps(MSG))
+SOCK.close()
 sys.exit(0)

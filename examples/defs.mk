@@ -1,1 +1,1 @@
-PYTHON_FILES:=*.py
+PYTHON_FILES:=*.py logstash/*.py

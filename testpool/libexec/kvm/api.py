@@ -109,8 +109,6 @@ class VMPool(testpool.core.api.VMPool):
 
         testpool.core.api.VMPool.__init__(self, context)
 
-        print "MARK: VMPool called"
-
         self.context = context
         self.url_name = url_name
         if url_name.startswith("qemu+tcp"):
@@ -187,7 +185,7 @@ class VMPool(testpool.core.api.VMPool):
         self.conn = virtinst.connection.VirtualConnection(self.url_name)
         self.conn.open(_do_creds_authname)
 
-        design = cloner.Cloner(conn)
+        design = cloner.Cloner(self.conn)
 
         design.clone_running = False
         design.replace = True

@@ -33,3 +33,6 @@ PLUGINS = {
 ##
 # log formatting
 FMT = '%(asctime)s:%(name)s:%(levelname)s:%(message)s'
+
+
+CFG_FILE = "/etc/testpool/testpool.yml"
