@@ -51,9 +51,7 @@ class Testsuite(unittest.TestCase):
         # Assert that one VM was acquires. The number of avaliable VMs
         # will now be less max.
         details = hndl.detail_get()
-        self.assertTrue(details["vm_avaliable"] < current_vms)
-        ##
-
+        self.assertTrue(details["vm_available"] < current_vms)
         hndl.release()
         for _ in range(40 * 6):
             time.sleep(5)

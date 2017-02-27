@@ -49,7 +49,42 @@ FOREVER = None
 CFG = None
 LOGGER = logger.create()
 
-CFG = None
+
+class NullHandler(logging.Handler):
+    """ Supress warning messages. """
+    def emit(self, record):
+        pass
+
+
+PROFILE_LOGGER = None
+
+
+def profile_log_create(log_file):
+    """ Create structured log. """
+
+    if not log_file:
+        return None
+
+    log = logging.getLogger()
+    log.addHandler(logging.FileHandler(log_file))
+    log.setLevel(logging.INFO)
+    structlog.configure(
+        processors=[
+            structlog.stdlib.filter_by_level,
+            structlog.stdlib.add_log_level,
+            structlog.stdlib.PositionalArgumentsFormatter(),
+            structlog.processors.TimeStamper(fmt="iso", utc=False),
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.format_exc_info,
+            structlog.processors.JSONRenderer()
+        ],
+        context_class=dict,
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
+    )
+
+    return structlog.wrap_logger(log)
 
 
 class NullHandler(logging.Handler):
