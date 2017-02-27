@@ -2,7 +2,7 @@
 Examples on how to call the Testpool REST interfaces. Read the quick start
 guide in order to configure Testpoo..
 
-Make sure VMs are avaliable, run:
+Make sure VMs are available, run:
 
   ./bin/tpl profile list
 
@@ -49,23 +49,23 @@ class Testsuite(unittest.TestCase):
         """
         hndl = testpool.client.VMHndl(conftest.GLOBAL["hostname"],
                                       conftest.GLOBAL["profile"], 10, True)
-        current_vms = hndl.detail_get()["vm_avaliable"]
+        current_vms = hndl.detail_get()["vm_available"]
         hndl.acquire()
         ##
         # The ip attribute provides the IP address of the VM.
         self.assertTrue(hndl.ip_addr is not None)
         details = hndl.detail_get()
-        self.assertTrue(details["vm_avaliable"] < current_vms)
+        self.assertTrue(details["vm_available"] < current_vms)
         hndl.release()
         for _ in range(10 * 5):
             time.sleep(6)
             details = hndl.detail_get()
             self.assertTrue(details)
-            if details["vm_avaliable"] == current_vms:
+            if details["vm_available"] == current_vms:
                 return
         details = hndl.detail_get()
         self.assertTrue(details)
-        self.assertEqual(details["vm_avaliable"], current_vms)
+        self.assertEqual(details["vm_available"], current_vms)
 
     def test_vm_context_manager(self):
         """ show an example of the client contact manager. """
@@ -91,7 +91,7 @@ class Testsuite(unittest.TestCase):
         self.assertEqual(details["vm_max"], 3)
 
     def test_blocking(self):
-        """ test_blocking. show waiting for VM to be avaliable.
+        """ test_blocking. show waiting for VM to be available.
 
         There are at most 3 VMs available so take 4. With blocking
         there should never be an exception thrown.
@@ -118,7 +118,7 @@ class Testsuite(unittest.TestCase):
         count = 0
         for _ in range(100):
             details = hndl.detail_get()
-            count = details["vm_avaliable"]
+            count = details["vm_available"]
             if count == 3:
                 return
             time.sleep(20)

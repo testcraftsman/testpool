@@ -123,10 +123,10 @@ class Testsuite(unittest.TestCase):
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)
 
-        cmd = "vm incr localhost fake test.profile 1"
+        cmd = "vm incr localhost"
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)
 
-        cmd = "profile remove localhost test.profile"
+        cmd = "profile remove localhost --immediate"
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)

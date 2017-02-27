@@ -267,7 +267,7 @@ class Profile(models.Model):
     action = models.CharField(max_length=36, default="none")
     action_time = models.DateTimeField(auto_now_add=True)
 
-    def vm_avaliable(self):
+    def vm_available(self):
         """ Current available VMs. """
         return self.vm_set.filter(status=VM.READY).count()
 
