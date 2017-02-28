@@ -90,7 +90,6 @@ class Testsuite(unittest.TestCase):
             resp = requests.get(url)
             resp.raise_for_status()
 
-
     def test_acquire_renew(self):
         """ test_acquire_renew renew an acquired VM. """
 
