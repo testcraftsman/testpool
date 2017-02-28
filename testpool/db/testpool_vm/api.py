@@ -26,7 +26,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import Http404
 from testpooldb.models import VM
 from testpool_profile.serializers import VMSerializer
-from testpool.core import algo
 
 LOGGER = logging.getLogger("django.testpool")
 
@@ -62,7 +61,7 @@ def vm_renew(request, vm_id):
 
         ##
         # assert vm1 defined.
-        vm1.transition(VM.RESERVED, algo.ACTION_DESTROY, expiration_seconds)
+        vm1.transition(VM.RESERVED, VM.ACTION_DESTROY, expiration_seconds)
 
         serializer = VMSerializer(vm1)
         return JSONResponse(serializer.data)
