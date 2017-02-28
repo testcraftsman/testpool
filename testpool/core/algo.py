@@ -10,7 +10,7 @@ import testpool.core.api
 
 ACTION_ATTR = "attr"
 ACTION_CLONE = "clone"
-ACTION_DESTROY = "destroy"
+ACTION_DESTROY = models.VM.ACTION_DESTROY
 ACTION_STATUS = "status"
 ACTION_NONE = "none"
 

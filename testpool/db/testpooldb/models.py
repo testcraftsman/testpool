@@ -123,6 +123,8 @@ class VM(models.Model):
     BAD - VM is in a bad state
     """
 
+    ACTION_DESTROY = "destroy"
+
     READY = 3
     PENDING = 2
     RESERVED = 1
