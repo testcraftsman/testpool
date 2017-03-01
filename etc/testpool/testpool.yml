@@ -1,0 +1,13 @@
+##
+# Section dedicated to configuring tpl-daemon.
+# Changes in this section require restarting the tpl-daemon.
+##
+tpldaemon:
+    profile:
+        ##
+        # Control logging content. If path is defined not empty then 
+        # periodically status in regards to profile usage will be logged
+        # with the given file.
+        # "/var/log/tpldaemon/profile.log"
+        log: ""
+        ##

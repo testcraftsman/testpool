@@ -182,8 +182,8 @@ class VMPool(testpool.core.api.VMPool):
         def _do_creds_authname(_):
             return 0
 
-        conn = virtinst.connection.VirtualConnection(self.url_name)
-        conn.open(_do_creds_authname)
+        self.conn = virtinst.connection.VirtualConnection(self.url_name)
+        self.conn.open(_do_creds_authname)
 
         design = cloner.Cloner(conn)
 

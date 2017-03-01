@@ -1,0 +1,8 @@
+/var/log/testpool/logstash.log {
+	rotate 20
+	compress
+	missingok
+	notifempty
+        copytruncate
+        size 10M
+}
