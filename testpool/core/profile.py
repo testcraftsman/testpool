@@ -117,6 +117,8 @@ def _do_profile_detail(args):
             print "name:     ", profile.name
             print "template: ", profile.template_name
             print "status:   ", profile.status_str()
+            print "VMs available: ", profile.vm_available()
+            print "VMs maximum:   ", profile.vm_max
 
             ##
             # Check to see if the number of VMs should change.

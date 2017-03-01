@@ -83,10 +83,9 @@ We'll install Testpool from source.
        cd testpool/testpool/db
        ./manage.py migrate 
 
-
   #. Run Testpool database. In a shell run::
 
-       cd testpool
+       cd ../..
        ./bin/tpl-db runserver -v 3
 
   #. In a second shell, run the Testpool daemon::
@@ -114,9 +113,10 @@ Confirm the profile is valid::
   ./bin/tpl profile detail example
 
 The Testpool Daemon will clone 3 VMs from the test.template. This can take
-a while which is the point of this tool. In that Testpool, maintains a 
-pool of VMs which are immediatelly available.  Use **virt-manager** to see the 
-VMs being created. 
+a while which is the point of this product. In that, Testpool generates
+new clean clones based on test.template. The VMs available line in the detail
+output shows the current number of available VMs. Use **virt-manager** to see
+the VMs being created. 
 
 From this point, Testpool is cloning VMs for use, the examples folder relies on
 this configuration to run. Refer to the example below to see how to use Testpool.

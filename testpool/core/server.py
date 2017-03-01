@@ -99,11 +99,17 @@ def args_process(args):
     global PROFILE_LOGGER
 
     testpool.core.logger.args_process(LOGGER, args)
-    LOGGER.info("checking configuration file %s", args.cfg)
     ##
     # After this we know that the configuration is valid.
     CFG = cfgcheck.check(args.cfg)
-    PROFILE_LOGGER = profile_log_create(CFG.tpldaemon.profile.log)
+    if CFG:
+        LOGGER.info("loading configuration file %s", args.cfg)
+    else:
+        LOGGER.warning("configuration file %s not found", args.cfg)
+    try:
+        PROFILE_LOGGER = profile_log_create(CFG.tpldaemon.profile.log)
+    except AttributeError:
+        pass
 
 
 def argparser():
