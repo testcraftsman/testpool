@@ -75,7 +75,7 @@ We'll install Testpool from source.
        cd testpool
        cat requirements.system | sudo xargs apt-get install
        sudo apt-file update
-       sudo pip install -r requirements.pip
+       sudo pip install -qr requirements.pip
        sudo apt-get -f install
 
   #. Setup Testpool database, in  a shell run::
