@@ -8,6 +8,5 @@ tpldaemon:
         # Control logging content. If path is defined not empty then 
         # periodically status in regards to profile usage will be logged
         # with the given file.
-        # "/var/log/tpldaemon/profile.log"
-        log: "/tmp/profile.log"
+        # log: "/var/log/tpldaemon/profile.log"
         ##
