@@ -15,6 +15,22 @@ import conftest
 TEST_URL = "http://%(hostname)s:8000/testpool/api/" % conftest.GLOBAL
 
 
+def acquire_get(url):
+    """ Wrap acquire with a delay incase none are available. """
+    ##
+    # previous tests may have acquired all VMs wait for a while to
+    # acquire one
+    for _ in range(10):
+        resp = requests.get(url)
+        if resp.status_code == 403:
+            time.sleep(60)
+        else:
+            vm1 = json.loads(resp.text)
+            return vm1
+    resp.raise_for_status()
+    ##
+
+
 class Testsuite(unittest.TestCase):
     """ Demonstrate each REST interface. """
 
@@ -36,32 +52,22 @@ class Testsuite(unittest.TestCase):
         """ test_profile_acquire acquire a VM. """
 
         url = TEST_URL + "profile/acquire/example"
-        resp = requests.get(url)
-        resp.raise_for_status()
-        vm1 = json.loads(resp.text)
+        requests.get(url)
+        vm1 = acquire_get(url)
 
         self.assertTrue(vm1["name"].startswith("test.template"))
         self.assertTrue(len(vm1["name"]) > len("test.template"))
 
-        resp = requests.get(url)
-        resp.raise_for_status()
-        vm2 = json.loads(resp.text)
+        vm2 = acquire_get(url)
 
         self.assertTrue(vm2["name"].startswith("test.template"))
         self.assertTrue(len(vm2["name"]) > len("test.template"))
 
         url = TEST_URL + "profile/release/%d" % vm1["id"]
-        resp = requests.get(url)
-        resp.raise_for_status()
+        acquire_get(url)
 
         url = TEST_URL + "profile/release/%d" % vm2["id"]
-        resp = requests.get(url)
-        resp.raise_for_status()
-
-    def tearDown(self):
-        """ This gives the daemon time to restart the VMs. """
-
-        time.sleep(10 * 60)
+        acquire_get(url)
 
     def test_acquire_too_many(self):
         """ test_acquire_too_many attempt to acquire too many VMs."""
@@ -72,9 +78,7 @@ class Testsuite(unittest.TestCase):
         ##
         # Take all of the VMs
         for _ in range(conftest.GLOBAL["count"]):
-            resp = requests.get(url)
-            resp.raise_for_status()
-            vm1 = json.loads(resp.text)
+            vm1 = acquire_get(url)
 
             self.assertTrue(vm1["name"].startswith("test.template"))
             self.assertFalse(vm1["name"] in prev_vms)
@@ -87,17 +91,14 @@ class Testsuite(unittest.TestCase):
 
         for vm_id in prev_vms:
             url = TEST_URL + "profile/release/%d" % vm_id
-            resp = requests.get(url)
-            resp.raise_for_status()
+            acquire_get(url)
 
     def test_acquire_renew(self):
         """ test_acquire_renew renew an acquired VM. """
 
         url = TEST_URL + "profile/acquire/example"
 
-        resp = requests.get(url)
-        resp.raise_for_status()
-        vm1 = json.loads(resp.text)
+        vm1 = acquire_get(url)
         vm_id = vm1["id"]
 
         url = TEST_URL + "vm/renew/%(id)s" % vm1
