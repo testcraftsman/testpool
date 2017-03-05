@@ -10,7 +10,6 @@
 -Show actions in web pages and CLI
 -Add elastic search support
 -Add kibana support
--Add Graphana support
 -Create a style for the web pages
 -Look at Graphana
 -add requirements to setup.py
@@ -19,3 +18,4 @@
 -Change JSON output to named tuple
 -Create a testpool-beat
 -Consider how to limit VM creation by 1 at a time.
+-Adapt sphinx documentation style
