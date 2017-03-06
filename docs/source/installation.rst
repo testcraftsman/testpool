@@ -29,13 +29,21 @@ Testpool Server Installation on Ubuntu 16.04
 A single testpool server is required for store VM pool status. Here are the
 steps for installing testpool's server:
 
-#. Install several packages:
+#. Download testpool from github release area::
 
-   **sudo apt-get install libvirt-python django-split-settings>=0.1.3 testpool**
+  wget https://github.com/testcraftsman/testpool/archive/v0.0.7.tar.gz
+  tar -xf testpool-0.0.7.tar.gz
+
+#. Install several required packages::
+
+  cd testpool
+  cat requirements.system | sudo xargs apt-get install
+  sudo pip install -qr requirements.txt
+  sudo apt-file update
 
 #. Install latest testbed which can be found at **https://github.com/testbed/testbed/releases**. For example:
 
-   **sudo pip install https://github.com/testbed/testbed/archive/v0.0.7.tar.gz**
+  **sudo pip install https://github.com/testbed/testbed/archive/v0.0.7.tar.gz**
 
 #. Add testbed configuration 
 
@@ -57,7 +65,7 @@ steps for installing testpool's server:
    **/usr/local/bin/tbd-manage migrate**
 #. Validate proper configuration **tbd db check** to confirm all checks pass.
 
-Client Installation on Ubuntu 14.04
+Client Installation on Ubuntu 16.04
 -----------------------------------
 
 Here are the steps to setup testbed on a client running Ubuntu 14.04.

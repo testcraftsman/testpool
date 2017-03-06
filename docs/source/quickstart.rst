@@ -78,10 +78,11 @@ We'll install Testpool from source.
        sudo pip install -qr requirements.txt
        sudo apt-get -f install
 
-  #. Setup Testpool database, in  a shell run::
+  #. Create debian packages,in  a shell run::
 
-       cd testpool/testpool/db
-       ./manage.py migrate 
+       make deb.build
+
+  #. Install Testpool server, Ina shell run::
 
   #. Run Testpool database. In a shell run::
 
