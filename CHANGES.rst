@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Work on debian installation to include /etc/testpool content for logstash
 
-## [0.0.7] - 2017-03-04
+## [0.0.7] - 2017-02-12
 ### Added
 - Change to Semantic Versioning.
 - Change KVM feature to use full connection semantics.

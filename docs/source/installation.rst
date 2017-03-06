@@ -13,8 +13,9 @@ What is Installed
 =================
 
 Testpool consists of:
-  #. A test pool database installed on an Ubuntu 16.04 system
-  #. a supported hypervisor 
+  #. a KVM hypervisor 
+  #. A test pool database installed on an Ubuntu 16.04 system, which can be on the 
+     KVM hypervisor
   #. testpool client software installed on every client
 
 Actually the last item is optional in that the client API is a thin
@@ -34,7 +35,8 @@ steps for installing testpool's server:
 
 #. Install latest testbed which can be found at **https://github.com/testbed/testbed/releases**. For example:
 
-   **sudo pip install https://github.com/testbed/testbed/archive/v0.1-alpha.8.tar.gz**
+   **sudo pip install https://github.com/testbed/testbed/archive/v0.0.7.tar.gz**
+
 #. Add testbed configuration 
 
 #. Copy example testbed configuration 

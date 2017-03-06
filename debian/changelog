@@ -1,10 +1,18 @@
-testpool (0.0.6) UNRELEASED; urgency=medium
+testpool (0.0.7) xenial; urgency=medium
+	
+  * Change to Semantic Versioning.
+  * Change KVM feature to use full connection semantics.
+  * Work through quick start guide.
+	
+ -- mark <mark@hamilton>  Sun, 12 Feb 2017 12:00:00 -0800
+
+testpool (0.0.6) xenial; urgency=medium
 
   * change KVM auth to use full connection
 
  -- mark <mark@hamilton>  Sat, 07 Jan 2017 21:30:44 -0800
 
-testpool (0.0.5) UNRELEASED; urgency=medium
+testpool (0.0.5) xenial; urgency=medium
 
   * Add SQL migrations when installing database.
 
