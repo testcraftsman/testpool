@@ -21,8 +21,8 @@ clean::
 help::
 	@echo "make source - Create source package"
 	@echo "make install - Install on local system"
-	@echo "make buildrpm - Generate a rpm package"
-	@echo "make builddeb - Generate a deb package"
+	@echo "make rpm.build - Generate a rpm package"
+	@echo "make deb.build - Generate a deb package"
 	@echo "make clean - Get rid of scratch and byte files"
 
 .PHONY: source

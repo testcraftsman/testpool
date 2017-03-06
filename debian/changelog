@@ -20,7 +20,6 @@ testpool (0.0.3) xenial; urgency=medium
 
   * Introduce package requirements.
   * Work through quick start documentation.
-  * 
 
  -- mark <mark@hamilton>  Mon, 05 Sep 2016 12:54:03 -0700
 

@@ -20,7 +20,7 @@ version = subprocess.check_output("dpkg-parsechangelog --show-field Version",
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
     README = readme.read()
 
-fpath = os.path.join(os.path.dirname(__file__), 'requirements.pip')
+fpath = os.path.join(os.path.dirname(__file__), 'requirements.txt')
 
 with open(fpath) as hdl:
     REQUIREMENTS = hdl.read()
