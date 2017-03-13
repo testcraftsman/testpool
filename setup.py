@@ -7,14 +7,14 @@ import subprocess
 from subprocess import call
 from setuptools import setup, find_packages
 from setuptools.command.install import install
+import testpool.version
 
 AUTHOR = "Mark Hamilton"
 AUTHOR_EMAIL = "mark.lee.hamilton@gmail.com"
 
 ##
 # Figure out version based on debian changelog
-version = subprocess.check_output("dpkg-parsechangelog --show-field Version",
-                                  shell=True)
+version = testpool.version.package_version
 ##
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
@@ -50,7 +50,7 @@ setup_args = {
         ("testpool/systemd/", ["scripts/systemd/tpl-daemon.service"]),
     ],
     "classifiers": [
-        'Development Status :: 1 - Pre-Alphe',
+        'Development Status :: 1 - Pre-Alpha',
         'Programming Language :: Python :: 2.7',
     ],
 }
