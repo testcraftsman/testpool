@@ -41,8 +41,10 @@ deb.build: deb.source
 	cp debian/rules deb_dist/testpool-$(VERSION)/debian/rules
 	cd deb_dist/testpool-$(VERSION);dpkg-buildpackage -uc -us
 
-install:
+.PHONY: install
+install: deb.build
 	sudo -H dpkg --install deb_dist/python-testpool_$(VERSION)-1_all.deb
 
+.PHONY: uninstall
 uninstall:
 	sudo -H dpkg --remove python-testpool
