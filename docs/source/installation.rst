@@ -39,6 +39,7 @@ steps for installing testpool's server:
   cd testpool
   cat requirements.system | sudo xargs apt-get install
   sudo pip install -qr requirements.txt
+  sudo pip install easydict
   sudo apt-file update
 
 #. Install latest testbed which can be found at **https://github.com/testbed/testbed/releases**. For example:

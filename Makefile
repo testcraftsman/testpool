@@ -42,7 +42,7 @@ deb.build: deb.source
 	cd deb_dist/testpool-$(VERSION);dpkg-buildpackage -uc -us
 
 .PHONY: install
-install: deb.build
+install:
 	sudo -H dpkg --install deb_dist/python-testpool_$(VERSION)-1_all.deb
 
 .PHONY: uninstall

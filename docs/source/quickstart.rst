@@ -76,6 +76,9 @@ We'll install Testpool from source.
        cat requirements.system | sudo xargs apt-get install
        sudo apt-file update
        sudo pip install -qr requirements.txt
+       sudo pip install easydict
+       sudo pip install django-pure-pagination==0.2.1
+       sudo pip install django-split-settings==0.1.3
        sudo apt-get -f install
 
   #. Create debian packages,in  a shell run::
@@ -98,7 +101,7 @@ A Short Tour
 ------------
 
 In order for Testpool to manage VMs, Hypervisor information is registered
-with the Testpool along with a name of a single VM template.
+with Testpool along with a VM template.
 
 Create a VM on the KVM hypervisor called test.template and keep it shutdown. Now create a testpool profile given the IP address and name of the VM template.
 Since we're running on the hypervisor, the IP address is localhost.
@@ -121,5 +124,3 @@ the VMs being created.
 
 From this point, Testpool is cloning VMs for use, the examples folder relies on
 this configuration to run. Refer to the example below to see how to use Testpool.
-
-.. literalinclude:: /../../examples/python_api.py
