@@ -29,42 +29,49 @@ Testpool Server Installation on Ubuntu 16.04
 A single testpool server is required for store VM pool status. Here are the
 steps for installing testpool's server:
 
-#. Download testpool from github release area::
+  #. Download testpool from github release area::
 
-  wget https://github.com/testcraftsman/testpool/archive/v0.0.7.tar.gz
-  tar -xf testpool-0.0.7.tar.gz
+      wget https://github.com/testcraftsman/testpool/archive/v0.0.7.tar.gz
+      tar -xf testpool-0.0.7.tar.gz
 
-#. Install several required packages::
+  #. Install several required packages::
 
-  cd testpool
-  cat requirements.system | sudo xargs apt-get install
-  sudo pip install -qr requirements.txt
-  sudo pip install easydict
-  sudo apt-file update
+      cd testpool
+      cat requirements.system | sudo xargs apt-get install
+      sudo pip install -qr requirements.txt
+      sudo pip install easydict
+      sudo pip install django-pure-pagination==0.2.1
+      sudo pip install django-split-settings==0.1.3
+      sudo apt-file update
 
-#. Install latest testbed which can be found at **https://github.com/testbed/testbed/releases**. For example:
+  #. Create debian packages,in  a shell run::
 
-  **sudo pip install https://github.com/testbed/testbed/archive/v0.0.7.tar.gz**
+      make deb.build
 
-#. Add testbed configuration 
+  #. Install latest testbed which can be found at **https://github.com/testbed/testbed/releases**. For example:
 
-#. Copy example testbed configuration 
+    make install
 
-  **cd /usr/local/testbed**
-  **cp examples/etc/mysql.cnf etc/mysql.cnf**
+  #. Add testbed configuration 
+  
+  #. Copy example testbed configuration 
+  
+    cd /usr/local/testbed**
+    cp examples/etc/mysql.cnf etc/mysql.cnf
 
-#. Edit testbed configuration **/usr/local/testbed/etc/mysql.cnf** and change
-   the password which was set in step 7.
+  #. Edit testbed configuration **/usr/local/testbed/etc/mysql.cnf** and change
+     the password which was set in step 7.
 
-#. Populate testbed database.
+  #. Populate testbed database.
 
-   **/usr/local/bin/tbd-manage migrate**
-#. Create admin account for testbed database not to be confused with the 
-   mysql admin account. This is a user that had full edit access in the 
-   testbed database. Run the following command and answer the prompts
+     **/usr/local/bin/tbd-manage migrate**
+  #. Create admin account for testbed database not to be confused with the 
+     mysql admin account. This is a user that had full edit access in the 
+     testbed database. Run the following command and answer the prompts
+  
+     **/usr/local/bin/tbd-manage migrate**
 
-   **/usr/local/bin/tbd-manage migrate**
-#. Validate proper configuration **tbd db check** to confirm all checks pass.
+  #. Validate proper configuration **tbd db check** to confirm all checks pass.
 
 Client Installation on Ubuntu 16.04
 -----------------------------------

@@ -79,22 +79,13 @@ We'll install Testpool from source.
        sudo pip install easydict
        sudo pip install django-pure-pagination==0.2.1
        sudo pip install django-split-settings==0.1.3
-       sudo apt-get -f install
-
-  #. Create debian packages,in  a shell run::
-
-       make deb.build
-
-  #. Install Testpool server, Ina shell run::
 
   #. Run Testpool database. In a shell run::
 
-       cd ../..
        ./bin/tpl-db runserver -v 3
 
   #. In a second shell, run the Testpool daemon::
 
-       cd testpool
        ./bin/tpl-daemon -v
 
 A Short Tour
@@ -122,5 +113,10 @@ new clean clones based on test.template. The VMs available line in the detail
 output shows the current number of available VMs. Use **virt-manager** to see
 the VMs being created. 
 
-From this point, Testpool is cloning VMs for use, the examples folder relies on
-this configuration to run. Refer to the example below to see how to use Testpool.
+From this point, testpool daemon is cloning VMs. There are several examples
+to look through. The file examples/rest.py provides documentation and 
+demonstrates how to use Testpool's REST interface. Simply refer to the 
+file examples/rest.py.
+
+Additionally, testpool-client can be installed which provides a python
+API on top of the REST interface. To learn more, http://testpool-client.readthedocs.io/en/latest.
