@@ -37,6 +37,9 @@ def level(cfg, valid, path):
     """ Compare cfg against valid options. """
 
     for (key, value) in cfg.iteritems():
+   
+        if not value and isinstance(valid[key], dict):
+            continue
         new_path = key if not path else ".".join([path, key])
         if key not in valid:
             raise ValueError("illegal: key %s.%s" % (path, key))
