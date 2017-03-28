@@ -12,10 +12,7 @@ LOGGER = logger.create()
 
 # pylint: disable=W0703
 def is_valid_path(key, value):
-    """ Throw exception if arg is not a path.
-
-    The path does not have to exist.
-    """
+    """ Throw exception if arg is not a path. """
 
     if not isinstance(value, str):
         raise ValueError("%s: must be a string" % key)
@@ -37,7 +34,7 @@ def level(cfg, valid, path):
     """ Compare cfg against valid options. """
 
     for (key, value) in cfg.iteritems():
-   
+
         if not value and isinstance(valid[key], dict):
             continue
         new_path = key if not path else ".".join([path, key])

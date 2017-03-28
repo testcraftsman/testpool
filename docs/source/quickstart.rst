@@ -120,3 +120,5 @@ file examples/rest.py.
 
 Additionally, testpool-client can be installed which provides a python
 API on top of the REST interface. To learn more, http://testpool-client.readthedocs.io/en/latest.
+
+.. literalinclude:: /../../examples/rest.py

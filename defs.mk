@@ -2,7 +2,6 @@ SUBDEFS:=$(wildcard */defs.mk)
 SUBMODULES:=$(foreach module,$(SUBDEFS),$(dir $(module)))
 ROOT=$(shell git rev-parse --show-toplevel)
 PYTHONPATH:=$(ROOT)
-#:$(ROOT)/testpool/db
 
 .PHONY: help
 help::
@@ -18,7 +17,7 @@ subdirs: $(SUBMODULES)
 
 .PHONY: pylint
 %.pylint::
-	@export PYTHONPATH=$(PYTHONPATH);pylint --reports=n --disable=I0011 \
+	@export PYTHONPATH=$(PYTHONPATH):$(ROOT)/testpool/db; pylint --reports=n --disable=I0011 \
           --disable=R0801 --disable=E1101 --disable=I0012 --disable=R0914 \
           --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" \
 	  --generated-members=objects,MultipleObjectsReturned,get_or_create $*

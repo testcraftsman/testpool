@@ -19,6 +19,7 @@ def init():
         sys.path.insert(0, testpool.settings.TEST_DBSITE_DIR)
     else:
         sys.path.append(testpool.settings.TEST_DBSITE_DIR)
+    print "MARK: ", sys.path
 
     # pylint: disable=W0612
     import djconfig.settings

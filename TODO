@@ -19,3 +19,4 @@
 -Create a testpool-beat
 -Consider how to limit VM creation by 1 at a time.
 -Adapt sphinx documentation style
+-Store latest log to show progress.

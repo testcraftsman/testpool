@@ -1,7 +1,23 @@
 """
-  Examples on how to call the REST interfaces.
+Examples on how to call the REST interfaces. Read the quick start guide in
+order to configure Testpool server :and then come back to this script.
 
-  The database needs to be running in order for these examples can run.
+As discussed in the Testpool quickstart guide. This example uses a
+profile named example. These examples work best when all VMs have been cloned
+and have retrieved their IP address.  Make sure VMs are avaliable, run:
+
+  ./bin/tpl profile list
+
+To run this file type
+
+  py.test -s examples/python_api.py
+
+These examples illustrates the use of the testpool.client. The global variable
+GLOBAL in conftest defines the Testpool profile. Once a VM is acquired, this
+test can login and use the VM throughout the entire testsuite. This assumes
+that the VM has negotiated an IP address usually throught DHCP.
+
+As these examples are running, use virt-manager to see hypervisor changes.
 """
 import time
 import json
@@ -16,7 +32,7 @@ TEST_URL = "http://%(hostname)s:8000/testpool/api/" % conftest.GLOBAL
 
 
 def acquire_get(url):
-    """ Wrap acquire with a delay incase none are available. """
+    """ Wrap acquire with a delay in case none are available. """
     ##
     # previous tests may have acquired all VMs wait for a while to
     # acquire one
@@ -35,7 +51,7 @@ class Testsuite(unittest.TestCase):
     """ Demonstrate each REST interface. """
 
     def test_profile_list(self):
-        """ test_profile_list. """
+        """ test_profile_list Show how to list profile content."""
 
         url = TEST_URL + "profile/list"
         resp = requests.get(url)
@@ -55,8 +71,11 @@ class Testsuite(unittest.TestCase):
         requests.get(url)
         vm1 = acquire_get(url)
 
+        ##
+        # Cloned VMs begin with the name of the template.
         self.assertTrue(vm1["name"].startswith("test.template"))
         self.assertTrue(len(vm1["name"]) > len("test.template"))
+        ##
 
         vm2 = acquire_get(url)
 

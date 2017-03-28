@@ -5,11 +5,13 @@ Useful for developing Testpool algorithms.
 """
 import unittest
 import logging
-import testpool.core.database
 import testpool.core.ext
 from testpool.core import algo
-import testpool.core.server
+from testpool.core import server
 from testpool.libexec.fake import api
+from testpool.core import database
+
+database.init()
 from testpooldb import models
 
 
