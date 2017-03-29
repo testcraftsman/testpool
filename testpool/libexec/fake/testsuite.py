@@ -7,12 +7,15 @@ import unittest
 import logging
 import testpool.core.ext
 from testpool.core import algo
-from testpool.core import server
 from testpool.libexec.fake import api
 from testpool.core import database
 
-database.init()
+##
+# database init is required to add to the system path so that models can
+# be found
+database.init()  # nopep8
 from testpooldb import models
+##
 
 
 class Testsuite(unittest.TestCase):
