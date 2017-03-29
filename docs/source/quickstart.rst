@@ -3,34 +3,31 @@
 Quick Start
 ===============
 
-Testpool clones VMs from a template VM. Testpool monitors each VM waiting for their management
-interface to be assgiend an IP address, usually through DHCP. Once assigned,
-Testpool makes the VM available for users. Users acquire a VM and then release
-it when done. Where Testpool replaces the VM with a fresh clone. Cloning 
-VMs can take a considerable amount of time. Testpool manages the VMs so
-that acquiring VMs is immediate.
+Testpool maintains a pool of pristine VMs cloned from a template. Users 
+can immediate acquire a VM, use it and then throw it away. Testpool
+then replaces discarded VMs with a fresh clone.  Cloning VMs can take a
+considerable amount of time, but with a pool of VMs, acquiring a single VM
+is immediate.
 
 Normally Testpool is installed on a central server and configured to
-manager several hypervisors. Testpool supports KVM which is required for 
+manage several hypervisors. Testpool supports KVM which is required for 
 this demonstration. 
 
-To expedite this guide, Testpool content will be installed on the KVM 
-hypervisor. For final installation, Testpool can be installed either the 
-hypervisor or a separate system. The differences will be identified during 
-the installation steps.
+To expedite this guide, Testpool content is installed on the KVM hypervisor.
+For final installation, Testpool can be installed either the hypervisor or a
+separate system. The differences will be identified during the installation
+steps.
 
 
 KVM Installation 
 ----------------
 
 For this quick start guide, we'll need a single VM named test.template on 
-the hypervisor which is off and ready to be cloned.  What the VM is running is
+the hypervisor which is off and ready to be cloned.  When the VMs starts
+it must use DHCP to acquire its IP address. What the VM is running is
 not important and there are good instructions on the internet for setting up a
-KVM hypervisor and creating a VM. This section will provide references to
-these sites.
-
-For installing KVM on Ubuntu 16.04, refer to this site https://help.ubuntu.com/community/KVM/Installation. Once complete, you will need the following 
-information:
+KVM hypervisor and creating a VM.  For installing KVM on Ubuntu 16.04, refer
+to this site https://help.ubuntu.com/community/KVM/Installation. Once complete, you will need the following information:
 
   - user and password that can install VMs. This is the user that is part of
     the libvirtd and kvm groups. 
