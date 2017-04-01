@@ -2,3 +2,4 @@ apt-file
 git
 debhelper
 python-yaml
+python-pip

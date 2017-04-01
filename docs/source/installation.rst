@@ -6,43 +6,39 @@ Installation
 Getting Testpool
 ================
 
-If you want the latest code you'll need a `GitHub <http://www.github.com/>`_ account. This is also where we track issues and feature request. This code
-is committed into <http://guthub.com/testcraftsman/testpool>.
+Testpool is installed from source, download the latest from `GitHub <http://www.github.com/testcraftsman/testpool/releases>`_. This is also where we track issues and feature request.
 
 What is Installed
 =================
 
 Testpool consists of:
-  #. a KVM hypervisor 
-  #. A test pool database installed on an Ubuntu 16.04 system, which can be on the 
-     KVM hypervisor
-  #. testpool client software installed on every client
+  #. A database installed on an Ubuntu 16.04 system, which can also be a KVM 
+     hypervisor
+  #. testpool-client, another repo, is installed on every client
 
-Actually the last item is optional in that the client API is a thin
-wrapper around the server's REST interface.  One could simply use the REST
-interface on each client. For evaluation purposes a single system can be used to install both the server and client packages. Actual deployments would install the server on a single system and the client packages on each client system.
-
+Actually the last item is optional in that the testpool-client provides an API above the server's 
+REST API.  One could simply use the REST interface directly.
 
 Testpool Server Installation on Ubuntu 16.04
 --------------------------------------------
 
-A single testpool server is required for store VM pool status. Here are the
-steps for installing testpool's server:
+A single testpool server is required. It maintains VM pool requirements for each hypervisor. Here are the
+steps to install a testpool's server:
 
   #. Download testpool from github release area::
 
-      wget https://github.com/testcraftsman/testpool/archive/v0.0.7.tar.gz
-      tar -xf testpool-0.0.7.tar.gz
+      wget https://github.com/testcraftsman/testpool/archive/v0.1.0.tar.gz
+      tar -xf testpool-0.l.0.tar.gz
 
   #. Install several required packages::
 
-      cd testpool
-      cat requirements.system | sudo xargs apt-get install
+      cd testpool-0.1.0
+      cat requirements.system | sudo xargs apt-get -y install
+      sudo apt-file update
       sudo pip install -qr requirements.txt
       sudo pip install easydict
       sudo pip install django-pure-pagination==0.2.1
       sudo pip install django-split-settings==0.1.3
-      sudo apt-file update
 
   #. Create debian packages,in  a shell run::
 

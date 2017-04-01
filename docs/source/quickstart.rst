@@ -35,8 +35,8 @@ to this site https://help.ubuntu.com/community/KVM/Installation. Once complete, 
     hypervisor
 
 For the rest of this guide, we'll assume the user tadmin with password 
-as 'password'. Since testpool will be installed on the hypervisor, so the IP
- address used is localhost.
+'password'. Since testpool is installed on the hypervisor, the IP address used is
+localhost.
 
 Now a single VM is required which represents the template that is managed
 and cloned by Testpool. Using virt-manager, these instructions will create
