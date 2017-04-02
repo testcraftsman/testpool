@@ -1,4 +1,5 @@
 apt-file
+virtinst
 git
 debhelper
 python-yaml
