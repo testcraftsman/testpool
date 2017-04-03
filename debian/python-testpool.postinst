@@ -35,6 +35,3 @@ if [ "$init_system" = "systemd-sysv: /sbin/init" ]; then
 else
   echo "error: service system $init_system unsupported"
 fi
-
-chmod 755 /var/log/testpool
-touch /var/log/testpool/tpl.log
