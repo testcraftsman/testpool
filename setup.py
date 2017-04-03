@@ -44,7 +44,6 @@ setup_args = {
     "author_email": AUTHOR_EMAIL,
     "install_requires": REQUIREMENTS,
     "data_files": [
-        ("/var/log/testpool/", []),
         ("testpool/etc", ["etc/testpool/testpool.yml",
                           "etc/logrotate.d/testpool"]),
         ("testpool/systemd/", ["scripts/systemd/tpl-db.service"]),
