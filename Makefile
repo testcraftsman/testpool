@@ -25,6 +25,8 @@ help::
 	@echo "make deb.build - Generate a deb package"
 	@echo "make clean - Get rid of scratch and byte files"
 
+testpool/version.py: debian/changelog
+	dpkg-parsechangelog | sed -rne 's,^Version: (.*),package_version="\1", p' > testpool/version.py
 
 .PHONY: rpm.build
 rpm.build:
@@ -32,12 +34,11 @@ rpm.build:
                                   --pre-uninstall=rpm/preuninstall
 
 .PHONY: deb.source
-deb.source:
+deb.source: testpool/version.py
 	python setup.py -q --command-packages=stdeb.command sdist_dsc
 
 .PHONY: deb.build
 deb.build: deb.source
-	dpkg-parsechangelog | sed -rne 's,^Version: (.*),package_version="\1", p' > testpool/version.py
 	cp debian/rules deb_dist/testpool-$(VERSION)/debian/rules
 	cd deb_dist/testpool-$(VERSION);dpkg-buildpackage -uc -us
 

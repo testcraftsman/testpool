@@ -29,17 +29,18 @@ LOGGING = {
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
         },
-        'development': {
-            'level': 'DEBUG',
-            'filters': ['require_debug_true'],
-            'class': 'logging.FileHandler',
-            'filename': './tpl-db.log',
+        "syslog": {
+            'level': 'INFO',
+            'filters': ['require_debug_false'],
+            'class': 'logging.handlers.SysLogHandler',
+            'facility': 'local7',
+            'address': '/dev/log',
             'formatter': 'verbose'
-        },
+        }
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'development'],
+            'handlers': ['console', "syslog"],
             'level': 'DEBUG',
         },
         'django.request': {
@@ -52,6 +53,7 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': False,
         },
+
         ##
         # Suppress database query in the logging, which is probably not needed
         # most of the time. 
@@ -61,26 +63,9 @@ LOGGING = {
             'propagate': False,
         },
         ##
+
         'py.warnings': {
             'handlers': ['console'],
         },
     }
 }
-
-
-##
-# Even if DEBUG is True, the django logging infrastructure will 
-# attempt to initialize the handlers. In development, we do not have the 
-# permission to modify /var/log
-if not DEBUG:
-   LOGGING["handlers"]["production"] = {
-       'level': 'INFO',
-       'filters': ['require_debug_false'],
-       'class': 'logging.FileHandler',
-       'filename': '/var/log/testpool/tpl-db.log',
-       'formatter': 'verbose'
-    }
-
-if not DEBUG:
-    LOGGING["loggers"]['django']['handlers'].append("production")
-##

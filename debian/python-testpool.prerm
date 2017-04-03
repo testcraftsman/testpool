@@ -42,4 +42,8 @@ else
 		rm -f "${file}"[co] >/dev/null
   	done
 fi
+
 ##
+# Post removal script
+##
+rm -f /var/log/testpool/*.log
