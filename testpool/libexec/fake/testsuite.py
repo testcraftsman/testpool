@@ -13,6 +13,7 @@ from testpool.core import database
 ##
 # database init is required to add to the system path so that models can
 # be found
+# pylint: disable=C0413
 database.init()  # nopep8
 from testpooldb import models
 ##
