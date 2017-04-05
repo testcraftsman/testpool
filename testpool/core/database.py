@@ -23,5 +23,4 @@ def init():
     # pylint: disable=W0612
     import djconfig.settings
     from django.conf import settings
-    print "MARK: settings", settings
     django.setup()
