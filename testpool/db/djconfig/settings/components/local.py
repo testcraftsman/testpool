@@ -1,7 +1,7 @@
 import os
 import sys
 
-sqllite_path = os.path.join("/var", "tmp", 'db.sqlite3')
+sqllite_path = os.path.join("/var", "tmp", 'testpooldb.sqlite3')
 
 RUNSERVER_DEFAULT_PORT = "7000"
 

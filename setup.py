@@ -28,6 +28,22 @@ with open(fpath) as hdl:
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
+
+def walkdir(dirname):
+    """ Retrieve a list of files.
+    Since this is part of setup.py, files are pruned after passed to
+    data_files based on MANIFEST.IN. """
+    for cur, ddirs, ffiles in os.walk(dirname):
+        for ffile in ffiles:
+            fext = os.path.splitext(ffile)[1]
+            yield os.path.join(cur, ffile)
+
+        for ddir in ddirs:
+            walkdir(os.path.join(cur, ddir))
+
+STATIC_FILES = [(item.split("static")[1], [item]) for item in walkdir("testpool/db/static")]
+STATIC_FILES = [("/var/lib/testpool/static" + item[0], item[1]) for item in STATIC_FILES]
+
 setup_args = {
     "name": 'testpool',
     "version": version,
@@ -44,11 +60,10 @@ setup_args = {
     "author_email": AUTHOR_EMAIL,
     "install_requires": REQUIREMENTS,
     "data_files": [
-        ("testpool/etc", ["etc/testpool/testpool.yml",
-                          "etc/logrotate.d/testpool"]),
+        ("testpool/etc", ["etc/testpool/testpool.yml", "etc/logrotate.d/testpool"]),
         ("testpool/systemd/", ["scripts/systemd/tpl-db.service"]),
         ("testpool/systemd/", ["scripts/systemd/tpl-daemon.service"]),
-    ],
+    ] + STATIC_FILES,
     "classifiers": [
         'Development Status :: 1 - Pre-Alpha',
         'Programming Language :: Python :: 2.7',

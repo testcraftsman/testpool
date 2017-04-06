@@ -39,6 +39,7 @@ deb.source: testpool/version.py
 
 .PHONY: deb.build
 deb.build: deb.source
+	make -C testpool/db build
 	cp debian/rules deb_dist/testpool-$(VERSION)/debian/rules
 	cd deb_dist/testpool-$(VERSION);dpkg-buildpackage -uc -us
 

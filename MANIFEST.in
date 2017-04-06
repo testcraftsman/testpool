@@ -6,6 +6,7 @@ include requirements.txt
 recursive-include testpool *.py
 recursive-include bin *.py
 recursive-include scripts *.service
+recursive-include testpool/db/static
 include bin/tpl
 include bin/tpl-daemon
 include bin/tpl-db
