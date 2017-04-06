@@ -3,6 +3,7 @@ testpool (0.0.8) UNRELEASED; urgency=medium
   * Finished quick start guide and installation.
   * Fixed location of django log. 
   * Add syslog handler.
+  * Add static files to installation.
 
  -- mark <mark@mark-VirtualBox>  Sun, 02 Apr 2017 14:44:54 -0700
 
