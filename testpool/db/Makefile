@@ -1,6 +1,5 @@
-ROOT=$(shell git rev-parse --show-toplevel)
 include defs.mk
-include $(ROOT)/defs.mk
+include ../../defs.mk
 test::
 	./manage.py test -v 2
 

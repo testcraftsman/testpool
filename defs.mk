@@ -1,6 +1,6 @@
 SUBDEFS:=$(wildcard */defs.mk)
 SUBMODULES:=$(foreach module,$(SUBDEFS),$(dir $(module)))
-ROOT=$(shell git rev-parse --show-toplevel)
+ROOT=$(shell pwd)
 PYTHONPATH:=$(ROOT)
 
 .PHONY: help
