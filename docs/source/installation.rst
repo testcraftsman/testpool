@@ -52,4 +52,4 @@ steps to install a testpool's server:
 
   #. Install::
 
-    sudo make install
+      sudo make install
