@@ -60,7 +60,8 @@ setup_args = {
     "author_email": AUTHOR_EMAIL,
     "install_requires": REQUIREMENTS,
     "data_files": [
-        ("testpool/etc", ["etc/testpool/testpool.yml", "etc/logrotate.d/testpool"]),
+        ("/etc/testpool/", ["etc/testpool/testpool.yml"]),
+        ("/etc/logrotate.d/", ["etc/logrotate.d/testpool"]),
         ("testpool/systemd/", ["scripts/systemd/tpl-db.service"]),
         ("testpool/systemd/", ["scripts/systemd/tpl-daemon.service"]),
     ] + STATIC_FILES,
