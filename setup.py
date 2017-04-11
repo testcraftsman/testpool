@@ -49,7 +49,7 @@ setup_args = {
     "version": version,
     "packages": find_packages(),
     "include_package_data": True,
-    "scripts": ["bin/tpl", "bin/tpl-daemon", "bin/tpl-db"],
+    "scripts": ["bin/tpl", "bin/tpl-daemon", "bin/tpl-db", "bin/tplcfgcheck"],
     "license": 'GPLv3',
     "description": 'Manage and recycle pools of VMs.',
     "long_description": README,
@@ -60,7 +60,9 @@ setup_args = {
     "author_email": AUTHOR_EMAIL,
     "install_requires": REQUIREMENTS,
     "data_files": [
+        ("/var/log/testpool/", []),
         ("/etc/testpool/", ["etc/testpool/testpool.yml"]),
+        ("/etc/testpool/filebeat", ["etc/filebeat/filebeat.yml"]),
         ("/etc/logrotate.d/", ["etc/logrotate.d/testpool"]),
         ("testpool/systemd/", ["scripts/systemd/tpl-db.service"]),
         ("testpool/systemd/", ["scripts/systemd/tpl-daemon.service"]),

@@ -1,0 +1,91 @@
+################# Testpool Filebeat Configuration Example ####################
+
+# This file is an example configuration file highlighting only the most common
+# options. The filebeat.full.yml file from the same directory contains all the
+# supported options with more comments. You can use it as a reference.
+#
+# You can find the full configuration reference here:
+# https://www.elastic.co/guide/en/beats/filebeat/index.html
+
+#================ Testpool Filebeat prospectors =============================
+
+filebeat.prospectors:
+
+- input_type: log
+
+  ##
+  # By default testpool stores profiel status at the path below.
+  # Change this if you change the location in /etc/testpool/testpool.yml
+  paths:
+    - /var/log/testpool/profile.log
+  json:
+    message_key: event
+    keys_under_root: true
+  ##
+  # Change server to anything you want
+  fields:
+    server: localhost
+  tags: [
+    "testpool"
+  ]
+
+#================================ General =====================================
+
+# The name of the shipper that publishes the network data. It can be used to group
+# all the transactions sent by a single shipper in the web interface.
+#name: testpool
+
+# The tags of the shipper are included in their own field with each
+# transaction published.
+#tags: ["service-X", "web-tier"]
+
+#================================ Outputs =====================================
+
+# Configure what outputs to use when sending the data collected by the beat.
+# Multiple outputs may be used. The configuration below assumes logstash
+
+#-------------------------- Elasticsearch output ------------------------------
+#output.elasticsearch:
+  # Array of hosts to connect to.
+  #hosts: ["localhost:9200"]
+  #template.name: filebeat
+  #template.path: filebeat.template.json
+
+  # Optional protocol and basic auth credentials.
+  #protocol: "https"
+  #username: "elastic"
+  #password: "changeme"
+
+#----------------------------- Logstash output --------------------------------
+##
+# uncomment the appropriate authentication
+output.logstash:
+  # The Logstash hosts
+  hosts: ["127.0.0.1:5045"]
+  template.name: filebeat
+  template.path: filebeat.template.json
+
+  # Optional SSL. By default is off.
+  # List of root certificates for HTTPS server verifications
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+
+  # Certificate for SSL client authentication
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+
+  # Client Certificate Key
+  #ssl.key: "/etc/pki/client/cert.key"
+  #ssl.key: "/etc/ssl/logstash-forwarder.key"
+  #tls:
+  #  certificate_authorities ["/etc/ssl/logstash-forwarder.crt"]
+
+
+#================================ Logging =====================================
+
+# Sets log level. The default log level is info.
+# Available log levels are: critical, error, warning, info, debug
+#logging.level: debug
+
+# At debug level, you can selectively enable logging only for some components.
+# To enable all selectors use ["*"]. Examples of other selectors are "beat",
+# "publish", "service".
+#logging.selectors: ["*"]

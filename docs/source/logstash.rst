@@ -1,0 +1,50 @@
+.. _LogstashAnchor:
+
+Log Stash Support
+*****************
+
+Testpool provides a structured log of profile status that includes the 
+number of available VMs for each profile. This information can be 
+pushed to logstash and visualized with Kibana or Graphana. 
+
+These instructions explain how to enable structured logging, push them
+to logstash using Filebeat.
+
+Installation
+============
+
+ELK stack 5.3 is required which natively supports JSON FileBeat output. There are numerous
+sites to explain ELK installation e.g.
+http://www.itzgeek.com/how-tos/linux/ubuntu-how-tos/setup-elk-stack-ubuntu-16-04.html
+was used to test the following content.
+
+Configure testpool to save profile status. Edit the YAML file::
+
+  /etc/testpool/testpool.yml
+
+Validate changes::
+  
+  tplcfgcheck /etc/testpool/testpool.yml
+
+Uncoment tpldaemon.profile.log. The default value is **/var/log/testpool/profile.log**
+and restart testpool daemon::
+
+  sudo systemctl restart tpl-daemon
+
+Configure logstash to recieve JSON structured content. An example configure
+file at **/etc/testpool/etc/logstash/conf.d/02-testpool-beat-input.conf**.
+
+  sudo cp /etc/testpool/etc/logstash/conf.d/02-testpool-beat-input.conf /etc/logstash/conf.d/02-testpool-beat-input.conf
+  sudo systemctl restart logstash
+
+.. literalinclude:: ../../etc/logstash/conf.d/02-testpool-beat-input.conf
+
+Configure Filebeat to push JSON content. An example is available at
+**/etc/testpool/filebeat/filebeat.yml** and can be copied verbatim:
+
+  sudo cp /etc/testpool/filebeat/filebeat.yml /etc/filebeat/filebeat.yml
+  sudo systemctl restart filebeat
+
+The content below shows a sample filebeat configuration.
+
+.. literalinclude:: ../../etc/filebeat/filebeat.yml

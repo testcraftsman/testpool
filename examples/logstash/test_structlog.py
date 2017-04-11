@@ -8,7 +8,7 @@ import random
 import structlog
 
 ROOT_LOGGER = logging.getLogger()
-HANDLER = logging.FileHandler("/var/log/testpool/logstash.log")
+HANDLER = logging.FileHandler("/var/log/testpool/profile.log")
 ROOT_LOGGER.addHandler(HANDLER)
 ROOT_LOGGER.setLevel(logging.INFO)
 

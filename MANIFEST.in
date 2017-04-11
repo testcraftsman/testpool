@@ -10,6 +10,7 @@ recursive-include testpool/db/static
 include bin/tpl
 include bin/tpl-daemon
 include bin/tpl-db
+include etc/filebeat/filebeat.yml
 include etc/testpool/testpool.yml
 include etc/logrotate.d/testpool
 include debian/python-testpool.postinst
