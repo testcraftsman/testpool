@@ -1,13 +1,14 @@
-################# Testpool Filebeat Configuration Example ####################
-
-# This file is an example configuration file highlighting only the most common
-# options. The filebeat.full.yml file from the same directory contains all the
-# supported options with more comments. You can use it as a reference.
+############## Testpool Filebeat Configuration Example ##############
+#
+# This file is an example configuration file highlighting only the
+# most common options. The filebeat.full.yml file from the same
+# directory contains all the supported options with more comments.
+# You can use it as a reference.
 #
 # You can find the full configuration reference here:
 # https://www.elastic.co/guide/en/beats/filebeat/index.html
-
-#================ Testpool Filebeat prospectors =============================
+#
+#============= Testpool Filebeat prospectors ========================
 
 filebeat.prospectors:
 
@@ -15,7 +16,8 @@ filebeat.prospectors:
 
   ##
   # By default testpool stores profiel status at the path below.
-  # Change this if you change the location in /etc/testpool/testpool.yml
+  # Change this if you change the location in
+  # /etc/testpool/testpool.yml
   paths:
     - /var/log/testpool/profile.log
   json:
@@ -29,22 +31,24 @@ filebeat.prospectors:
     "testpool"
   ]
 
-#================================ General =====================================
-
-# The name of the shipper that publishes the network data. It can be used to group
-# all the transactions sent by a single shipper in the web interface.
+#========================== General =================================
+#
+# The name of the shipper that publishes the network data. It can be
+# used to group all the transactions sent by a single shipper in the
+# web interface.
 #name: testpool
 
 # The tags of the shipper are included in their own field with each
 # transaction published.
 #tags: ["service-X", "web-tier"]
 
-#================================ Outputs =====================================
+#========================== Outputs =================================
+#
+# Configure what outputs to use when sending the data collected by
+# the beat.  Multiple outputs may be used. The configuration below
+#  assumes logstash
 
-# Configure what outputs to use when sending the data collected by the beat.
-# Multiple outputs may be used. The configuration below assumes logstash
-
-#-------------------------- Elasticsearch output ------------------------------
+#---------------------- Elasticsearch output ------------------------
 #output.elasticsearch:
   # Array of hosts to connect to.
   #hosts: ["localhost:9200"]
@@ -56,7 +60,7 @@ filebeat.prospectors:
   #username: "elastic"
   #password: "changeme"
 
-#----------------------------- Logstash output --------------------------------
+#----------------------- Logstash output ----------------------------
 ##
 # uncomment the appropriate authentication
 output.logstash:
@@ -79,13 +83,13 @@ output.logstash:
   #  certificate_authorities ["/etc/ssl/logstash-forwarder.crt"]
 
 
-#================================ Logging =====================================
+#============================ Logging ===============================
 
 # Sets log level. The default log level is info.
 # Available log levels are: critical, error, warning, info, debug
 #logging.level: debug
 
-# At debug level, you can selectively enable logging only for some components.
-# To enable all selectors use ["*"]. Examples of other selectors are "beat",
-# "publish", "service".
+# At debug level, you can selectively enable logging only for some
+# components. To enable all selectors use ["*"]. Examples of other
+#  selectors are "beat", "publish", "service".
 #logging.selectors: ["*"]

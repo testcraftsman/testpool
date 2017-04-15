@@ -12,7 +12,7 @@ Contents:
    quickstart.rst
    installation.rst
    development.rst
-   logstash.rst
+   integration.rst
    :maxdepth: 3
 
 

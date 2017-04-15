@@ -7,11 +7,11 @@ recursive-include testpool *.py
 recursive-include bin *.py
 recursive-include scripts *.service
 recursive-include testpool/db/static
+recursive-include etc *.json
+recursive-include etc *.yml
 include bin/tpl
 include bin/tpl-daemon
 include bin/tpl-db
-include etc/filebeat/filebeat.yml
-include etc/testpool/testpool.yml
 include etc/logrotate.d/testpool
 include debian/python-testpool.postinst
 include debian/python-testpool.prerm

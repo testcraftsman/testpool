@@ -62,6 +62,8 @@ setup_args = {
     "data_files": [
         ("/var/log/testpool/", []),
         ("/etc/testpool/", ["etc/testpool/testpool.yml"]),
+        ("/etc/testpool/kibana/", ["etc/kibana/testpool-profile.json",
+                                   "etc/kibana/dashboard-testpool.json"]),
         ("/etc/testpool/filebeat", ["etc/filebeat/filebeat.yml"]),
         ("/etc/logrotate.d/", ["etc/logrotate.d/testpool"]),
         ("testpool/systemd/", ["scripts/systemd/tpl-db.service"]),
