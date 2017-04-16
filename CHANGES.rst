@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Work on debian installation to include /etc/testpool content for logstash
 
-## [0.0.7] - 2017-04-15
+## [0.1.0] - 2017-04-15
 ### Added
 - Document how to push profile information into logstash and visualize with Kibana.
 - Provide quick start documentation.
