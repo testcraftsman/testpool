@@ -1,0 +1,19 @@
+[
+  {
+    "_id": "0be37f80-1d74-11e7-aa95-237b1592bf8c",
+    "_type": "dashboard",
+    "_source": {
+      "title": "testpool-dashboard",
+      "hits": 0,
+      "description": "",
+      "panelsJSON": "[\n  {\n    \"size_x\": 6,\n    \"size_y\": 3,\n    \"panelIndex\": 1,\n    \"type\": \"visualization\",\n    \"id\": \"db94dc20-1d73-11e7-aa95-237b1592bf8c\",\n    \"col\": 1,\n    \"row\": 1\n  }\n]",
+      "optionsJSON": "{\n  \"darkTheme\": false\n}",
+      "uiStateJSON": "{}",
+      "version": 1,
+      "timeRestore": false,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\n  \"filter\": [\n    {\n      \"query\": {\n        \"query_string\": {\n          \"query\": \"*\",\n          \"analyze_wildcard\": true\n        }\n      }\n    }\n  ]\n}"
+      }
+    }
+  }
+]
