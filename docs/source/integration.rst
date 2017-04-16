@@ -62,5 +62,6 @@ Kibana 5.3
 
 A sample kibana dashboard with supporting visualization can be imported into
 Kibana. Content is available at:
-**/etc/testpool/kibana/dashboard-testpool.json**.
+**/etc/testpool/kibana/testpool.json**.
+**/etc/testpool/kibana/testpool-dashboard.json**.
 
