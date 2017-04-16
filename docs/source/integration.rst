@@ -60,6 +60,7 @@ The content below shows a sample filebeat configuration.
 Kibana 5.3
 **********
 
-A sample kibana dashboard which can be imported into Kibana is available at
+A sample kibana dashboard with supporting visualization can be imported into
+Kibana. Content is available at:
 **/etc/testpool/kibana/dashboard-testpool.json**.
 
