@@ -35,7 +35,7 @@ to this site https://help.ubuntu.com/community/KVM/Installation. Once complete, 
     hypervisor
 
 For the rest of this guide, we'll assume the user tadmin with password 
-'password'. Since testpool is installed on the hypervisor, the IP address used is
+'password'. Since Testpool is installed on the hypervisor, the IP address used is
 localhost.
 
 Now a single VM is required which represents the template that is managed
@@ -53,7 +53,7 @@ an Ubuntu 16.04 server VM.
   #. Select Hypervisor in the virt-manager,
   #. Choose **Create a new virtual manager**.
   #. Choose **Network Install (HTTP, FTP or NFS)** then Forward.
-  #. For URL, enter **http://us.archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/** The URL changes periodically, check the ubuntu site for the 
+  #. For URL, enter **http://us.archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/** The URL changes periodically, check the Ubuntu site for the 
      latest valid links.
 
 
@@ -62,7 +62,7 @@ Testpool Installation
 
 We'll install Testpool from source.
 
-  #. Download testpool from github release area::
+  #. Download Testpool from github release area::
 
        wget https://github.com/testcraftsman/testpool/archive/v0.0.7.tar.gz
        tar -xf testpool-0.0.7.tar.gz
@@ -91,11 +91,11 @@ A Short Tour
 In order for Testpool to manage VMs, Hypervisor information is registered
 with Testpool along with a VM template.
 
-Create a VM on the KVM hypervisor called test.template and keep it shutdown. Now create a testpool profile given the IP address and name of the VM template.
+Create a VM on the KVM hypervisor called test.template and keep it shutdown. Now create a Testpool profile given the IP address and name of the VM template.
 Since we're running on the hypervisor, the IP address is localhost.
 
 Where hypervisor-ip is replaced with the actual Hypervisor IP address.  While 
-running testpool on the hypervisor, use the tpl CLI to create a test pool 
+running Testpool on the hypervisor, use the tpl CLI to create a test pool 
 profile::
 
   ./bin/tpl profile add example kvm qemu:///system test.template 3
@@ -110,12 +110,12 @@ new clean clones based on test.template. The VMs available line in the detail
 output shows the current number of available VMs. Use **virt-manager** to see
 the VMs being created. 
 
-From this point, testpool daemon is cloning VMs. There are several examples
+From this point, Testpool daemon is cloning VMs. There are several examples
 to look through. The file examples/rest.py provides documentation and 
 demonstrates how to use Testpool's REST interface. Simply refer to the 
 file examples/rest.py.
 
-Additionally, testpool-client can be installed which provides a python
+Additionally, Testpool-client can be installed which provides a python
 API on top of the REST interface. To learn more, http://testpool-client.readthedocs.io/en/latest.
 
 .. literalinclude:: /../../examples/rest.py

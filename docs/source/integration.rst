@@ -9,7 +9,7 @@ number of available VMs for each profile. This information can be
 pushed to logstash and visualized with Kibana or Graphana. 
 
 These instructions explain how to enable structured logging, push them
-to logstash using Filebeat.
+to Logstash using Filebeat.
 
 ELK Installation
 ================
@@ -30,19 +30,19 @@ Validate changes::
   
   tplcfgcheck /etc/testpool/testpool.yml
 
-Uncoment tpldaemon.profile.log. The default value is **/var/log/testpool/profile.log**
+Uncomment tpldaemon.profile.log. The default value is **/var/log/testpool/profile.log**
 and restart testpool daemon::
 
   sudo systemctl restart tpl-daemon
 
-Configure logstash to recieve JSON structured content. An example configuration
+Configure Logstash to receive JSON structured content. An example configuration
 file at **/etc/testpool/etc/logstash/conf.d/02-testpool-beat-input.conf**.::
 
   sudo cp /etc/testpool/etc/logstash/conf.d/02-testpool-beat-input.conf /etc/logstash/conf.d/02-testpool-beat-input.conf
   sudo systemctl restart logstash
 
 
-The logstash **02-testpool-beat-input.conf** content.
+The Logstash **02-testpool-beat-input.conf** content.
 
 .. literalinclude:: ../../etc/logstash/conf.d/02-testpool-beat-input.conf
 
@@ -52,7 +52,7 @@ Configure Filebeat to push JSON content. An example is available at
   sudo cp /etc/testpool/filebeat/filebeat.yml /etc/filebeat/filebeat.yml
   sudo systemctl restart filebeat
 
-The content below shows a sample filebeat configuration.
+The content below shows a sample Filebeat configuration.
 
 .. literalinclude:: ../../etc/filebeat/filebeat.yml
 
@@ -60,7 +60,7 @@ The content below shows a sample filebeat configuration.
 Kibana 5.3
 **********
 
-A sample kibana dashboard with supporting visualization can be imported into
+A sample Kibana dashboard with supporting visualization can be imported into
 Kibana. Content is available at:
 **/etc/testpool/kibana/testpool.json**.
 **/etc/testpool/kibana/testpool-dashboard.json**.

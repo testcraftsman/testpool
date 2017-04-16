@@ -53,7 +53,8 @@ setup_args = {
     "license": 'GPLv3',
     "description": 'Manage and recycle pools of VMs.',
     "long_description": README,
-    "url": 'https://github.com/testbed/testpool.git',
+    "url": 'https://github.com/testcraftsman/testpool',
+    "download_url": "https://github.com/testcraftsman/testpool/releases",
     "maintainer": AUTHOR,
     "maintainer_email": AUTHOR_EMAIL,
     "author": AUTHOR,
@@ -70,8 +71,11 @@ setup_args = {
         ("testpool/systemd/", ["scripts/systemd/tpl-daemon.service"]),
     ] + STATIC_FILES,
     "classifiers": [
-        'Development Status :: 1 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         'Programming Language :: Python :: 2.7',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)'
+
     ],
 }
 setup(**setup_args)
