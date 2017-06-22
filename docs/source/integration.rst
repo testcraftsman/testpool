@@ -8,7 +8,7 @@ Testpool provides a structured log of profile status that includes the
 number of available VMs for each profile. This information can be 
 pushed to logstash and visualized with Kibana or Graphana. 
 
-These instructions explain how to enable structured logging, push them
+The following instructions explain how to enable structured logging and push them
 to Logstash using Filebeat.
 
 ELK Installation
@@ -42,6 +42,12 @@ file at **/etc/testpool/etc/logstash/conf.d/02-testpool-beat-input.conf**.::
   sudo systemctl restart logstash
 
 
+Make sure elastic search and logstash start on boot:
+
+  sudo systemctl enable logstash
+  sudo systemctl enable elasticsearch
+
+
 The Logstash **02-testpool-beat-input.conf** content.
 
 .. literalinclude:: ../../etc/logstash/conf.d/02-testpool-beat-input.conf
@@ -64,4 +70,3 @@ A sample Kibana dashboard with supporting visualization can be imported into
 Kibana. Content is available at:
 **/etc/testpool/kibana/testpool.json**.
 **/etc/testpool/kibana/testpool-dashboard.json**.
-
