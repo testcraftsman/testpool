@@ -63,6 +63,10 @@ def profile_log_create(log_file):
     if not log_file:
         return None
 
+    ##
+    # Timestamper must use utc=True because the golang parsing
+    # code really expects RFC3339Nano which is a version of 
+    # iso8601.
     log = logging.getLogger()
     log.addHandler(logging.FileHandler(log_file))
     log.setLevel(logging.INFO)
@@ -71,7 +75,7 @@ def profile_log_create(log_file):
             structlog.stdlib.filter_by_level,
             structlog.stdlib.add_log_level,
             structlog.stdlib.PositionalArgumentsFormatter(),
-            structlog.processors.TimeStamper(fmt="iso", utc=False),
+            structlog.processors.TimeStamper(fmt="iso", utc=True),
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
             structlog.processors.JSONRenderer()
@@ -81,6 +85,7 @@ def profile_log_create(log_file):
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
+    ##
 
     return structlog.wrap_logger(log)
 
@@ -517,3 +522,10 @@ class ModelTestCase(unittest.TestCase):
         # Check to see if the expiration happens.
         self.assertEqual(vms.count(), 2)
         ##
+
+    def test_profile_log(self):
+        """ test structure log format. """
+
+        logger = profile_log_create("./profile.log")
+        self.assertTrue(logger)
+        logger.info(profile="example", vm_count=1, vm_max=2)
