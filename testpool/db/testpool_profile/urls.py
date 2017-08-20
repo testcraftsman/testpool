@@ -28,7 +28,6 @@ urlpatterns = patterns(
         api.profile_acquire),
     url(r'api/profile/detail/(?P<profile_name>[\.\w]+$)', api.profile_detail),
     url(r'api/profile/list', api.profile_list),
-    url(r"profile/detail/(?P<profile>.+)",
-        views.detail),
+    url(r"profile/detail/(?P<profile>.+)", views.detail),
     url(r"profile", views.index),
 )

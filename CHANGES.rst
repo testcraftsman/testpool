@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
-### Added
+
+## [0.1.1]
+### Added 2017-07
 - Work on debian installation to include /etc/testpool content for logstash
+- Support testpool-beat project. Filebeat replaced with Testpool-beat.
 
 ## [0.1.0] - 2017-04-15
 ### Added
