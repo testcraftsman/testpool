@@ -8,8 +8,6 @@
 -Handle when a profile maps to the same template.
 -Check to see what happens when tpl-daemon starts but profile bogus
 -Show actions in web pages and CLI
--Add elastic search support
--Add kibana support
 -Create a style for the web pages
 -Look at Graphana
 -add requirements to setup.py
