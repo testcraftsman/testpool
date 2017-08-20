@@ -65,8 +65,7 @@ def profile_log_create(log_file):
 
     ##
     # Timestamper must use utc=True because the golang parsing
-    # code really expects RFC3339Nano which is a version of 
-    # iso8601.
+    # code really expects RFC3339Nano which is a version of iso8601.
     log = logging.getLogger()
     log.addHandler(logging.FileHandler(log_file))
     log.setLevel(logging.INFO)
