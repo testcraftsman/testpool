@@ -8,16 +8,15 @@ Testpool provides a structured log of profile status that includes the
 number of available VMs for each profile. This information can be 
 pushed to logstash and visualized with Kibana or Graphana. 
 
-The following instructions explain how to enable structured logging and push them
-to Logstash using Filebeat.
+The following instructions explain how to enable structured logging and push
+them to Logstash using Filebeat.
 
 ELK Installation
 ================
 
-ELK stack 5.3 is required which natively supports JSON FileBeat output. There are numerous
-sites to explain ELK installation e.g.
-http://www.itzgeek.com/how-tos/linux/ubuntu-how-tos/setup-elk-stack-ubuntu-16-04.html
-was used to test the following content.
+ELK stack 5.3 is required which natively supports JSON FileBeat output. There
+are numerous sites to explain ELK installation e.g.
+http://www.itzgeek.com/how-tos/linux/ubuntu-how-tos/setup-elk-stack-ubuntu-16-04.html was used to test the following content.
 
 Testpool Configuration
 ======================
@@ -30,8 +29,7 @@ Validate changes::
   
   tplcfgcheck /etc/testpool/testpool.yml
 
-Uncomment tpldaemon.profile.log. The default value is **/var/log/testpool/profile.log**
-and restart testpool daemon::
+Uncomment tpldaemon.profile.log. The default value is **/var/log/testpool/profile.log** and restart testpool daemon::
 
   sudo systemctl restart tpl-daemon
 

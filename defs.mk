@@ -3,13 +3,15 @@ SUBDEFS:=$(wildcard */defs.mk)
 SUBMODULES:=$(foreach module,$(SUBDEFS),$(dir $(module)))
 export PYTHONPATH:=$(ROOT):$(ROOT)/testpool/db
 
+.PHONY: help
+help::
+	@echo "pylint - run pylint on python files."
+	@echo "pep8 - run pep8 on python files."
+	@echo "info - show makefile variables"
+
 info::
 	echo "PYTHONPATH: $(PYTHONPATH)"
 
-.PHONY: help
-help::
-	echo "pylint - run pylint on python files."
-	echo "pep8 - run pep8 on python files."
 
 .PHONY: subdirs $(SUBMODULES)
 $(SUBMODULES):

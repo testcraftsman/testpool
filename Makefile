@@ -7,6 +7,15 @@ BUILDIR=$(CURDIR)/debian/testpool
 PROJECT=testpool
 export VERSION:=`python ./setup.py --version`
 
+.PHONY: help
+help::
+	@echo "make source - Create source package"
+	@echo "make install - Install on local system"
+	@echo "make rpm.build - Generate a rpm package"
+	@echo "make deb.build - Generate a deb package"
+	@echo "make clean - Get rid of scratch and byte files"
+
+
 info::
 	@echo "version ${VERSION}"
 
@@ -16,14 +25,6 @@ clean::
 	find . -name '*.pyc' -delete
 	rm -rf ../testpool_* testpool-* deb_dist testpool.egg-info
 
-
-.PHONY: help
-help::
-	@echo "make source - Create source package"
-	@echo "make install - Install on local system"
-	@echo "make rpm.build - Generate a rpm package"
-	@echo "make deb.build - Generate a deb package"
-	@echo "make clean - Get rid of scratch and byte files"
 
 testpool/version.py: debian/changelog
 	dpkg-parsechangelog | sed -rne 's,^Version: (.*),package_version="\1", p' > testpool/version.py
