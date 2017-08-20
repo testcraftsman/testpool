@@ -1,3 +1,7 @@
+-Generate a release on all tools.
+-Setup CI build
+-Look at tox
+-finish vsphere
 -Figure out best way to connect to KVM, ssh password is cumbersome.
  -Catch exception in setup to mark profile as bad
  -Look into openssh-askpass
