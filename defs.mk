@@ -1,7 +1,10 @@
+ROOT=$(shell git rev-parse --show-toplevel)
 SUBDEFS:=$(wildcard */defs.mk)
 SUBMODULES:=$(foreach module,$(SUBDEFS),$(dir $(module)))
-ROOT=$(shell pwd)
-PYTHONPATH:=$(ROOT)
+export PYTHONPATH:=$(ROOT):$(ROOT)/testpool/db
+
+info::
+	echo "PYTHONPATH: $(PYTHONPATH)"
 
 .PHONY: help
 help::

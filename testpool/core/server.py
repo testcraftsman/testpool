@@ -525,6 +525,6 @@ class ModelTestCase(unittest.TestCase):
     def test_profile_log(self):
         """ test structure log format. """
 
-        logger = profile_log_create("./profile.log")
-        self.assertTrue(logger)
-        logger.info(profile="example", vm_count=1, vm_max=2)
+        logger1 = profile_log_create("./profile.log")
+        self.assertTrue(logger1)
+        logger1.info(profile="example", vm_count=1, vm_max=2)
