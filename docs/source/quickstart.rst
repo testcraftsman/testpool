@@ -19,6 +19,22 @@ separate system. The differences will be identified during the installation
 steps.
 
 
+Additional Testpool Products
+----------------------------
+
+This content provides core functionality. There are several more opensource
+Testpool packages that may be useful. They are:
+
+  - Testpool-client - installed on each client, this package provides an API
+   to acquire and release VMs.  This is useful when writing tests and not 
+   wanting to use the REST interface directly.
+
+  - Testpool-beat - pushes testpool metrics to logstash. This is useful for 
+    monitoring VM pools.
+
+Make sure to install the appropriate major and minor version that matches the testpool package. For example, if the version of Testpool is 0.1.0. Then install 0.1.Y of Testpool-client and Testpool-beat. Where Y can be any value.
+
+
 KVM Installation 
 ----------------
 
