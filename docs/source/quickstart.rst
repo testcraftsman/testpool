@@ -19,11 +19,10 @@ separate system. The differences will be identified during the installation
 steps.
 
 
-Additional Testpool Products
-----------------------------
+Testpool Stack
+--------------
 
-This content provides core functionality. There are several more opensource
-Testpool packages that may be useful. They are:
+Testpool consists of several releated products. They are:
 
   - Testpool-client - installed on each client, this package provides an API
    to acquire and release VMs.  This is useful when writing tests and not 

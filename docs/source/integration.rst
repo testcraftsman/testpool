@@ -14,7 +14,7 @@ them to Logstash using Filebeat.
 ELK Installation
 ================
 
-ELK stack 5.3 is required which natively supports JSON FileBeat output. There
+ELK stack 5.5 is required which natively supports JSON FileBeat output. There
 are numerous sites to explain ELK installation e.g.
 http://www.itzgeek.com/how-tos/linux/ubuntu-how-tos/setup-elk-stack-ubuntu-16-04.html was used to test the following content.
 
