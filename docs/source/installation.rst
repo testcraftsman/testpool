@@ -30,8 +30,7 @@ steps to install a testpool's server:
       wget https://github.com/testcraftsman/testpool/archive/v0.1.0.tar.gz
       tar -xf testpool-0.l.0.tar.gz
 
-  #. Skip this step if you are installing Testpool on the KVM hypervisor, most likely these packages
-     are already installed.
+  #. Skip this step if you are installing Testpool on the KVM hypervisor, most likely these packages are already installed.
      
       sudo apt-get install -y virtinst
 
