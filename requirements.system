@@ -1,6 +1,5 @@
 apt-file
 virtinst
-git
 debhelper
 python-yaml
 python-pip
