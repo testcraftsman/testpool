@@ -12,3 +12,4 @@ http/static
 *.log
 *.tar.gz
 deb_dist
+.tox
