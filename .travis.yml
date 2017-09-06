@@ -1,5 +1,6 @@
 language: python
 before_install:
-   - sudo apt-get install libvirt-bin
+   - sudo apt-get install libvirt-bin libvirtd
+
    - cat requirements.system | sudo xargs apt-get -y install
 
