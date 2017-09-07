@@ -2,9 +2,10 @@ language: python
 install:
    - sudo apt install -yq libvirt-bin virtinst libvirt0 libvirt-dev
    - cat requirements.system | sudo xargs apt -yq install
-   - pip install tox-travis
+   - pip install tox-travis pylint pep8
 script:
    - make pylint pep8
-   - pushd testpool/db; python ./manage.py syncdb --noinput; popd
-   - tox
-   - pushd testpool/db; python ./manage.py test ; popd
+
+#   - pushd testpool/db; python ./manage.py syncdb --noinput; popd
+#   - tox
+#   - pushd testpool/db; python ./manage.py test ; popd
