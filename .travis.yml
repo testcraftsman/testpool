@@ -5,4 +5,5 @@ before_install:
 install:
    - pip install tox-travis
 script:
+   - cd testpool/db; python ./manager.py syncdb --noinput
    - tox
