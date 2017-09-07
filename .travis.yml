@@ -1,7 +1,7 @@
 language: python
 before_install:
-   - sudo apt-get install libvirt-bin virtinst libvirt0 libvirt-dev
-   - cat requirements.system | sudo xargs apt-get -y install
+   - sudo apt install -yq libvirt-bin virtinst libvirt0 libvirt-dev
+   - cat requirements.system | sudo xargs apt -yq install
 install:
    - pip install tox-travis
 script:
