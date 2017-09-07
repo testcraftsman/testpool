@@ -4,7 +4,8 @@ install:
    - cat requirements.system | sudo xargs apt -yq install
    - pip install tox-travis pylint pep8
 script:
-   - make pylint pep8
+   - make pep8
+   - make pylint
 
 #   - pushd testpool/db; python ./manage.py syncdb --noinput; popd
 #   - tox
