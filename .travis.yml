@@ -1,6 +1,6 @@
 language: python
 install:
-   - sudo apt install -yq libvirt-bin virtinst libvirt0 libvirt-dev
+   - sudo apt install -yq libvirt-bin virtinst libvirt0 libvirt-dev enchant
    - cat requirements.system | sudo xargs apt -yq install
    - pip install tox-travis
    - pip install -r requirements.txt
