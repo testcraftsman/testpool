@@ -1,5 +1,5 @@
 pep8>=1.7.0
-pylint==1.6.3
+pylint==1.6.5
 pytest>=2.8.3
 stdeb>=0.8.5
 Sphinx>=1.5.3
