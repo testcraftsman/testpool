@@ -6,8 +6,5 @@ install:
    - pip install -r requirements.txt
    - pip install -r requirements.dev
 script:
-   - make pep8 pylint
-#   - make pylint
-#   - pushd testpool/db; python ./manage.py syncdb --noinput; popd
+   - make check
 #   - tox
-#   - pushd testpool/db; python ./manage.py test ; popd
