@@ -16,37 +16,37 @@
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Tests KVM API
+Test docker API
 
-In order to run these tests, either:
-  - change the TEST_HOST global variable to your hypervisor and create
-    a test.template VM.
-  - Use existing CONNECTION and use a localhost KVM hypvervisor and
-    create a test.template VM.
-Also, make sure tpl-daemon is NOT running.
+Install python binding to docker.
+  - sudo -H pip install docker
 """
 
 import time
 import unittest
 import logging
-import libvirt
+import docker
 from testpooldb import models
-from testpool.libexec import kvm
 from testpool.core import server
 from testpool.core import ext
 from testpool.core import algo
+from testpool.libexec.docker import api
 
-CONNECTION = "qemu:///system"
-TEST_PROFILE = "test.kvm.profile"
-TEMPLATE = "test.template"
-PRODUCT = "kvm"
+CONNECTION = "http://127.0.0.1"
+TEST_PROFILE = "test.docker.profile"
+##
+# Used nginx because it does not terminate.
+TEMPLATE = "nginx:1.13"
+##
+
+PRODUCT = "docker"
 
 
 class Testsuite(unittest.TestCase):
-    """ tests various aspects of cloning a VM. """
+    """ tests various aspects of cloning a container. """
 
     def setUp(self):
-        """ Create KVM profile. """
+        """ Create docker profile. """
 
         (hv1, _) = models.HV.objects.get_or_create(
             connection=CONNECTION, product=PRODUCT)
@@ -56,6 +56,7 @@ class Testsuite(unittest.TestCase):
 
     def tearDown(self):
         """ Remove any previous test profiles1. """
+        logging.debug("tearDown")
 
         try:
             profile1 = models.Profile.objects.get(name=TEST_PROFILE)
@@ -66,94 +67,59 @@ class Testsuite(unittest.TestCase):
             pass
 
         try:
-            hv1 = models.HV.objects.get(connection=CONNECTION,
-                                        product=PRODUCT)
+            hv1 = models.HV.objects.get(connection=CONNECTION, product=PRODUCT)
             hv1.delete()
         except models.HV.DoesNotExist:
             pass
 
     def test_clone(self):
-        """ test clone.
+        """ test creating a container given an image. """
 
-        Clone three VMs. """
-        count = 2
+        count = 3
 
-        hv1 = libvirt.open(CONNECTION)
+        hv1 = docker.from_env()
         self.assertTrue(hv1)
 
-        vmpool = kvm.api.VMPool(CONNECTION, "test")
-        self.assertTrue(vmpool)
+        vmpool = api.VMPool(CONNECTION, "test")
+        self.assertIsNotNone(vmpool)
         for item in range(count):
-            vm_name = TEMPLATE + ".%d" % item
-            try:
-                vmpool.destroy(vm_name)
-            except libvirt.libvirtError:
-                continue
+            vm_name = vmpool.new_name_get(TEMPLATE, item)
+            vmpool.destroy(vm_name)
 
-        pool = [item for item in vmpool.conn.listAllDomains()]
-        pool = [item.name() for item in pool]
-        pool = [item for item in pool if item.startswith(TEMPLATE)]
+        pool = [item for item in vmpool.conn.containers.list()]
         for item in range(count):
-            vm_name = TEMPLATE + ".%d" % item
+            vm_name = vmpool.new_name_get(TEMPLATE, item)
             if vm_name not in pool:
-                logging.debug("creating %s", vm_name)
+                logging.debug("cloning %s to %s", TEMPLATE, vm_name)
                 vmpool.clone(TEMPLATE, vm_name)
                 vmpool.start(vm_name)
 
         for item in range(count):
-            vm_name = "%s.%d" % (TEMPLATE, item)
-            try:
-                vmpool.destroy(vm_name)
-            except libvirt.libvirtError:
-                continue
-
-    def test_info(self):
-        """ test_info """
-
-        hndl = libvirt.open(CONNECTION)
-        self.assertTrue(hndl)
-
-        self.assertTrue(hndl.getInfo())
-        self.assertTrue(hndl.getHostname())
-
-    def test_storage(self):
-        """ test_storage """
-        hndl = libvirt.open(CONNECTION)
-        self.assertTrue(hndl)
-
-        for item in hndl.listDomainsID():
-            dom = hndl.lookupByID(item)
-            print "Active: Name: ", dom.name()
-            print "Active: Info: ", dom.info()
+            vm_name = TEMPLATE + ".%d" % item
+            vmpool.destroy(vm_name)
 
     def test_destroy_missing(self):
         """ test_destroy_missing. """
 
         profile1 = models.Profile.objects.get(name=TEST_PROFILE)
 
-        hv1 = kvm.api.vmpool_get(profile1)
+        hv1 = api.vmpool_get(profile1)
         self.assertTrue(hv1)
 
-        hndl = libvirt.open(CONNECTION)
-        self.assertTrue(hndl)
-
-        try:
-            vm_name = "%s.destroy" % TEMPLATE
-            hv1.start(vm_name)
-        except libvirt.libvirtError:
-            pass
+        vm_name = "%s.destroy" % TEMPLATE
+        hv1.destroy(vm_name)
 
 
 # pylint: disable=R0903
 class FakeArgs(object):
     """ Used in testing to pass values to server.main. """
     def __init__(self):
-        self.count = 200
+        self.count = 40
         self.sleep_time = 1
         self.max_sleep_time = 60
         self.min_sleep_time = 1
         self.setup = True
-        self.verbose = 0
+        self.verbose = 3
         self.cfg_file = ""
 
 
@@ -162,18 +128,21 @@ class TestsuiteServer(unittest.TestCase):
 
     def tearDown(self):
         """ Make sure profile is removed. """
+
         try:
             hv1 = models.HV.objects.get(connection=CONNECTION,
                                         product=PRODUCT)
             profile1 = models.Profile.objects.get(name=TEST_PROFILE, hv=hv1)
-            vmpool = kvm.api.vmpool_get(profile1)
+            vmpool = api.vmpool_get(profile1)
             algo.destroy(vmpool, profile1)
-
             profile1.delete()
         except models.HV.DoesNotExist:
             pass
         except models.Profile.DoesNotExist:
             pass
+
+        hv1 = docker.from_env()
+        vmpool = api.VMPool(CONNECTION, "test")
 
     def test_setup(self):
         """ test_setup. """
@@ -188,8 +157,33 @@ class TestsuiteServer(unittest.TestCase):
         args = FakeArgs()
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
-
         self.assertEqual(profile1.vm_set.all().count(), 1)
+
+    def test_create_one(self):
+        """ Create one container. """
+
+        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
+                                                   product=PRODUCT)
+        defaults = {"vm_max": 1, "template_name": TEMPLATE}
+        models.Profile.objects.update_or_create(name=TEST_PROFILE, hv=hv1,
+                                                defaults=defaults)
+
+        args = FakeArgs()
+        server.args_process(args)
+        self.assertEqual(server.main(args), 0)
+
+    def test_create_two(self):
+        """ Create one container. """
+
+        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
+                                                   product=PRODUCT)
+        defaults = {"vm_max": 2, "template_name": TEMPLATE}
+        models.Profile.objects.update_or_create(name=TEST_PROFILE, hv=hv1,
+                                                defaults=defaults)
+
+        args = FakeArgs()
+        server.args_process(args)
+        self.assertEqual(server.main(args), 0)
 
     def test_shrink(self):
         """ test_shrink. test when the profile shrinks. """
@@ -211,6 +205,7 @@ class TestsuiteServer(unittest.TestCase):
         ##
 
         args = FakeArgs()
+        args.setup = False
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
         exts = ext.api_ext_list()
@@ -228,7 +223,7 @@ class TestsuiteServer(unittest.TestCase):
             name=TEST_PROFILE, hv=hv1, defaults=defaults)
 
         ##
-        # Now expand to 3
+        #  Now expand to 3
         profile1.vm_max = 3
         profile1.save()
         ##

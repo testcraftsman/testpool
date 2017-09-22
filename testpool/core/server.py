@@ -105,11 +105,11 @@ def args_process(args):
     testpool.core.logger.args_process(LOGGER, args)
     ##
     # After this we know that the configuration is valid.
-    CFG = cfgcheck.check(args.cfg)
+    CFG = cfgcheck.check(args.cfg_file)
     if CFG:
-        LOGGER.info("loading configuration file %s", args.cfg)
+        LOGGER.info("loading configuration file %s", args.cfg_file)
     else:
-        LOGGER.warning("configuration file %s not found", args.cfg)
+        LOGGER.warning("configuration file %s not found", args.cfg_file)
     try:
         PROFILE_LOGGER = profile_log_create(CFG.tpldaemon.profile.log)
     except AttributeError:
@@ -131,7 +131,8 @@ def argparser():
                         action="store_false",
                         help="Skip system setup. Assume database content "
                         "matches hypervisor")
-    parser.add_argument('--cfg', default=testpool.settings.CFG_FILE,
+    parser.add_argument('--cfg-file', dest="cfg_file",
+                        default=testpool.settings.CFG_FILE,
                         help="Override default configuration location "
                         "/etc/testpool/testpool.yml")
     return parser
@@ -221,6 +222,9 @@ def setup(exts):
         LOGGER.info("setup %s %s %d of %d", profile1.name,
                     profile1.template_name, vms.count(), profile1.vm_max)
 
+        ext1 = exts[profile1.hv.product]
+        vmpool = ext1.vmpool_get(profile1)
+
         ##
         # Check the hypervisor. Create Database entries for each existing
         # VM. Then mark them to be destroyed. Before that mark any
@@ -228,7 +232,7 @@ def setup(exts):
         # do not correspond to an actual VM. Actual VMS, will be destroyed
         # through the normal event engine.
         for count in range(profile1.vm_max):
-            vm_name = algo.vm_name_create(profile1.template_name, count)
+            vm_name = vmpool.new_name_get(profile1.template_name, count)
             (vmh, _) = models.VM.objects.get_or_create(profile=profile1,
                                                        name=vm_name)
             # Mark bad just to figure out which to delete immediately.
@@ -238,8 +242,6 @@ def setup(exts):
         ##
         # Quickly go through all of the VMs to reclaim them by transitioning.
         # them to PENDING and action destroy
-        ext1 = exts[profile1.hv.product]
-        vmpool = ext1.vmpool_get(profile1)
         delta = 0
         vm_list = vmpool.vm_list(profile1)
         for vm_name in vm_list:

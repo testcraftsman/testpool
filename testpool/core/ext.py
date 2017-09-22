@@ -74,5 +74,6 @@ class Testsuite(unittest.TestCase):
         self.assertTrue(api_exts)
         self.assertTrue("fake" in api_exts)
 
+
 if __name__ == "__main__":
     unittest.main()

@@ -124,7 +124,7 @@ def profile_acquire(request, profile_name):
         ##
     else:
         logging.error("profile_acquire method %s unsupported", request.method)
-        raise Http404("profile acquire only get supported")
+        raise Http404("profile_acquire method only get supported")
 
 
 @csrf_exempt
@@ -151,3 +151,4 @@ def profile_release(request, vm_id):
         return JSONResponse(content)
     else:
         logging.error("profile_release method %s unsupported", request.method)
+        raise Http404("profile_release method only get supported")

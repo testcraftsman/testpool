@@ -85,7 +85,7 @@ We'll install Testpool from source.
   #. Install several required packages::
 
        cd testpool
-       cat requirements.system | sudo xargs apt-get install
+       cat requirements.system | sudo xargs apt-get install -y
        sudo apt-file update
        sudo pip install -qr requirements.txt
 

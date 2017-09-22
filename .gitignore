@@ -13,3 +13,5 @@ http/static
 *.tar.gz
 deb_dist
 .tox
+.pytest_cache
+t.sh

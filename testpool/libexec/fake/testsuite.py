@@ -5,10 +5,11 @@ Useful for developing Testpool algorithms.
 """
 import unittest
 import logging
-import testpool.core.ext
+from testpool.core import ext
 from testpool.core import algo
-from testpool.libexec.fake import api
 from testpool.core import database
+from testpool.core import server
+from testpool.libexec.fake import api
 
 ##
 # database init is required to add to the system path so that models can
@@ -107,8 +108,8 @@ class Testsuite(unittest.TestCase):
         with self.assertRaises(algo.ResourceReleased):
             algo.push(vm1.id)
 
-        api_exts = testpool.core.ext.api_ext_list()
-        testpool.core.server.adapt(api_exts)
+        api_exts = ext.api_ext_list()
+        server.adapt(api_exts)
 
     def tearDown(self):
         """ Remove any previous fake profiles1. """
@@ -126,6 +127,7 @@ class Testsuite(unittest.TestCase):
             hv1.delete()
         except models.HV.DoesNotExist:
             pass
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

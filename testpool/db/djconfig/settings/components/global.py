@@ -5,8 +5,8 @@ import os
 # Provides location of plain text file that defines the mysql connection
 # information. The existance of the mysql configuration file implies that
 # it will become default database.
-CONF="/etc/testpool/testpool.yml"
-#WSGI_APPLICATION = 'cgi-bin.wsgi.application'
+CONF = "/etc/testpool/testpool.yml"
+# WSGI_APPLICATION = 'cgi-bin.wsgi.application'
 
 sqllite_path = os.path.join("/var", "tmp", 'testpooldb.sqlite3')
 

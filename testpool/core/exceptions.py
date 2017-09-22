@@ -13,7 +13,7 @@ LOG = logger.create()
 class TestpoolError(Exception):
     """ Common to all Testpool exceptions. """
 
-    def __init__(self, message):
+    def __init__(self, message):  # pylint: disable=W0235
         """ Constructor. """
         super(TestpoolError, self).__init__(message)
 

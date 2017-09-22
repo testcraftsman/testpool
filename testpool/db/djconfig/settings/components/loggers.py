@@ -12,7 +12,7 @@ LOGGING = {
     'formatters': {
         'verbose': {
             'format': '[%(asctime)s] %(levelname)s %(message)s',
-	        'datefmt': '%Y-%m-%d %H:%M:%S'
+                      'datefmt': '%Y-%m-%d %H:%M:%S'
         }
     },
     'handlers': {
@@ -56,7 +56,7 @@ LOGGING = {
 
         ##
         # Suppress database query in the logging, which is probably not needed
-        # most of the time. 
+        # most of the time.
         'django.db.backends': {
             'handlers': ['null'],
             'level': 'DEBUG',

@@ -18,20 +18,22 @@
 
 import json
 import time
-import requests
 import urllib
 import threading
 from argparse import Namespace
+import requests
 import testpool.core.exceptions
 
 
 class ResourceError(testpool.core.exceptions.TestpoolError):
-    def __init__(self, message):
-        super(testpool.core.exceptions.TestpoolError, self).__init__(message)
+    """ Thrown when there isn't enough resources. """
+    def __init__(self, message):  # pylint: disable=useless-super-delegation
+        super(ResourceError, self).__init__(message)
 
 
 def _renew(*args, **kwargs):
     """ Renew VM acquisition. """
+    # pylint: disable=unused-argument
 
     hndl = args[0]
     hndl.renew()
@@ -51,6 +53,8 @@ class VMHndl(object):
         @param expiration The time in seconds.
         @param blocking Wait for VM to be available.
         """
+        # pylint: disable=invalid-name
+
         self.profile_name = profile_name
         self.ip_addr = ip_addr
         self.expiration = expiration
@@ -94,7 +98,6 @@ class VMHndl(object):
                 raise ResourceError("all VMs busy or pending")
         return None
 
-
     def release(self):
         """ Release VM resource. """
 
@@ -115,7 +118,7 @@ class VMHndl(object):
 
         params = {"id": self.vm.id,
                   "expiration": 100}
-        resp = requests.get(self._url_get("renew"), urllib.urlencode(params))
+        requests.get(self._url_get("renew"), urllib.urlencode(params))
 
     def _url_get(self, action):
         """ Create URL for the given action. """

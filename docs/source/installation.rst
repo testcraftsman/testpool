@@ -32,7 +32,7 @@ steps to install a testpool's server:
 
   #. Skip this step if you are installing Testpool on the KVM hypervisor, most likely these packages are already installed.
      
-      sudo apt-get install -y virtinst
+      sudo apt-get install -y libvirt-dev libxen-dev virtinst
 
   #. Install several required packages::
 

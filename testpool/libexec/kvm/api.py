@@ -9,7 +9,7 @@ import testpool.core.api
 from testpool.core import exceptions
 from testpool.core import logger
 
-logger = logger.create()
+LOGGER = logger.create()
 
 
 ##
@@ -37,6 +37,7 @@ def libvirt_callback(userdata, err):
 # pylint: enable=W0613
 ##
 
+
 libvirt.registerErrorHandler(f=libvirt_callback, ctx=None)
 
 
@@ -59,7 +60,7 @@ def get_clone_diskfile(design):
         if origpath is None:
             newpath = None
 
-        logger.debug("cloning disk %s to %s", origpath, newpath)
+        LOGGER.debug("cloning disk %s to %s", origpath, newpath)
         clonepaths.append(newpath)
         newidx += 1
     design.clone_paths = clonepaths
@@ -68,7 +69,7 @@ def get_clone_diskfile(design):
         _, errmsg = disk.is_size_conflict()
         # The isfatal case should have already caused us to fail
         if errmsg:
-            logger.warning("disk size limit exceeded")
+            LOGGER.warning("disk size limit exceeded")
 
 
 def vm_state_to_str(dom):
@@ -89,6 +90,10 @@ def vm_state_to_str(dom):
 
 
 class HostInfo(testpool.core.api.HostInfo):
+    """ Holds Host information. """
+    # pylint: disable=too-few-public-methods
+    # pylint: disable=too-many-instance-attributes
+
     def __init__(self, kvm_info):
         testpool.core.api.HostInfo.__init__(self)
         self.model = str(kvm_info[0])
@@ -104,6 +109,8 @@ class HostInfo(testpool.core.api.HostInfo):
 class VMPool(testpool.core.api.VMPool):
     """ Interface to KVM Pool manager. """
 
+    # pylint: disable=no-self-use
+
     def __init__(self, url_name, context):
         """ Constructor. """
 
@@ -118,7 +125,12 @@ class VMPool(testpool.core.api.VMPool):
         elif url_name.startswith("qemu") or url_name.startswith("qemu+ssh"):
             self.conn = libvirt.open(url_name)
         else:
-            raise ValueError("unsupported connection %s", url_name)
+            raise ValueError("unsupported connection %s" % url_name)
+
+    def new_name_get(self, template_name, index):
+        """ Given a profile, generate a new name. """
+        vm_name = template_name + ".%d" % index
+        return vm_name
 
     def timing_get(self, request):
         """ Return algorithm timing based on the request. """
@@ -126,17 +138,17 @@ class VMPool(testpool.core.api.VMPool):
         if request == testpool.core.api.VMPool.TIMING_REQUEST_DESTROY:
             return 60
         else:
-            raise ValueError("unknown timing request %s", request)
+            raise ValueError("unknown timing request %s" % request)
 
     def type_get(self):
         """ Return the type of the interface. """
         return "kvm"
 
-    def vm_state_get(self, vm_name):
+    def vm_state_get(self, name):
         """ Return the state of the VM. """
 
         try:
-            vm_hndl = self.conn.lookupByName(vm_name)
+            vm_hndl = self.conn.lookupByName(name)
             return vm_hndl.info()[0]
         except libvirt.libvirtError:
             return testpool.core.api.VMPool.STATE_NONE
@@ -147,14 +159,14 @@ class VMPool(testpool.core.api.VMPool):
         Shutdown the VM if necessary.
         """
 
-        logger.debug("%s vm_destroy", vm_name)
+        LOGGER.debug("%s vm_destroy", vm_name)
         try:
             vm_hndl = self.conn.lookupByName(vm_name)
         except (AttributeError, libvirt.libvirtError):
             return testpool.core.api.VMPool.STATE_NONE
 
-        logger.debug("%s vm_destroy VM state %s", vm_name,
-                      vm_state_to_str(vm_hndl))
+        LOGGER.debug("%s vm_destroy VM state %s", vm_name,
+                     vm_state_to_str(vm_hndl))
         vm_xml = vm_hndl.XMLDesc()
 
         root = ElementTree.fromstring(vm_xml)
@@ -163,15 +175,15 @@ class VMPool(testpool.core.api.VMPool):
 
         [state, _, _, _, _] = vm_hndl.info()
         if state != libvirt.VIR_DOMAIN_SHUTOFF:
-            logger.debug("%s destroy VM", vm_name)
+            LOGGER.debug("%s destroy VM", vm_name)
             vm_hndl.destroy()
 
         [state, _, _, _, _] = vm_hndl.info()
         if state == libvirt.VIR_DOMAIN_SHUTOFF:
-            logger.debug("%s undefine VM", vm_name)
+            LOGGER.debug("%s undefine VM", vm_name)
             vm_hndl.undefineFlags(libvirt.VIR_DOMAIN_UNDEFINE_MANAGED_SAVE)
 
-        logger.debug("%s destroy volume %s", vm_name, volume_in_use)
+        LOGGER.debug("%s destroy volume %s", vm_name, volume_in_use)
         vm_vol = self.conn.storageVolLookupByPath(volume_in_use)
         vm_vol.wipe(0)
         vm_vol.delete(0)
@@ -179,6 +191,7 @@ class VMPool(testpool.core.api.VMPool):
 
     def clone(self, orig_name, new_name):
         """ Clone KVM system. """
+
         def _do_creds_authname(_):
             return 0
 
@@ -205,35 +218,34 @@ class VMPool(testpool.core.api.VMPool):
         design.setup_clone()
         # start cloning
         design.start_duplicate(None)
-        logger.debug("end clone")
+        LOGGER.debug("end clone")
 
-    def start(self, vm_name):
+    def start(self, name):
         """ Start VM. """
 
-        vm_dom = self.conn.lookupByName(vm_name)
+        vm_dom = self.conn.lookupByName(name)
         rtc = vm_dom.create()
 
         if rtc == 0:
             return testpool.core.api.VMPool.STATE_RUNNING
-        else:
-            return testpool.core.api.VMPool.STATE_BAD_STATE
+        return testpool.core.api.VMPool.STATE_BAD_STATE
 
     def ip_get(self, vm_name, source=0):
         """ Return IP address of VM.
         IP address may not be found if the VM is not fully running.
         """
-        logger.debug("%s: ip_get called", vm_name)
+        LOGGER.debug("%s: ip_get called", vm_name)
 
         try:
             dom = self.conn.lookupByName(vm_name)
-            logger.debug("%s: ip_get dom %s", vm_name, dom)
+            LOGGER.debug("%s: ip_get dom %s", vm_name, dom)
         except libvirt.libvirtError:
             return None
 
         try:
-            logger.debug("%s: domain not found", vm_name)
+            LOGGER.debug("%s: domain not found", vm_name)
             ifc = dom.interfaceAddresses(0)
-            logger.debug("%s: ip_get dom ifc %s", vm_name, ifc)
+            LOGGER.debug("%s: ip_get dom ifc %s", vm_name, ifc)
         except libvirt.libvirtError:
             return None
 
@@ -241,7 +253,7 @@ class VMPool(testpool.core.api.VMPool):
             for (_, values) in ifc.iteritems():
                 return values["addrs"][source]["addr"]
         except KeyError:
-            logger.debug("%s: ip address not set", vm_name)
+            LOGGER.debug("%s: ip address not set", vm_name)
         return None
 
     def vm_list(self, profile1):
@@ -279,16 +291,16 @@ class VMPool(testpool.core.api.VMPool):
 
         ret_value = HostInfo(host_info)
         return ret_value
-        
+
 
 def vmpool_get(profile):
     """ Return a handle to the KVM API. """
     ##
     # User qemu+ssh://hostname/system list --all
-    # or 
+    # or
     # User qemu+tcp://username@hostname/system list --all
     try:
         return VMPool(profile.hv.connection, profile.name)
     except libvirt.libvirtError, arg:
-        # logger.exception(arg)
+        # LOGGER.exception(arg)
         raise exceptions.ProfileError(str(arg), profile)

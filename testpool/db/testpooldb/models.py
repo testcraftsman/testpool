@@ -50,7 +50,7 @@ class Key(models.Model):
         for (config_type, config_str) in Key.CONFIG_TYPE:
             if value == config_str:
                 return config_type
-        raise ValueError("unknown: config_type %s", value)
+        raise ValueError("unknown: config_type %s" % value)
 
     def __str__(self):
         """ Return testsuite name. """
@@ -190,7 +190,7 @@ class VM(models.Model):
     def transition(self, status, action, action_time_delta):
         """ Transition VM through states. """
 
-        LOGGER.info("%s: transition %s %s in %d (sec)", self.name,
+        LOGGER.info("%s: transition %s to %s in %d (sec)", self.name,
                     VM.status_to_str(status), action, action_time_delta)
         self.status = status
         self.action = action
@@ -215,8 +215,7 @@ class Traceback(models.Model):
         if self.file_name and self.lineno and self.func_name:
             return "File %s, line %d, in %s\n    %s" % \
                    (self.file_name, self.lineno, self.func_name, self.text)
-        else:
-            return self.text
+        return self.text
 
 
 class ProfileKVP(models.Model):
