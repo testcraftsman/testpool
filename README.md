@@ -9,3 +9,5 @@ The goal is for VMs to always be available when tests need them and not
 waiting for VMs to be cloned.
 
 To learn more http://testpool.readthedocs.io/en/latest/
+
+Builds are in travis https://travis-ci.org/testcraftsman
