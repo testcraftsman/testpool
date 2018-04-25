@@ -102,11 +102,11 @@ class KVP(models.Model):
             models.Q(value__contains=contains))
 
 
-class VMKVP(models.Model):
+class ResourceKVP(models.Model):
     """ Key value pair for profile. """
 
     # pylint: disable=C0103
-    vm = models.ForeignKey("VM")
+    vm = models.ForeignKey("Resource")
     # pylint: enable=C0103
     kvp = models.ForeignKey(KVP)
 
@@ -115,12 +115,12 @@ class VMKVP(models.Model):
         return str(self.kvp)
 
 
-class VM(models.Model):
+class Resource(models.Model):
     """ A single test consisting of one or more results.
     READY - system is ready to be used.
     PENDING - system is pending towards being ready.
-    RESERVED - VM is currently in use.
-    BAD - VM is in a bad state
+    RESERVED - Resource is currently in use.
+    BAD - Resource is in a bad state
     """
 
     ACTION_DESTROY = "destroy"
@@ -142,33 +142,33 @@ class VM(models.Model):
     ##
     action = models.CharField(max_length=36, default="clone")
     action_time = models.DateTimeField(auto_now_add=True)
-    kvps = models.ManyToManyField(KVP, through="VMKVP")
+    kvps = models.ManyToManyField(KVP, through="ResourceKVP")
 
     def __str__(self):
         """ User representation. """
         return str(self.name)
 
     def release(self):
-        """ Acquire VM. """
+        """ Acquire resource. """
 
-        self.status = VM.PENDING
+        self.status = Resource.PENDING
         self.save()
 
     def status_as_str(self):
         """ Return status as string. """
-        return VM.status_to_str(self.status)
+        return Resource.status_to_str(self.status)
 
     @staticmethod
     def status_to_str(status):
         """ Return string form of the status code. """
 
-        if status == VM.RESERVED:
+        if status == Resource.RESERVED:
             return "reserved"
-        elif status == VM.PENDING:
+        elif status == Resource.PENDING:
             return "pending"
-        elif status == VM.BAD:
+        elif status == Resource.BAD:
             return "bad"
-        elif status == VM.READY:
+        elif status == Resource.READY:
             return "ready"
         else:
             raise ValueError("status %d unknown" % status)
@@ -177,21 +177,21 @@ class VM(models.Model):
     def status_map(status):
         """ Return status. """
         if status == "reserved":
-            return VM.RESERVED
+            return Resource.RESERVED
         elif status == "bad":
-            return VM.BAD
+            return Resource.BAD
         elif status == "ready":
-            return VM.READY
+            return Resource.READY
         elif status == "pending":
-            return VM.PENDING
+            return Resource.PENDING
         else:
             raise ValueError("status %s unknown" % status)
 
     def transition(self, status, action, action_time_delta):
-        """ Transition VM through states. """
+        """ Transition Resource through states. """
 
         LOGGER.info("%s: transition %s to %s in %d (sec)", self.name,
-                    VM.status_to_str(status), action, action_time_delta)
+                    Resource.status_to_str(status), action, action_time_delta)
         self.status = status
         self.action = action
         delta = datetime.timedelta(seconds=action_time_delta+1)
@@ -269,8 +269,8 @@ class Profile(models.Model):
     action_time = models.DateTimeField(auto_now_add=True)
 
     def vm_available(self):
-        """ Current available VMs. """
-        return self.vm_set.filter(status=VM.READY).count()
+        """ Current available resources. """
+        return self.resource_set.filter(status=Resource.READY).count()
 
     def stacktrace_set(self, msg, stack_trace):
         """ Store the exception received while operating on a profile. """
@@ -314,13 +314,13 @@ class Profile(models.Model):
 
     def deleteable(self):
         """ Return true if the model should be deleted.
-        Profiles can only be deleted if all of the VMs have been
-        deleted. Deleting a VM takes time. Only when maximum number
-        is zero and all of the VMs have been actualy been deleted will
+        Profiles can only be deleted if all of the resources have been
+        deleted. Deleting a resource takes time. Only when maximum number
+        is zero and all of the resources have been actualy been deleted will
         the profile be deleted.
         """
 
-        return self.vm_max == 0 and self.vm_set.count() == 0
+        return self.vm_max == 0 and self.resource_set.count() == 0
 
     def __str__(self):
         """ User representation. """

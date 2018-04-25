@@ -28,7 +28,7 @@ import testpool.settings
 import testpool.version
 from testpool.core import logger
 from testpool.core import profile
-from testpool.core import vm
+from testpool.core import resource
 
 
 def args_process(log_hndl, args):
@@ -68,7 +68,7 @@ def extensions_find(arg_parser):
     ##
     # Add common commands.
     profile.add_subparser(subparser)
-    vm.add_subparser(subparser)
+    resource.add_subparser(subparser)
     ##
 
     for package in testpool.settings.PLUGINS:
@@ -114,7 +114,7 @@ class Testsuite(unittest.TestCase):
         with self.assertRaises(ValueError):
             args_process(None, args)
 
-    def test_vm_incr(self):
+    def test_resource_incr(self):
         """ Test that bad profiles are prevented. """
 
         arg_parser = main()
@@ -123,11 +123,11 @@ class Testsuite(unittest.TestCase):
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)
 
-        cmd = "vm incr test.profile"
+        cmd = "resource incr test.profile"
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)
 
-        cmd = "vm incr test.profile --count 2"
+        cmd = "resource incr test.profile --count 2"
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)
 

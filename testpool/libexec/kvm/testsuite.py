@@ -20,9 +20,9 @@ Tests KVM API
 
 In order to run these tests, either:
   - change the TEST_HOST global variable to your hypervisor and create
-    a test.template VM.
+    a test.template resource.
   - Use existing CONNECTION and use a localhost KVM hypvervisor and
-    create a test.template VM.
+    create a test.template resource.
 Also, make sure tpl-daemon is NOT running.
 """
 
@@ -43,7 +43,7 @@ PRODUCT = "kvm"
 
 
 class Testsuite(unittest.TestCase):
-    """ tests various aspects of cloning a VM. """
+    """ tests various aspects of cloning a resource. """
 
     def setUp(self):
         """ Create KVM profile. """
@@ -59,7 +59,7 @@ class Testsuite(unittest.TestCase):
 
         try:
             profile1 = models.Profile.objects.get(name=TEST_PROFILE)
-            for vm1 in models.VM.objects.filter(profile=profile1):
+            for vm1 in models.Resource.objects.filter(profile=profile1):
                 vm1.delete()
             profile1.delete()
         except models.Profile.DoesNotExist:
@@ -75,13 +75,13 @@ class Testsuite(unittest.TestCase):
     def test_clone(self):
         """ test clone.
 
-        Clone three VMs. """
+        Clone three resources. """
         count = 2
 
         hv1 = libvirt.open(CONNECTION)
         self.assertTrue(hv1)
 
-        vmpool = kvm.api.VMPool(CONNECTION, "test")
+        vmpool = kvm.api.Pool(CONNECTION, "test")
         self.assertTrue(vmpool)
         for item in range(count):
             vm_name = TEMPLATE + ".%d" % item
@@ -131,7 +131,7 @@ class Testsuite(unittest.TestCase):
 
         profile1 = models.Profile.objects.get(name=TEST_PROFILE)
 
-        hv1 = kvm.api.vmpool_get(profile1)
+        hv1 = kvm.api.pool_get(profile1)
         self.assertTrue(hv1)
 
         hndl = libvirt.open(CONNECTION)
@@ -166,7 +166,7 @@ class TestsuiteServer(unittest.TestCase):
             hv1 = models.HV.objects.get(connection=CONNECTION,
                                         product=PRODUCT)
             profile1 = models.Profile.objects.get(name=TEST_PROFILE, hv=hv1)
-            vmpool = kvm.api.vmpool_get(profile1)
+            vmpool = kvm.api.pool_get(profile1)
             algo.destroy(vmpool, profile1)
 
             profile1.delete()
@@ -215,8 +215,8 @@ class TestsuiteServer(unittest.TestCase):
         self.assertEqual(server.main(args), 0)
         exts = ext.api_ext_list()
 
-        vmpool = exts[PRODUCT].vmpool_get(profile1)
-        self.assertEqual(len(vmpool.vm_list(profile1)), 2)
+        vmpool = exts[PRODUCT].pool_get(profile1)
+        self.assertEqual(len(vmpool.list(profile1)), 2)
 
     def test_expand(self):
         """ test_expand. Check when profile increases. """
@@ -238,8 +238,8 @@ class TestsuiteServer(unittest.TestCase):
         self.assertEqual(server.main(args), 0)
 
         exts = ext.api_ext_list()
-        vmpool = exts[PRODUCT].vmpool_get(profile1)
-        self.assertEqual(len(vmpool.vm_list(profile1)), 3)
+        vmpool = exts[PRODUCT].pool_get(profile1)
+        self.assertEqual(len(vmpool.list(profile1)), 3)
 
     def test_expiration(self):
         """ test_expiration. """
@@ -256,14 +256,14 @@ class TestsuiteServer(unittest.TestCase):
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
 
-        vms = profile1.vm_set.filter(status=models.VM.READY)
+        vms = profile1.vm_set.filter(status=models.Resource.READY)
         self.assertEqual(len(vms), vm_max)
 
         vmh = vms[0]
 
         ##
         # Acquire for 3 seconds.
-        vmh.transition(models.VM.RESERVED, algo.ACTION_DESTROY, 3)
+        vmh.transition(models.Resource.RESERVED, algo.ACTION_DESTROY, 3)
         time.sleep(5)
         args.setup = False
         args.count = 2
@@ -277,7 +277,7 @@ class TestsuiteServer(unittest.TestCase):
         exts = ext.api_ext_list()
         server.adapt(exts)
 
-        vms = profile1.vm_set.filter(status=models.VM.READY)
+        vms = profile1.vm_set.filter(status=models.Resource.READY)
 
         ##
         # Check to see if the expiration happens.

@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
-""" VM Pool API. """
+""" Pool API. """
 
 
 # pylint: disable=R0902
@@ -35,22 +35,22 @@ class HostInfo(object):
 NOT_IMPL = "%s not implemented"
 
 
-class VMPool(object):
-    """ VM Pool API. """
+class Pool(object):
+    """ Pool API. """
 
     TIMING_REQUEST_DESTROY = "timing.request.destroy"
 
     STATE_RUNNING = 1
-    """ The VM is running. """
+    """ The resource is running. """
 
     STATE_NONE = 2
-    """ Indicate that the VM does not exist. """
+    """ Indicate that the resource does not exist. """
 
     STATE_BAD_STATE = 3
     """ System exists but is not running. """
 
     STATE_DESTROYED = 4
-    """ VM has been destroyed. """
+    """ resource has been destroyed. """
 
     STATE_STRING = {
         STATE_RUNNING: "running",
@@ -83,15 +83,15 @@ class VMPool(object):
         """ Start name content. """
         raise NotImplementedError(NOT_IMPL % "start")
 
-    def vm_state_get(self, name):
+    def state_get(self, name):
         """ Return the current vm_name. """
-        raise NotImplementedError(NOT_IMPL % "vm_state_get")
+        raise NotImplementedError(NOT_IMPL % "state_get")
 
     def vm_is_clone(self, profile1, vm_name):
         """ Return True if vm1 is a clone for the profile1. """
 
         raise NotImplementedError(NOT_IMPL % "vm_is_clone")
 
-    def vm_list(self, profile1):
-        """ Return the list of VMs for the profile1. """
-        raise NotImplementedError(NOT_IMPL % "vm_list")
+    def list(self, profile1):
+        """ Return the list of resources for the profile1. """
+        raise NotImplementedError(NOT_IMPL % "list")

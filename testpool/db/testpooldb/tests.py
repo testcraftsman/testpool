@@ -24,8 +24,8 @@ from .models import Profile
 from .models import Key
 from .models import KVP
 from .models import HV
-from .models import VM
-from .models import VMKVP
+from .models import Resource
+from .models import ResourceKVP
 
 
 class Testsuite(TestCase):
@@ -50,7 +50,7 @@ class Testsuite(TestCase):
         self.assertEqual(profile1.kvp_value_get("key2"), "value2")
 
     def test_vm(self):
-        """ Generate several VM instances. """
+        """ Generate several resource instances. """
 
         hv1 = HV.objects.create(connection="localhost")
         self.assertTrue(hv1)
@@ -61,13 +61,13 @@ class Testsuite(TestCase):
         self.assertTrue(profile1)
 
         for item in range(3):
-            vm1 = VM.objects.create(profile=profile1,
-                                    name="template.ubuntu1404.%d" % item,
-                                    status=VM.PENDING)
+            vm1 = Resource.objects.create(profile=profile1,
+                                          name="template.ubuntu1404.%d" % item,
+                                          status=Resource.PENDING)
             self.assertTrue(vm1)
 
     def test_vm_attr(self):
-        """ Test adding attribute to a VM. """
+        """ Test adding attribute to a resource. """
 
         hv1 = HV.objects.create(connection="localhost")
         self.assertTrue(hv1)
@@ -77,12 +77,12 @@ class Testsuite(TestCase):
                                           expiration=10*60*60*10000000)
         self.assertTrue(profile1)
 
-        vm1 = VM.objects.create(profile=profile1,
-                                name="template.ubuntu1404.0",
-                                status=VM.PENDING)
+        vm1 = Resource.objects.create(profile=profile1,
+                                      name="template.ubuntu1404.0",
+                                      status=Resource.PENDING)
         self.assertTrue(vm1)
         (kvp, _) = KVP.get_or_create("key1", "value1")
-        VMKVP.objects.create(vm=vm1, kvp=kvp)
+        ResourceKVP.objects.create(vm=vm1, kvp=kvp)
 
     def test_exception(self):
         """ Test storing an exception in a profile. """

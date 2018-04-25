@@ -21,7 +21,7 @@ from testpooldb import models
 
 
 class Testsuite(unittest.TestCase):
-    """ tests various aspects of cloning a VM. """
+    """ tests various aspects of cloning a resource. """
 
     def test_setup(self):
         """ test clone """
@@ -32,7 +32,7 @@ class Testsuite(unittest.TestCase):
             name="fake.profile", hv=hv1, template_name="test.template",
             vm_max=10)
 
-        vmpool = api.VMPool("fake.profile")
+        vmpool = api.Pool("fake.profile")
         algo.destroy(vmpool, profile1)
         rtc = algo.adapt(vmpool, profile1)
         self.assertEqual(rtc, 10)
@@ -45,7 +45,7 @@ class Testsuite(unittest.TestCase):
         (profile1, _) = models.Profile.objects.get_or_create(
             name="fake.profile", hv=hv1, template_name="test.template",
             vm_max=10)
-        vmpool = api.VMPool("fake.profile")
+        vmpool = api.Pool("fake.profile")
 
         algo.destroy(vmpool, profile1)
         rtc = algo.adapt(vmpool, profile1)
@@ -70,7 +70,7 @@ class Testsuite(unittest.TestCase):
             name="fake.profile", hv=hv1, vm_max=10,
             template_name="test.template")
 
-        vmpool = api.VMPool("memory")
+        vmpool = api.Pool("memory")
         algo.destroy(vmpool, profile1)
         rtc = algo.adapt(vmpool, profile1)
         self.assertEqual(rtc, 10)
@@ -95,7 +95,7 @@ class Testsuite(unittest.TestCase):
             name="fake.profile", hv=hv1, template_name="test.template",
             vm_max=10)
 
-        vmpool = api.vmpool_get(profile1)
+        vmpool = api.pool_get(profile1)
         self.assertTrue(vmpool)
         algo.destroy(vmpool, profile1)
         rtc = algo.adapt(vmpool, profile1)
@@ -116,7 +116,7 @@ class Testsuite(unittest.TestCase):
 
         try:
             profile1 = models.Profile.objects.get(name="fake.profile")
-            for vm1 in models.VM.objects.filter(profile=profile1):
+            for vm1 in models.Resource.objects.filter(profile=profile1):
                 vm1.delete()
             profile1.delete()
         except models.Profile.DoesNotExist:

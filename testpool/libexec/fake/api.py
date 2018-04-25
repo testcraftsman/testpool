@@ -13,7 +13,7 @@ __STORE_PATH__ = "/tmp/testpool/fake"
 
 
 def db_vm_read(context):
-    """ Read the current database of VMS. """
+    """ Read the current database of resources. """
 
     store_path = os.path.join(__STORE_PATH__, context)
     if os.path.exists(store_path):
@@ -33,7 +33,7 @@ def db_vm_read(context):
 
 @contextmanager
 def db_ctx(context):
-    """ Return VM list. """
+    """ Return resource list. """
 
     store_path = __STORE_PATH__
 
@@ -81,12 +81,12 @@ class HostInfo(testpool.core.api.HostInfo):
         self.threads_per_core = 0
 
 
-class VMPool(testpool.core.api.VMPool):
+class Pool(testpool.core.api.Pool):
     """ Interface to KVM Pool manager. """
 
     def __init__(self, context):
         """ Constructor. """
-        testpool.core.api.VMPool.__init__(self, context)
+        testpool.core.api.Pool.__init__(self, context)
 
     def new_name_get(self, template_name, index):
         """ Given a profile, generate a new name. """
@@ -97,7 +97,7 @@ class VMPool(testpool.core.api.VMPool):
     def timing_get(self, request):
         """ Return algorithm timing based on the request. """
 
-        if request == testpool.core.api.VMPool.TIMING_REQUEST_DESTROY:
+        if request == testpool.core.api.Pool.TIMING_REQUEST_DESTROY:
             return 1
         else:
             raise ValueError("unknown timing request %s" % request)
@@ -107,7 +107,7 @@ class VMPool(testpool.core.api.VMPool):
         return "fake"
 
     def destroy(self, vm_name):
-        """ Destroy VM. """
+        """ Destroy resource. """
 
         vm_name = str(vm_name)
 
@@ -130,27 +130,27 @@ class VMPool(testpool.core.api.VMPool):
         return 0
 
     def start(self, name):
-        """ Start VM. """
+        """ Start resource. """
         logging.debug("fake start %s", name)
 
         with db_ctx(self.context) as vms:
             if name in vms:
-                return testpool.core.api.VMPool.STATE_RUNNING
-            return testpool.core.api.VMPool.STATE_BAD_STATE
+                return testpool.core.api.Pool.STATE_RUNNING
+            return testpool.core.api.Pool.STATE_BAD_STATE
 
-    def vm_state_get(self, name):
-        """ Start VM. """
-        logging.debug("fake vm_state_get %s", name)
+    def state_get(self, name):
+        """ Start resource. """
+        logging.debug("fake state_get %s", name)
 
         with db_ctx(self.context) as vms:
             if name in vms:
-                return testpool.core.api.VMPool.STATE_RUNNING
-            return testpool.core.api.VMPool.STATE_NONE
+                return testpool.core.api.Pool.STATE_RUNNING
+            return testpool.core.api.Pool.STATE_NONE
 
-    def vm_list(self, profile1):
-        """ Start VM. """
+    def list(self, profile1):
+        """ Start resource. """
 
-        logging.debug("fake vm_list")
+        logging.debug("fake list")
 
         result = list(db_vm_read(self.context))
 
@@ -161,7 +161,7 @@ class VMPool(testpool.core.api.VMPool):
     # pylint: disable=W0613
     # pylint: disable=R0201
     def ip_get(self, vm_name):
-        """ Return VM IP address used to connect to the VM.
+        """ Return resource IP address used to connect to the resource.
 
         @param vm_name Return the IP off the vm_name.
         """
@@ -171,7 +171,7 @@ class VMPool(testpool.core.api.VMPool):
     # pylint: disable=W0613
     # pylint: disable=R0201
     def vm_attr_get(self, vm_name):
-        """ Return the list of attributes for the VM.
+        """ Return the list of attributes for the resource.
 
         These attributes are stored in the database, eventually they are
         passed through the REST interface to the client.
@@ -192,11 +192,11 @@ class VMPool(testpool.core.api.VMPool):
         return ret_value
 
 
-def vmpool_get(profile1):
+def pool_get(profile1):
     """ Return a handle to the KVM API. """
 
     context = "%s/%s" % (profile1.hv.connection, profile1.name)
-    return VMPool(context)
+    return Pool(context)
 
 
 class Testsuite(unittest.TestCase):

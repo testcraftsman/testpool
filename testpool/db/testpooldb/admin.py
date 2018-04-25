@@ -37,10 +37,10 @@ class KVPAdmin(admin.ModelAdmin):
     list_display = ("key", "value", )
 
 
-class VMAdmin(admin.ModelAdmin):
+class ResourceAdmin(admin.ModelAdmin):
     """ Show set of keys that associate a testsuite. """
 
-    model = models.VM
+    model = models.Resource
 
 
 class ProfileAdmin(admin.ModelAdmin):
@@ -57,6 +57,6 @@ class HVAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Key, KeyAdmin)
 admin.site.register(models.KVP, KVPAdmin)
-admin.site.register(models.VM, VMAdmin)
+admin.site.register(models.Resource, ResourceAdmin)
 admin.site.register(models.Profile, ProfileAdmin)
 admin.site.register(models.HV, HVAdmin)

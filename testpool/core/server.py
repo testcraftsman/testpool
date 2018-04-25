@@ -16,7 +16,7 @@
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
 """ Test pool Server.
 
-Server algorithm. VMs, given a current state, can be assigned an action
+Server algorithm. resources, given a current state, can be assigned an action
 and when the action should fire.
 
 STATE    ACTION    STATE    NEXT ACTION   FAILURE
@@ -150,20 +150,20 @@ def adapt(exts):
                                 vm_count=profile1.vm_available(),
                                 vm_max=profile1.vm_max)
         ext1 = exts[profile1.hv.product]
-        vmpool = ext1.vmpool_get(profile1)
+        vmpool = ext1.pool_get(profile1)
         algo.adapt(vmpool, profile1)
 
     LOGGER.info("adapt ended")
 
 
 def action_destroy(exts, vmh):
-    """ Reclaim any VMs released. """
+    """ Reclaim any resources released. """
 
     LOGGER.info("%s: action_destroy started %s %s",
                 vmh.profile.name, vmh.profile.hv.product, vmh.name)
 
     ext1 = exts[vmh.profile.hv.product]
-    vmpool = ext1.vmpool_get(vmh.profile)
+    vmpool = ext1.pool_get(vmh.profile)
 
     try:
         profile1 = vmh.profile
@@ -171,8 +171,8 @@ def action_destroy(exts, vmh):
         algo.adapt(vmpool, profile1)
 
         ##
-        # If all of the VMs have been removed and the max is zero then
-        # remove the VM.
+        # If all of the resources have been removed and the max is zero then
+        # remove the resource.
         if profile1.deleteable():
             LOGGER.info("%s: action_destroy profile deleted",
                         vmh.profile.name)
@@ -183,18 +183,18 @@ def action_destroy(exts, vmh):
         LOGGER.debug("%s: action_destroy %s interrupted", profile1.name,
                      vmh.name)
         LOGGER.exception(arg)
-        delta = vmpool.timing_get(api.VMPool.TIMING_REQUEST_DESTROY)
+        delta = vmpool.timing_get(api.Pool.TIMING_REQUEST_DESTROY)
         vmh.transition(vmh.status, vmh.action, delta)
 
 
 def action_clone(exts, vmh):
-    """ Clone a new VM. """
+    """ Clone a new resource. """
 
     LOGGER.info("%s: action_clone started %s %s",
                 vmh.profile.name, vmh.profile.hv.product, vmh.name)
 
     ext1 = exts[vmh.profile.hv.product]
-    vmpool = ext1.vmpool_get(vmh.profile)
+    vmpool = ext1.pool_get(vmh.profile)
     try:
         algo.vm_clone(vmpool, vmh)
         algo.adapt(vmpool, vmh.profile)
@@ -202,7 +202,7 @@ def action_clone(exts, vmh):
     except Exception:
         LOGGER.exception("%s: action_clone %s interrupted", vmh.profile.name,
                          vmh.name)
-        delta = vmpool.timing_get(api.VMPool.TIMING_REQUEST_DESTROY)
+        delta = vmpool.timing_get(api.Pool.TIMING_REQUEST_DESTROY)
         vmh.transition(vmh.status, vmh.action, delta)
 
     LOGGER.info("%s: action_clone done", vmh.profile.name)
@@ -211,50 +211,52 @@ def action_clone(exts, vmh):
 def setup(exts):
     """ Run the setup of each hypervisor.
 
-    VMs are reset to pending with the action to destroy them. Setup
+    resources are reset to pending with the action to destroy them. Setup
     should be called only once before the event loop.
     """
 
     LOGGER.info("setup started")
 
     for profile1 in models.Profile.objects.all():
-        vms = profile1.vm_set.all()
+        vms = profile1.resource_set.all()
         LOGGER.info("setup %s %s %d of %d", profile1.name,
                     profile1.template_name, vms.count(), profile1.vm_max)
 
         ext1 = exts[profile1.hv.product]
-        vmpool = ext1.vmpool_get(profile1)
+        vmpool = ext1.pool_get(profile1)
 
         ##
         # Check the hypervisor. Create Database entries for each existing
-        # VM. Then mark them to be destroyed. Before that mark any
-        # VMs in the database as BAD so that they can be deleted if they
-        # do not correspond to an actual VM. Actual VMS, will be destroyed
-        # through the normal event engine.
+        # resource. Then mark them to be destroyed. Before that mark any
+        # resources in the database as BAD so that they can be deleted if they
+        # do not correspond to an actual resource. Actual resources, will be
+        # destroyed through the normal event engine.
         for count in range(profile1.vm_max):
             vm_name = vmpool.new_name_get(profile1.template_name, count)
-            (vmh, _) = models.VM.objects.get_or_create(profile=profile1,
-                                                       name=vm_name)
+            (vmh, _) = models.Resource.objects.get_or_create(profile=profile1,
+                                                             name=vm_name)
             # Mark bad just to figure out which to delete immediately.
-            vmh.status = models.VM.BAD
+            vmh.status = models.Resource.BAD
             vmh.save()
 
         ##
-        # Quickly go through all of the VMs to reclaim them by transitioning.
-        # them to PENDING and action destroy
+        # Quickly go through all of the resources to reclaim them by
+        # transitioning. them to PENDING and action destroy
         delta = 0
-        vm_list = vmpool.vm_list(profile1)
+        vm_list = vmpool.list(profile1)
         for vm_name in vm_list:
             try:
-                vmh = models.VM.objects.get(profile=profile1, name=vm_name)
-                vmh.transition(models.VM.PENDING, algo.ACTION_DESTROY, delta)
-                LOGGER.info("setup mark VM %s to be destroyed", vmh.name)
-                delta += vmpool.timing_get(api.VMPool.TIMING_REQUEST_DESTROY)
-            except models.VM.DoesNotExist:
+                vmh = models.Resource.objects.get(profile=profile1,
+                                                  name=vm_name)
+                vmh.transition(models.Resource.PENDING, algo.ACTION_DESTROY,
+                               delta)
+                LOGGER.info("setup mark resource %s to be destroyed", vmh.name)
+                delta += vmpool.timing_get(api.Pool.TIMING_REQUEST_DESTROY)
+            except models.Resource.DoesNotExist:
                 pass
 
-        for vmh in profile1.vm_set.filter(status=models.VM.BAD):
-            LOGGER.info("setup deleted VM data %s", vmh.name)
+        for vmh in profile1.resource_set.filter(status=models.Resource.BAD):
+            LOGGER.info("setup deleted resource data %s", vmh.name)
             vmh.delete()
         ##
 
@@ -275,17 +277,17 @@ def action_attr(exts, vmh):
                 vmh.profile.name, vmh.profile.hv.product, vmh.name)
 
     ##
-    #  If VM expires reclaim it.
+    #  If resource expires reclaim it.
     ext1 = exts[vmh.profile.hv.product]
-    vmpool = ext1.vmpool_get(vmh.profile)
+    vmpool = ext1.pool_get(vmh.profile)
     vmh.ip_addr = vmpool.ip_get(vmh.name)
     if vmh.ip_addr:
-        LOGGER.info("%s: VM %s ip %s", vmh.profile.name, vmh.name,
+        LOGGER.info("%s: resource %s ip %s", vmh.profile.name, vmh.name,
                     vmh.ip_addr)
-        vmh.transition(models.VM.READY, algo.ACTION_NONE, 1)
+        vmh.transition(models.Resource.READY, algo.ACTION_NONE, 1)
         adapt(exts)
     else:
-        LOGGER.info("%s: VM %s waiting for ip addr", vmh.profile.name,
+        LOGGER.info("%s: resource %s waiting for ip addr", vmh.profile.name,
                     vmh.name)
         vmh.transition(vmh.status, vmh.action, 60)
     ##
@@ -298,11 +300,11 @@ def mode_test_stop(args):
     if args.count == FOREVER:
         return False
 
-    for vmh in models.VM.objects.all().order_by("action_time"):
+    for vmh in models.Resource.objects.all().order_by("action_time"):
         action_delay = vmh.action_time - datetime.datetime.now()
         action_delay = action_delay.seconds
 
-        if models.VM.status_to_str(vmh.status) != "ready":
+        if models.Resource.status_to_str(vmh.status) != "ready":
             return False
 
     return True
@@ -311,23 +313,24 @@ def mode_test_stop(args):
 def events_show(banner):
     """ Show all of the pending events. """
 
-    for vmh in models.VM.objects.all().order_by("action_time"):
+    for vmh in models.Resource.objects.all().order_by("action_time"):
         action_delay = vmh.action_time - datetime.datetime.now()
         action_delay = action_delay.seconds
 
         LOGGER.info("%s: %s %s action %s at %s", vmh.name, banner,
-                    models.VM.status_to_str(vmh.status), vmh.action,
+                    models.Resource.status_to_str(vmh.status), vmh.action,
                     vmh.action_time.strftime("%Y-%m-%d %H:%M:%S"))
 
 
 def action_vm(vmh):
-    """ Handle VM actions.
-    A VM can be destroyed, cloned or its IP address determined.
+    """ Handle resource actions.
+
+    A resource can be destroyed, cloned or its IP address determined.
     """
 
     exts = ext.api_ext_list()
     LOGGER.info("%s: status %s action %s at %s", vmh.name,
-                models.VM.status_to_str(vmh.status), vmh.action,
+                models.Resource.status_to_str(vmh.status), vmh.action,
                 vmh.action_time.strftime("%Y-%m-%d %H:%M:%S"))
 
     if vmh.action == algo.ACTION_DESTROY:
@@ -360,13 +363,13 @@ def main(args):
     ##
 
     while count == FOREVER or count > 0:
-        events_show("VMs")
+        events_show("Resources")
         if mode_test_stop(args):
             return 0
 
         current = datetime.datetime.now()
-        vmh = models.VM.objects.exclude(
-            status=models.VM.READY).order_by("action_time").first()
+        vmh = models.Resource.objects.exclude(
+            status=models.Resource.READY).order_by("action_time").first()
 
         if not vmh:
             LOGGER.info("testpool no actions sleeping %s (seconds)",
@@ -453,8 +456,8 @@ class ModelTestCase(unittest.TestCase):
         self.assertEqual(main(args), 0)
         exts = testpool.core.ext.api_ext_list()
 
-        vmpool = exts[product].vmpool_get(profile1)
-        self.assertEqual(len(vmpool.vm_list(profile1)), 2)
+        vmpool = exts[product].pool_get(profile1)
+        self.assertEqual(len(vmpool.list(profile1)), 2)
 
     def test_expand(self):
         """ test_expand. """
@@ -478,8 +481,8 @@ class ModelTestCase(unittest.TestCase):
         self.assertEqual(main(args), 0)
 
         exts = testpool.core.ext.api_ext_list()
-        vmpool = exts[product].vmpool_get(profile1)
-        self.assertEqual(len(vmpool.vm_list(profile1)), 12)
+        vmpool = exts[product].pool_get(profile1)
+        self.assertEqual(len(vmpool.list(profile1)), 12)
 
     def test_expiration(self):
         """ test_expiration. """
@@ -497,14 +500,14 @@ class ModelTestCase(unittest.TestCase):
         args = ModelTestCase.fake_args()
         self.assertEqual(main(args), 0)
 
-        vms = profile1.vm_set.filter(status=models.VM.READY)
+        vms = profile1.resource_set.filter(status=models.Resource.READY)
         self.assertEqual(len(vms), vm_max)
 
         vmh = vms[0]
 
         ##
         # Acquire for 3 seconds.
-        vmh.transition(models.VM.RESERVED, algo.ACTION_DESTROY, 3)
+        vmh.transition(models.Resource.RESERVED, algo.ACTION_DESTROY, 3)
         time.sleep(5)
         args.setup = False
         args.count = 2
@@ -517,7 +520,7 @@ class ModelTestCase(unittest.TestCase):
         exts = testpool.core.ext.api_ext_list()
         adapt(exts)
 
-        vms = profile1.vm_set.filter(status=models.VM.READY)
+        vms = profile1.resource_set.filter(status=models.Resource.READY)
 
         ##
         # Check to see if the expiration happens.

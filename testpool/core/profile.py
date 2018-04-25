@@ -17,8 +17,8 @@
 """
 Fake profiles used for development.
 
-This profile pretends to manage a pool of VMs which are merely pretend
-VMS which do not exist.
+This profile pretends to manage a pool of Resources which are merely pretend
+ResourceS which do not exist.
 """
 import logging
 import testpool.core.ext
@@ -31,8 +31,8 @@ LOGGER = logging.getLogger("testpool.core.profile")
 def profile_remove(profile, immediate):
     """ Remove a profile.
 
-    Profiles can't be removed immediately, VMs are marked for purge
-    and when all VMs are gone the profile will be removed.
+    Profiles can't be removed immediately, Resources are marked for purge
+    and when all Resources are gone the profile will be removed.
     """
     LOGGER.debug("profile_remove %s", profile)
     try:
@@ -42,11 +42,11 @@ def profile_remove(profile, immediate):
         profile.save()
 
         delta = 0
-        for vmh in profile.vm_set.all():
+        for vmh in profile.resource_set.all():
             if immediate:
                 vmh.delete()
             else:
-                vmh.transition(models.VM.RESERVED,
+                vmh.transition(models.Resource.RESERVED,
                                testpool.core.algo.ACTION_DESTROY, delta)
                 delta += 60
 
@@ -69,9 +69,9 @@ def profile_add(connection, product, profile, vm_max, template):
                                                             defaults=defaults)
 
     ##
-    # Check to see if the number of VMs should change.
+    # Check to see if the number of Resources should change.
     exts = testpool.core.ext.api_ext_list()
-    vmpool = exts[product].vmpool_get(profile1)
+    vmpool = exts[product].pool_get(profile1)
     testpool.core.algo.adapt(vmpool, profile1)
     ##
 
@@ -88,8 +88,8 @@ def _do_profile_add(args):
     """ Add or modify a profile.
 
     If the profile exists, calling this again will change the maximum number
-    of VMS and the template name. The connection parameter supported format:
-    account@hypervisor account and connection of the hypervisor.
+    of ResourceS and the template name. The connection parameter supported
+    format: account@hypervisor account and connection of the hypervisor.
     """
 
     LOGGER.info("add a profile %s", args.profile)
@@ -117,13 +117,13 @@ def _do_profile_detail(args):
             print "name:     ", profile.name
             print "template: ", profile.template_name
             print "status:   ", profile.status_str()
-            print "VMs available: ", profile.vm_available()
-            print "VMs maximum:   ", profile.vm_max
+            print "Resources available: ", profile.vm_available()
+            print "Resources maximum:   ", profile.vm_max
 
             ##
-            # Check to see if the number of VMs should change.
+            # Check to see if the number of Resources should change.
             exts = testpool.core.ext.api_ext_list()
-            vmpool = exts[profile.hv.product].vmpool_get(profile)
+            vmpool = exts[profile.hv.product].pool_get(profile)
             info = vmpool.info_get()
 
             print "Model:          " + str(info.model)
@@ -141,7 +141,8 @@ def profile_list():
     """ Return a list of profiles. """
 
     for profile in models.Profile.objects.all():
-        current = profile.vm_set.filter(status=models.VM.READY).count()
+        current = profile.resource_set.filter(
+            status=models.Resource.READY).count()
         profile.current = current
         yield profile
 
@@ -153,7 +154,8 @@ def _do_profile_list(_):
     LOGGER.info("list profiles")
 
     # \todo provide a dynamically adjusting column width
-    print fmt % ("Name", "Prod", "Connection", "Template", "VMs", "Status")
+    print fmt % ("Name", "Prod", "Connection", "Template", "Resources",
+                 "Status")
     for profile in profile_list():
         print fmt % (profile.name, profile.hv.product, profile.hv.connection,
                      profile.template_name,
@@ -180,8 +182,9 @@ def add_subparser(subparser):
     parser.add_argument("connection", type=str,
                         help="How to connect to the hypervisor. Format "
                         "depends on how to connect to the hypervisor")
-    parser.add_argument("template", type=str, help="Number of VM to manage.")
-    parser.add_argument("max", type=int, help="Number of VM to manage.")
+    parser.add_argument("template", type=str,
+                        help="Number of Resource to manage.")
+    parser.add_argument("max", type=int, help="Number of Resource to manage.")
     ##
 
     ##
@@ -211,7 +214,7 @@ def add_subparser(subparser):
     parser.add_argument("profile", type=str, help="Profile name to delete.")
     parser.add_argument("--immediate", action="store_true",
                         help="Remove profile content from the database."
-                        "Do not wait for VMs to be purged")
+                        "Do not wait for Resources to be purged")
     ##
 
     return subparser

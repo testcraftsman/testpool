@@ -17,6 +17,7 @@ help::
 	@echo "make rpm.build - Generate a rpm package"
 	@echo "make deb.build - Generate a deb package"
 	@echo "make clean - Get rid of scratch and byte files"
+	@echo "make check - unit test and pylint check"
 
 pylint::
 	$(PYLINT) $(PYTHON_FILES)
@@ -30,9 +31,9 @@ info::
 
 clean::
 	python ./setup.py clean
-	rm -rf dist build MANIFEST
-	find . -name '*.pyc' -delete
+	rm -rf dist build MANIFEST .tox testpool/*.log
 	rm -rf ../testpool_* testpool-* deb_dist testpool.egg-info
+	find . -name '*.pyc' -delete
 
 testpool/version.py: debian/changelog
 	dpkg-parsechangelog | sed -rne 's,^Version: (.*),PACKAGE_VERSION="\1", p' > testpool/version.py

@@ -60,7 +60,7 @@ class Testsuite(unittest.TestCase):
 
         try:
             profile1 = models.Profile.objects.get(name=TEST_PROFILE)
-            for vm1 in models.VM.objects.filter(profile=profile1):
+            for vm1 in models.Resource.objects.filter(profile=profile1):
                 vm1.delete()
             profile1.delete()
         except models.Profile.DoesNotExist:
@@ -80,7 +80,7 @@ class Testsuite(unittest.TestCase):
         hv1 = docker.from_env()
         self.assertTrue(hv1)
 
-        vmpool = api.VMPool(CONNECTION, "test")
+        vmpool = api.Pool(CONNECTION, "test")
         self.assertIsNotNone(vmpool)
         for item in range(count):
             vm_name = vmpool.new_name_get(TEMPLATE, item)
@@ -103,7 +103,7 @@ class Testsuite(unittest.TestCase):
 
         profile1 = models.Profile.objects.get(name=TEST_PROFILE)
 
-        hv1 = api.vmpool_get(profile1)
+        hv1 = api.pool_get(profile1)
         self.assertTrue(hv1)
 
         vm_name = "%s.destroy" % TEMPLATE
@@ -133,7 +133,7 @@ class TestsuiteServer(unittest.TestCase):
             hv1 = models.HV.objects.get(connection=CONNECTION,
                                         product=PRODUCT)
             profile1 = models.Profile.objects.get(name=TEST_PROFILE, hv=hv1)
-            vmpool = api.vmpool_get(profile1)
+            vmpool = api.pool_get(profile1)
             algo.destroy(vmpool, profile1)
             profile1.delete()
         except models.HV.DoesNotExist:
@@ -142,7 +142,7 @@ class TestsuiteServer(unittest.TestCase):
             pass
 
         hv1 = docker.from_env()
-        vmpool = api.VMPool(CONNECTION, "test")
+        vmpool = api.Pool(CONNECTION, "test")
 
     def test_setup(self):
         """ test_setup. """
@@ -210,8 +210,8 @@ class TestsuiteServer(unittest.TestCase):
         self.assertEqual(server.main(args), 0)
         exts = ext.api_ext_list()
 
-        vmpool = exts[PRODUCT].vmpool_get(profile1)
-        self.assertEqual(len(vmpool.vm_list(profile1)), 2)
+        vmpool = exts[PRODUCT].pool_get(profile1)
+        self.assertEqual(len(vmpool.list(profile1)), 2)
 
     def test_expand(self):
         """ test_expand. Check when profile increases. """
@@ -233,8 +233,8 @@ class TestsuiteServer(unittest.TestCase):
         self.assertEqual(server.main(args), 0)
 
         exts = ext.api_ext_list()
-        vmpool = exts[PRODUCT].vmpool_get(profile1)
-        self.assertEqual(len(vmpool.vm_list(profile1)), 3)
+        vmpool = exts[PRODUCT].pool_get(profile1)
+        self.assertEqual(len(vmpool.list(profile1)), 3)
 
     def test_expiration(self):
         """ test_expiration. """
@@ -251,14 +251,14 @@ class TestsuiteServer(unittest.TestCase):
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
 
-        vms = profile1.vm_set.filter(status=models.VM.READY)
+        vms = profile1.vm_set.filter(status=models.Resource.READY)
         self.assertEqual(len(vms), vm_max)
 
         vmh = vms[0]
 
         ##
         # Acquire for 3 seconds.
-        vmh.transition(models.VM.RESERVED, algo.ACTION_DESTROY, 3)
+        vmh.transition(models.Resource.RESERVED, algo.ACTION_DESTROY, 3)
         time.sleep(5)
         args.setup = False
         args.count = 2
@@ -272,7 +272,7 @@ class TestsuiteServer(unittest.TestCase):
         exts = ext.api_ext_list()
         server.adapt(exts)
 
-        vms = profile1.vm_set.filter(status=models.VM.READY)
+        vms = profile1.vm_set.filter(status=models.Resource.READY)
 
         ##
         # Check to see if the expiration happens.

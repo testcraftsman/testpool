@@ -44,7 +44,7 @@ class HostInfo(testpool.core.api.HostInfo):
         self.threads_per_core = kvm_info[7]
 
 
-class VMPool(testpool.core.api.VMPool):
+class Pool(testpool.core.api.Pool):
     """ Interface to KVM Pool manager. """
 
     # pylint: disable=no-self-use
@@ -52,7 +52,7 @@ class VMPool(testpool.core.api.VMPool):
     def __init__(self, url_name, context):
         """ Constructor. """
 
-        testpool.core.api.VMPool.__init__(self, context)
+        testpool.core.api.Pool.__init__(self, context)
 
         self.context = context
         self.url_name = url_name
@@ -67,7 +67,7 @@ class VMPool(testpool.core.api.VMPool):
     def timing_get(self, request):
         """ Return algorithm timing based on the request. """
 
-        if request == testpool.core.api.VMPool.TIMING_REQUEST_DESTROY:
+        if request == testpool.core.api.Pool.TIMING_REQUEST_DESTROY:
             return 60
         else:
             raise ValueError("unknown timing request %s" % request)
@@ -77,33 +77,33 @@ class VMPool(testpool.core.api.VMPool):
 
         return "docker"
 
-    def vm_state_get(self, name):
-        """ Return the state of the VM. """
+    def state_get(self, name):
+        """ Return the state of the resource. """
 
-        LOGGER.debug("%s: vm_state_get", name)
+        LOGGER.debug("%s: state_get", name)
 
         try:
             cntnr = self.conn.containers.get(name)
             if cntnr.status == "running":
-                return testpool.core.api.VMPool.STATE_RUNNING
-            return testpool.core.api.VMPool.STATE_BAD_STATE
+                return testpool.core.api.Pool.STATE_RUNNING
+            return testpool.core.api.Pool.STATE_BAD_STATE
         except docker.errors.NotFound:
-            return testpool.core.api.VMPool.STATE_NONE
+            return testpool.core.api.Pool.STATE_NONE
 
     def destroy(self, name):
         """ Destroy container.
 
-        return api.VMPool.STATE_NONE When container name does not exist.
+        return api.Pool.STATE_NONE When container name does not exist.
         """
 
         LOGGER.debug("%s destroy", name)
         try:
             cntnr = self.conn.containers.get(name)
             cntnr.remove(v=True, force=True)
-            return testpool.core.api.VMPool.STATE_DESTROYED
+            return testpool.core.api.Pool.STATE_DESTROYED
         except docker.errors.NotFound:
             LOGGER.debug("container %s does not exist", name)
-            return testpool.core.api.VMPool.STATE_NONE
+            return testpool.core.api.Pool.STATE_NONE
 
     def clone(self, orig_name, new_name):
         """ Clone KVM system. """
@@ -119,16 +119,16 @@ class VMPool(testpool.core.api.VMPool):
             cntnr = self.conn.containers.get(name)
             cntnr.start()
             LOGGER.debug("%s started", name)
-            return testpool.core.api.VMPool.STATE_RUNNING
+            return testpool.core.api.Pool.STATE_RUNNING
         except docker.errors.APIError:
             LOGGER.error("%s failed to start", name)
-            return testpool.core.api.VMPool.STATE_BAD_STATE
+            return testpool.core.api.Pool.STATE_BAD_STATE
 
     # pylint: disable=unused-argument
     def ip_get(self, name, source=0):
-        """ Return IP address of VM.
+        """ Return IP address of resource.
 
-        IP address may not be found if the VM is not fully running.
+        IP address may not be found if the resource is not fully running.
         """
 
         LOGGER.debug("%s: ip_get called", name)
@@ -140,8 +140,8 @@ class VMPool(testpool.core.api.VMPool):
         except KeyError:
             return None
 
-    def vm_list(self, profile1):
-        """ Return the list of VMs. """
+    def list(self, profile1):
+        """ Return the list of resources. """
 
         filters = {"ancestor":  profile1.template_name}
         cntnrs = self.conn.containers.list(filters=filters)
@@ -150,7 +150,7 @@ class VMPool(testpool.core.api.VMPool):
     # pylint: disable=W0613
     # pylint: disable=R0201
     def vm_attr_get(self, vm_name):
-        """ Return the list of attributes for the VM.
+        """ Return the list of attributes for the resource.
 
         These attributes are stored in the database, eventually they are
         passed through the REST interface to the client.
@@ -173,10 +173,10 @@ class VMPool(testpool.core.api.VMPool):
         return ret_value
 
 
-def vmpool_get(profile):
+def pool_get(profile):
     """ Return a handle to the KVM API. """
     try:
-        return VMPool(profile.hv.connection, profile.name)
+        return Pool(profile.hv.connection, profile.name)
     except libvirt.libvirtError, arg:
         # LOGGER.exception(arg)
         raise exceptions.ProfileError(str(arg), profile)
