@@ -51,6 +51,7 @@ def onerror(name):
 
 def vm_name_create(template, count):
     """ Generate VM name based on template. """
+
     return template + ".%d" % count
 
 
@@ -64,23 +65,18 @@ def adapt(vmpool, profile):
 
     changes = 0
 
-    vm_list = vmpool.vm_list(profile)
-
     ##
-    # Now remove any extract VMs because the maximum VMs was reduced.
-    # The first number used is 0.
-    vm_current = len(vm_list)
+    # Check the database for the list of existing and pending virtual
+    # items.
+    vm_current = profile.vm_set.count()
 
     ##
     if vm_current == profile.vm_max:
         return changes
     elif vm_current > profile.vm_max:
         how_many = vm_current - profile.vm_max
-        vm_list.reverse()
-        for vm_name in vm_list:
-            (vm1, _) = models.VM.objects.get_or_create(profile=profile,
-                                                       name=vm_name)
-            if vm1.status == models.VM.READY:
+        for vm1 in profile.vm_set.reverse():
+            if vm1.status in [models.VM.READY, models.VM.PENDING]:
                 vm1.transition(models.VM.PENDING, ACTION_DESTROY, 1)
                 how_many -= 1
 
@@ -88,14 +84,17 @@ def adapt(vmpool, profile):
                 break
     else:
         ##
-        # there are not enough VMs. Add more.
+        # there are not enough VMs. Add more. vm_current represents
+        # the next slot so add that to count.
         for count in range(profile.vm_max):
             changes += 1
-            vm_name = profile.template_name + ".%d" % count
-
+            vm_name = vmpool.new_name_get(profile.template_name,
+                                          count+vm_current)
+            logging.info("%s checking", vm_name)
             (vm1, _) = models.VM.objects.get_or_create(profile=profile,
                                                        name=vm_name)
             vm_state = vmpool.vm_state_get(vm_name)
+            logging.debug("%s status %s", vm_name, vm_state)
             if vm_state == testpool.core.api.VMPool.STATE_NONE:
                 logging.debug("%s expanding pool VM with %s ", profile.name,
                               vm_name)

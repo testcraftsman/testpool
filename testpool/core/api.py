@@ -32,6 +32,9 @@ class HostInfo(object):
         self.threads_per_core = None
 
 
+NOT_IMPL = "%s not implemented"
+
+
 class VMPool(object):
     """ VM Pool API. """
 
@@ -39,6 +42,7 @@ class VMPool(object):
 
     STATE_RUNNING = 1
     """ The VM is running. """
+
     STATE_NONE = 2
     """ Indicate that the VM does not exist. """
 
@@ -51,36 +55,43 @@ class VMPool(object):
     STATE_STRING = {
         STATE_RUNNING: "running",
         STATE_NONE: "none",
-        STATE_BAD_STATE: "badstate"
-        }
+        STATE_BAD_STATE: "badstate",
+        STATE_DESTROYED: "destroyed"
+    }
 
     def __init__(self, context):
         self.context = context
 
+    def new_name_get(self, template_name, index):
+        """ Given a profile, generate a new name. """
+
+        raise NotImplementedError(NOT_IMPL % "new_name_get")
+
     def timing_get(self, request):
         """ Return the time in seconds for the request. """
-        raise NotImplementedError("timing_get unsupported")
+        raise NotImplementedError(NOT_IMPL % "timing_get")
 
     def type_get(self):
         """ Return the pool type. """
-        raise NotImplementedError("type_get unsupported")
+        raise NotImplementedError(NOT_IMPL % "type_get")
 
     def clone(self, orig_name, new_name):
         """ Clone orig_name to new_name. """
-        raise NotImplementedError("clone unsupported")
+        raise NotImplementedError(NOT_IMPL % "clone")
 
-    def start(self, vm_name):
-        """ Start vm_name VM. """
-        raise NotImplementedError("start unsupported")
+    def start(self, name):
+        """ Start name content. """
+        raise NotImplementedError(NOT_IMPL % "start")
 
-    def vm_state_get(self, vm_name):
+    def vm_state_get(self, name):
         """ Return the current vm_name. """
-        raise NotImplementedError("state_get unsupported")
+        raise NotImplementedError(NOT_IMPL % "vm_state_get")
 
     def vm_is_clone(self, profile1, vm_name):
         """ Return True if vm1 is a clone for the profile1. """
-        raise NotImplementedError("is_clone unsupported")
+
+        raise NotImplementedError(NOT_IMPL % "vm_is_clone")
 
     def vm_list(self, profile1):
         """ Return the list of VMs for the profile1. """
-        raise NotImplementedError("state_list unsupported")
+        raise NotImplementedError(NOT_IMPL % "vm_list")

@@ -18,6 +18,7 @@ def is_valid_path(key, value):
         raise ValueError("%s: must be a string" % key)
     return len(value) == 0
 
+
 ##
 # Dictionary of valid content with functions that validate value.
 VALID = {

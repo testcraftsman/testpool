@@ -45,6 +45,7 @@ def acquire_get(url):
             return vm1
     resp.raise_for_status()
     ##
+    return None
 
 
 class Testsuite(unittest.TestCase):

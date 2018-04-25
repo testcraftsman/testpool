@@ -48,8 +48,8 @@ class KeySerializer(serializers.ModelSerializer):
 class KVPListSerializer(serializers.ModelSerializer):
     """ Serialize KVP List. """
 
-    def to_representation(self, value):
-        return value.key.value, value.value
+    def to_representation(self, instance):
+        return instance.key.value, instance.value
 
 
 # pylint: disable=R0903

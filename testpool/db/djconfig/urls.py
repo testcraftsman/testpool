@@ -20,7 +20,8 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 import testpool_profile.urls
 import testpool_vm.urls
 
-urlpatterns = patterns("",
+urlpatterns = patterns(
+    "",
     url(r'^testpool/admin/', include(admin.site.urls)),
     url(r'^testpool/', include(testpool_profile.urls)),
     url(r'^testpool/', include(testpool_vm.urls)),

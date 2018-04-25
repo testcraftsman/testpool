@@ -14,7 +14,7 @@ AUTHOR_EMAIL = "mark.lee.hamilton@gmail.com"
 
 ##
 # Figure out version based on debian changelog
-version = testpool.version.package_version
+version = testpool.version.PACKAGE_VERSION
 ##
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:

@@ -76,7 +76,7 @@ def setup_db(request):
     # for setting up a KVM hypervisor.
     profiles = testpool.core.profile.profile_list()
     profiles = [item for item in profiles if item.name == GLOBAL["profile"]]
-    if len(profiles) == 0:
+    if len(profiles) == 0:  # pylint: disable=len-as-condition
         testpool.core.profile.profile_add(GLOBAL["connection"], "fake",
                                           GLOBAL["profile"], GLOBAL["count"],
                                           "test.template")

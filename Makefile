@@ -1,23 +1,32 @@
 # $Id: Makefile,v 1.6 2008/10/29 01:01:35 ghantoos Exp $
 include defs.mk
 
-PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/testpool
 PROJECT=testpool
 export VERSION:=`python ./setup.py --version`
 
+PYTHON_FILES+=testpool bin/*.py
+PYTHON_FILES+=`find ./examples -type f -name '*.py' -printf '%p '`
+
+
 .PHONY: help
 help::
-	@echo "make source - Create source package"
+	@echo "make deb.source - Create source package"
 	@echo "make install - Install on local system"
 	@echo "make rpm.build - Generate a rpm package"
 	@echo "make deb.build - Generate a deb package"
 	@echo "make clean - Get rid of scratch and byte files"
 
+pylint::
+	$(PYLINT) $(PYTHON_FILES)
+
+pycodestyle::
+	pycodestyle $(PYTHON_FILES)
 
 info::
-	@echo "version ${VERSION}"
+	@echo "version=${VERSION}"
+	@echo "PYTHON_FILES=${PYTHON_FILES}"
 
 clean::
 	python ./setup.py clean
@@ -25,9 +34,8 @@ clean::
 	find . -name '*.pyc' -delete
 	rm -rf ../testpool_* testpool-* deb_dist testpool.egg-info
 
-
 testpool/version.py: debian/changelog
-	dpkg-parsechangelog | sed -rne 's,^Version: (.*),package_version="\1", p' > testpool/version.py
+	dpkg-parsechangelog | sed -rne 's,^Version: (.*),PACKAGE_VERSION="\1", p' > testpool/version.py
 
 .PHONY: rpm.build
 rpm.build:

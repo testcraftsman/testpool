@@ -44,7 +44,7 @@ def argparser(progname):
 
     arg_parser = argparse.ArgumentParser(prog=progname)
     arg_parser.add_argument('--version', action="version",
-                            version=testpool.version.package_version)
+                            version=testpool.version.PACKAGE_VERSION)
     arg_parser.add_argument('--verbose', '-v', required=False, action="count",
                             help="enable debug verbosity.")
     return arg_parser

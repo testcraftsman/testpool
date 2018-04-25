@@ -99,7 +99,7 @@ def _do_profile_add(args):
     if args.product not in extensions:
         LOGGER.debug("acceptable extensions are:")
         for extension in extensions:
-            LOGGER.debug("  " + extension)
+            LOGGER.debug("  %s", extension)
 
         raise ValueError("product %s not supported" % args.product)
 

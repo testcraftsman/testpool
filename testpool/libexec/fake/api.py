@@ -88,13 +88,19 @@ class VMPool(testpool.core.api.VMPool):
         """ Constructor. """
         testpool.core.api.VMPool.__init__(self, context)
 
+    def new_name_get(self, template_name, index):
+        """ Given a profile, generate a new name. """
+
+        vm_name = template_name + ".%d" % index
+        return vm_name
+
     def timing_get(self, request):
         """ Return algorithm timing based on the request. """
 
         if request == testpool.core.api.VMPool.TIMING_REQUEST_DESTROY:
             return 1
         else:
-            raise ValueError("unknown timing request %s", request)
+            raise ValueError("unknown timing request %s" % request)
 
     def type_get(self):
         """ Return the type of the interface. """
@@ -123,25 +129,23 @@ class VMPool(testpool.core.api.VMPool):
 
         return 0
 
-    def start(self, vm_name):
+    def start(self, name):
         """ Start VM. """
-        logging.debug("fake start %s", vm_name)
+        logging.debug("fake start %s", name)
 
         with db_ctx(self.context) as vms:
-            if vm_name in vms:
+            if name in vms:
                 return testpool.core.api.VMPool.STATE_RUNNING
-            else:
-                return testpool.core.api.VMPool.STATE_BAD_STATE
+            return testpool.core.api.VMPool.STATE_BAD_STATE
 
-    def vm_state_get(self, vm_name):
+    def vm_state_get(self, name):
         """ Start VM. """
-        logging.debug("fake vm_state_get %s", vm_name)
+        logging.debug("fake vm_state_get %s", name)
 
         with db_ctx(self.context) as vms:
-            if vm_name in vms:
+            if name in vms:
                 return testpool.core.api.VMPool.STATE_RUNNING
-            else:
-                return testpool.core.api.VMPool.STATE_NONE
+            return testpool.core.api.VMPool.STATE_NONE
 
     def vm_list(self, profile1):
         """ Start VM. """
@@ -158,6 +162,7 @@ class VMPool(testpool.core.api.VMPool):
     # pylint: disable=R0201
     def ip_get(self, vm_name):
         """ Return VM IP address used to connect to the VM.
+
         @param vm_name Return the IP off the vm_name.
         """
 
@@ -212,6 +217,7 @@ class Testsuite(unittest.TestCase):
 
         store_path = os.path.join(store_path, context)
         self.assertTrue(os.path.exists(store_path))
+
 
 if __name__ == "__main__":
     unittest.main()

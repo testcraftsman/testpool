@@ -66,6 +66,6 @@ def vm_renew(request, vm_id):
         serializer = VMSerializer(vm1)
         return JSONResponse(serializer.data)
         ##
-
     else:
         logging.error("profile_acquire method %s unsupported", request.method)
+        raise Http404("profile_release method only get supported")

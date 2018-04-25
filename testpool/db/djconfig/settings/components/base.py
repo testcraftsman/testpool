@@ -63,7 +63,7 @@ INSTALLED_APPS = (
 )
 
 REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES" : {"rest_framework.permission.IsAdminUser",},
+    "DEFAULT_PERMISSION_CLASSES": {"rest_framework.permission.IsAdminUser", },
     "PAGE_SIZE": 10
 }
 
@@ -83,7 +83,7 @@ ROOT_URLCONF = 'djconfig.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, "templates"),],
+        'DIRS': [os.path.join(BASE_DIR, "templates"), ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -97,32 +97,30 @@ TEMPLATES = [
 ]
 
 
-
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
 ##
 # Values are provided by the settings/__init__.py content.
 DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.mysql',
-#        'USER': '{{USER}}',
-#        'PASSWORD': '{{PASSWORD}}',
-#        'HOST': '{{HOST}}',
-#        'NAME': 'testpool',
-#        'init_command': 'Set storage_engine=INNODB',
-#    },
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'USER': '{{USER}}',
+    #     'PASSWORD': '{{PASSWORD}}',
+    #     'HOST': '{{HOST}}',
+    #     'NAME': 'testpool',
+    #     'init_command': 'Set storage_engine=INNODB',
+    # },
 }
 
 if "test" in sys.argv:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.sqlite3',
-        'TEST_CHARSET': 'UTF8', # if your normal db is utf8
-        'NAME': ':memory:', # in memory
-        'TEST_NAME': ':memory:', # in memory
+        'TEST_CHARSET': 'UTF8',  # if your normal db is utf8
+        'NAME': ':memory:',  # in memory
+        'TEST_NAME': ':memory:',  # in memory
     }
-    #DATABASES['default'] = DATABASES['memory']
-
+    #  DATABASES['default'] = DATABASES['memory']
 
 
 # Internationalization
@@ -137,7 +135,7 @@ USE_L10N = True
 
 ##
 USE_TZ = False
-#USE_TZ = False
+#  USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
