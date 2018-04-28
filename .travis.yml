@@ -8,4 +8,5 @@ install:
 script:
    - cd testpool/db ; ./manage.py syncdb --noinput
    - make check
-#   - tox
+   - make deb.build
+   - make rpm.build

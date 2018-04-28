@@ -6,8 +6,11 @@ BUILDIR=$(CURDIR)/debian/testpool
 PROJECT=testpool
 export VERSION:=`python ./setup.py --version`
 
-PYTHON_FILES+=testpool bin/*.py
+##
+# Use find when __init__.py does not exist in the directory.
+PYTHON_FILES+=testpool bin/*.py *.py
 PYTHON_FILES+=`find ./examples -type f -name '*.py' -printf '%p '`
+##
 
 
 .PHONY: help

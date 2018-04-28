@@ -49,7 +49,8 @@ def _do_resource_release(args):
     """ Release Resource. """
 
     logging.info("release %s %s", args.profile, args.name)
-    vm1 = models.Resource.objects.get(name=args.name, profile__name=args.profile)
+    vm1 = models.Resource.objects.get(name=args.name,
+                                      profile__name=args.profile)
     vm1.transition(models.Resource.PENDING, algo.ACTION_DESTROY, 0)
     vm1.save()
     return 0
@@ -60,7 +61,7 @@ def _do_resource_reserve(args):
 
     logging.info("reserve %s %s", args.profile, args.name)
     vm1 = models.Resource.objects.get(name=args.name,
-                                profile__name=args.profile)
+                                      profile__name=args.profile)
     vm1.status = models.Resource.RESERVED
     vm1.save()
     return 0
@@ -69,7 +70,8 @@ def _do_resource_reserve(args):
 def _do_resource_detail(args):
     """ Resource Detail content. """
 
-    vm1 = models.Resource.objects.get(profile__name=args.profile, name=args.name)
+    vm1 = models.Resource.objects.get(profile__name=args.profile,
+                                      name=args.name)
 
     exts = ext.api_ext_list()
     vmpool = exts[vm1.profile.hv.product].pool_get(vm1.profile)
@@ -133,7 +135,8 @@ def add_subparser(subparser):
     parser.set_defaults(func=_do_resource_incr)
     parser.add_argument("profile", type=str, help="The profile name to clone.")
     parser.add_argument("--count", type=int, default=1,
-                        help="Increment/decrement the maximum number of Resources.")
+                        help="Increment/decrement the maximum number "
+                        "of resources.")
     ##
 
     parser = rootparser.add_parser("release",
@@ -155,7 +158,8 @@ def add_subparser(subparser):
     parser = rootparser.add_parser("list",
                                    description=_do_resource_list.__doc__,
                                    help="List resources that contain pattern")
-    parser.add_argument("profile", type=str, help="list Resources that for profile")
+    parser.add_argument("profile", type=str,
+                        help="list Resources that for profile")
     parser.set_defaults(func=_do_resource_list)
     ##
 

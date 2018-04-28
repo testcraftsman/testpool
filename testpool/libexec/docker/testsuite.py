@@ -157,7 +157,7 @@ class TestsuiteServer(unittest.TestCase):
         args = FakeArgs()
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
-        self.assertEqual(profile1.vm_set.all().count(), 1)
+        self.assertEqual(profile1.resource_set.all().count(), 1)
 
     def test_create_one(self):
         """ Create one container. """
@@ -251,7 +251,7 @@ class TestsuiteServer(unittest.TestCase):
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
 
-        vms = profile1.vm_set.filter(status=models.Resource.READY)
+        vms = profile1.resource_set.filter(status=models.Resource.READY)
         self.assertEqual(len(vms), vm_max)
 
         vmh = vms[0]
@@ -272,7 +272,7 @@ class TestsuiteServer(unittest.TestCase):
         exts = ext.api_ext_list()
         server.adapt(exts)
 
-        vms = profile1.vm_set.filter(status=models.Resource.READY)
+        vms = profile1.resource_set.filter(status=models.Resource.READY)
 
         ##
         # Check to see if the expiration happens.
