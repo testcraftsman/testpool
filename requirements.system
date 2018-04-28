@@ -3,3 +3,4 @@ virtinst
 debhelper
 python-yaml
 python-pip
+python-all
