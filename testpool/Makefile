@@ -3,4 +3,4 @@ include defs.mk
 include $(ROOT)/defs.mk
 
 test::
-	export PYTHONPATH=$(PYTHONPATH);py.test -s --color=no -v core libexec/fake
+	export PYTHONPATH=$(PYTHONPATH);${PYTEST} core libexec/fake libexec/docker

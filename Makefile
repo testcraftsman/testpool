@@ -63,3 +63,6 @@ install:
 .PHONY: uninstall
 uninstall:
 	sudo -H dpkg --remove python-testpool
+
+test::
+	make -C testpool

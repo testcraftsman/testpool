@@ -9,9 +9,12 @@ dist
 *.swp
 http/static
 #*.py#
+#*#
 *.log
 *.tar.gz
 deb_dist
 .tox
 .pytest_cache
 t.sh
+.coverage
+.coveragerc

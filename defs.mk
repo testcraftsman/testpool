@@ -3,6 +3,7 @@ SUBDEFS:=$(wildcard */defs.mk)
 SUBMODULES:=$(foreach module,$(SUBDEFS),$(dir $(module)))
 export PYTHONPATH:=$(ROOT):$(ROOT)/testpool/db
 PYTHON=`which python`
+PYTEST=pytest --cov=testpool -s --color=no -v 
 
 PYTHON_FILES=
 
