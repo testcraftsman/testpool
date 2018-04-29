@@ -147,65 +147,65 @@ def adapt(exts):
 
         if PROFILE_LOGGER:
             PROFILE_LOGGER.info(profile=profile1.name,
-                                vm_count=profile1.vm_available(),
-                                vm_max=profile1.vm_max)
+                                resource_count=profile1.resource_available(),
+                                resource_max=profile1.resource_max)
         ext1 = exts[profile1.hv.product]
-        vmpool = ext1.pool_get(profile1)
-        algo.adapt(vmpool, profile1)
+        pool = ext1.pool_get(profile1)
+        algo.adapt(pool, profile1)
 
     LOGGER.info("adapt ended")
 
 
-def action_destroy(exts, vmh):
+def action_destroy(exts, rsrc):
     """ Reclaim any resources released. """
 
     LOGGER.info("%s: action_destroy started %s %s",
-                vmh.profile.name, vmh.profile.hv.product, vmh.name)
+                rsrc.profile.name, rsrc.profile.hv.product, rsrc.name)
 
-    ext1 = exts[vmh.profile.hv.product]
-    vmpool = ext1.pool_get(vmh.profile)
+    ext1 = exts[rsrc.profile.hv.product]
+    pool = ext1.pool_get(rsrc.profile)
 
     try:
-        profile1 = vmh.profile
-        algo.vm_destroy(vmpool, vmh)
-        algo.adapt(vmpool, profile1)
+        profile1 = rsrc.profile
+        algo.resource_destroy(pool, rsrc)
+        algo.adapt(pool, profile1)
 
         ##
         # If all of the resources have been removed and the max is zero then
         # remove the resource.
         if profile1.deleteable():
             LOGGER.info("%s: action_destroy profile deleted",
-                        vmh.profile.name)
+                        rsrc.profile.name)
             profile1.delete()
         ##
-        LOGGER.info("%s: action_destroy %s done", profile1.name, vmh.name)
+        LOGGER.info("%s: action_destroy %s done", profile1.name, rsrc.name)
     except Exception, arg:
         LOGGER.debug("%s: action_destroy %s interrupted", profile1.name,
-                     vmh.name)
+                     rsrc.name)
         LOGGER.exception(arg)
-        delta = vmpool.timing_get(api.Pool.TIMING_REQUEST_DESTROY)
-        vmh.transition(vmh.status, vmh.action, delta)
+        delta = pool.timing_get(api.Pool.TIMING_REQUEST_DESTROY)
+        rsrc.transition(rsrc.status, rsrc.action, delta)
 
 
-def action_clone(exts, vmh):
+def action_clone(exts, rsrc):
     """ Clone a new resource. """
 
     LOGGER.info("%s: action_clone started %s %s",
-                vmh.profile.name, vmh.profile.hv.product, vmh.name)
+                rsrc.profile.name, rsrc.profile.hv.product, rsrc.name)
 
-    ext1 = exts[vmh.profile.hv.product]
-    vmpool = ext1.pool_get(vmh.profile)
+    ext1 = exts[rsrc.profile.hv.product]
+    pool = ext1.pool_get(rsrc.profile)
     try:
-        algo.vm_clone(vmpool, vmh)
-        algo.adapt(vmpool, vmh.profile)
+        algo.resource_clone(pool, rsrc)
+        algo.adapt(pool, rsrc.profile)
         adapt(exts)
     except Exception:
-        LOGGER.exception("%s: action_clone %s interrupted", vmh.profile.name,
-                         vmh.name)
-        delta = vmpool.timing_get(api.Pool.TIMING_REQUEST_DESTROY)
-        vmh.transition(vmh.status, vmh.action, delta)
+        LOGGER.exception("%s: action_clone %s interrupted", rsrc.profile.name,
+                         rsrc.name)
+        delta = pool.timing_get(api.Pool.TIMING_REQUEST_DESTROY)
+        rsrc.transition(rsrc.status, rsrc.action, delta)
 
-    LOGGER.info("%s: action_clone done", vmh.profile.name)
+    LOGGER.info("%s: action_clone done", rsrc.profile.name)
 
 
 def setup(exts):
@@ -218,12 +218,13 @@ def setup(exts):
     LOGGER.info("setup started")
 
     for profile1 in models.Profile.objects.all():
-        vms = profile1.resource_set.all()
+        rsrcs = profile1.resource_set.all()
         LOGGER.info("setup %s %s %d of %d", profile1.name,
-                    profile1.template_name, vms.count(), profile1.vm_max)
+                    profile1.template_name, rsrcs.count(),
+                    profile1.resource_max)
 
         ext1 = exts[profile1.hv.product]
-        vmpool = ext1.pool_get(profile1)
+        pool = ext1.pool_get(profile1)
 
         ##
         # Check the hypervisor. Create Database entries for each existing
@@ -231,33 +232,34 @@ def setup(exts):
         # resources in the database as BAD so that they can be deleted if they
         # do not correspond to an actual resource. Actual resources, will be
         # destroyed through the normal event engine.
-        for count in range(profile1.vm_max):
-            vm_name = vmpool.new_name_get(profile1.template_name, count)
-            (vmh, _) = models.Resource.objects.get_or_create(profile=profile1,
-                                                             name=vm_name)
+        for count in range(profile1.resource_max):
+            name = pool.new_name_get(profile1.template_name, count)
+            (rsrc, _) = models.Resource.objects.get_or_create(profile=profile1,
+                                                              name=name)
             # Mark bad just to figure out which to delete immediately.
-            vmh.status = models.Resource.BAD
-            vmh.save()
+            rsrc.status = models.Resource.BAD
+            rsrc.save()
 
         ##
         # Quickly go through all of the resources to reclaim them by
         # transitioning. them to PENDING and action destroy
         delta = 0
-        vm_list = vmpool.list(profile1)
-        for vm_name in vm_list:
+        names = pool.list(profile1)
+        for name in names:
             try:
-                vmh = models.Resource.objects.get(profile=profile1,
-                                                  name=vm_name)
-                vmh.transition(models.Resource.PENDING, algo.ACTION_DESTROY,
-                               delta)
-                LOGGER.info("setup mark resource %s to be destroyed", vmh.name)
-                delta += vmpool.timing_get(api.Pool.TIMING_REQUEST_DESTROY)
+                rsrc = models.Resource.objects.get(profile=profile1,
+                                                   name=name)
+                rsrc.transition(models.Resource.PENDING, algo.ACTION_DESTROY,
+                                delta)
+                LOGGER.info("setup mark resource %s to be destroyed",
+                            rsrc.name)
+                delta += pool.timing_get(api.Pool.TIMING_REQUEST_DESTROY)
             except models.Resource.DoesNotExist:
                 pass
 
-        for vmh in profile1.resource_set.filter(status=models.Resource.BAD):
-            LOGGER.info("setup deleted resource data %s", vmh.name)
-            vmh.delete()
+        for rsrc in profile1.resource_set.filter(status=models.Resource.BAD):
+            LOGGER.info("setup deleted resource data %s", rsrc.name)
+            rsrc.delete()
         ##
 
         ##
@@ -270,28 +272,28 @@ def setup(exts):
     LOGGER.info("setup ended")
 
 
-def action_attr(exts, vmh):
+def action_attr(exts, rsrc):
     """ Retrieve attributes. """
 
     LOGGER.info("%s: action_attr started %s %s",
-                vmh.profile.name, vmh.profile.hv.product, vmh.name)
+                rsrc.profile.name, rsrc.profile.hv.product, rsrc.name)
 
     ##
     #  If resource expires reclaim it.
-    ext1 = exts[vmh.profile.hv.product]
-    vmpool = ext1.pool_get(vmh.profile)
-    vmh.ip_addr = vmpool.ip_get(vmh.name)
-    if vmh.ip_addr:
-        LOGGER.info("%s: resource %s ip %s", vmh.profile.name, vmh.name,
-                    vmh.ip_addr)
-        vmh.transition(models.Resource.READY, algo.ACTION_NONE, 1)
+    ext1 = exts[rsrc.profile.hv.product]
+    pool = ext1.pool_get(rsrc.profile)
+    rsrc.ip_addr = pool.ip_get(rsrc.name)
+    if rsrc.ip_addr:
+        LOGGER.info("%s: resource %s ip %s", rsrc.profile.name, rsrc.name,
+                    rsrc.ip_addr)
+        rsrc.transition(models.Resource.READY, algo.ACTION_NONE, 1)
         adapt(exts)
     else:
-        LOGGER.info("%s: resource %s waiting for ip addr", vmh.profile.name,
-                    vmh.name)
-        vmh.transition(vmh.status, vmh.action, 60)
+        LOGGER.info("%s: resource %s waiting for ip addr", rsrc.profile.name,
+                    rsrc.name)
+        rsrc.transition(rsrc.status, rsrc.action, 60)
     ##
-    LOGGER.info("%s: action_attr ended", vmh.profile.name)
+    LOGGER.info("%s: action_attr ended", rsrc.profile.name)
 
 
 def mode_test_stop(args):
@@ -300,11 +302,11 @@ def mode_test_stop(args):
     if args.count == FOREVER:
         return False
 
-    for vmh in models.Resource.objects.all().order_by("action_time"):
-        action_delay = vmh.action_time - datetime.datetime.now()
+    for rsrc in models.Resource.objects.all().order_by("action_time"):
+        action_delay = rsrc.action_time - datetime.datetime.now()
         action_delay = action_delay.seconds
 
-        if models.Resource.status_to_str(vmh.status) != "ready":
+        if models.Resource.status_to_str(rsrc.status) != "ready":
             return False
 
     return True
@@ -313,33 +315,33 @@ def mode_test_stop(args):
 def events_show(banner):
     """ Show all of the pending events. """
 
-    for vmh in models.Resource.objects.all().order_by("action_time"):
-        action_delay = vmh.action_time - datetime.datetime.now()
+    for rsrc in models.Resource.objects.all().order_by("action_time"):
+        action_delay = rsrc.action_time - datetime.datetime.now()
         action_delay = action_delay.seconds
 
-        LOGGER.info("%s: %s %s action %s at %s", vmh.name, banner,
-                    models.Resource.status_to_str(vmh.status), vmh.action,
-                    vmh.action_time.strftime("%Y-%m-%d %H:%M:%S"))
+        LOGGER.info("%s: %s %s action %s at %s", rsrc.name, banner,
+                    models.Resource.status_to_str(rsrc.status), rsrc.action,
+                    rsrc.action_time.strftime("%Y-%m-%d %H:%M:%S"))
 
 
-def action_vm(vmh):
+def action_resource(rsrc):
     """ Handle resource actions.
 
     A resource can be destroyed, cloned or its IP address determined.
     """
 
     exts = ext.api_ext_list()
-    LOGGER.info("%s: status %s action %s at %s", vmh.name,
-                models.Resource.status_to_str(vmh.status), vmh.action,
-                vmh.action_time.strftime("%Y-%m-%d %H:%M:%S"))
+    LOGGER.info("%s: status %s action %s at %s", rsrc.name,
+                models.Resource.status_to_str(rsrc.status), rsrc.action,
+                rsrc.action_time.strftime("%Y-%m-%d %H:%M:%S"))
 
-    if vmh.action == algo.ACTION_DESTROY:
-        action_destroy(exts, vmh)
-    elif vmh.action == algo.ACTION_CLONE:
-        action_clone(exts, vmh)
-    elif vmh.action == algo.ACTION_ATTR:
-        action_attr(exts, vmh)
-    elif vmh.action == algo.ACTION_NONE:
+    if rsrc.action == algo.ACTION_DESTROY:
+        action_destroy(exts, rsrc)
+    elif rsrc.action == algo.ACTION_CLONE:
+        action_clone(exts, rsrc)
+    elif rsrc.action == algo.ACTION_ATTR:
+        action_attr(exts, rsrc)
+    elif rsrc.action == algo.ACTION_NONE:
         pass
 
 
@@ -368,17 +370,17 @@ def main(args):
             return 0
 
         current = datetime.datetime.now()
-        vmh = models.Resource.objects.exclude(
+        rsrc = models.Resource.objects.exclude(
             status=models.Resource.READY).order_by("action_time").first()
 
-        if not vmh:
+        if not rsrc:
             LOGGER.info("testpool no actions sleeping %s (seconds)",
                         args.max_sleep_time)
             time.sleep(args.max_sleep_time)
-        elif vmh.action_time < current or args.max_sleep_time == 0:
-            exceptions.try_catch(coding.Curry(action_vm, vmh))
+        elif rsrc.action_time < current or args.max_sleep_time == 0:
+            exceptions.try_catch(coding.Curry(action_resource, rsrc))
         else:
-            action_delay = abs(vmh.action_time - current).seconds
+            action_delay = abs(rsrc.action_time - current).seconds
 
             sleep_time = min(args.max_sleep_time, action_delay)
             sleep_time = max(args.min_sleep_time, sleep_time)
@@ -421,7 +423,7 @@ class ModelTestCase(unittest.TestCase):
         (hv1, _) = models.HV.objects.get_or_create(connection="localhost",
                                                    product="fake")
 
-        defaults = {"vm_max": 1, "template_name": "test.template"}
+        defaults = {"resource_max": 1, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
             name=self.profile_name, hv=hv1, defaults=defaults)
 
@@ -442,13 +444,13 @@ class ModelTestCase(unittest.TestCase):
 
         (hv1, _) = models.HV.objects.get_or_create(connection=connection,
                                                    product=product)
-        defaults = {"vm_max": 10, "template_name": "test.template"}
+        defaults = {"resource_max": 10, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
             name=self.profile_name, hv=hv1, defaults=defaults)
 
         ##
         # Now shrink the pool to two
-        profile1.vm_max = 2
+        profile1.resource_max = 2
         profile1.save()
         ##
 
@@ -456,8 +458,8 @@ class ModelTestCase(unittest.TestCase):
         self.assertEqual(main(args), 0)
         exts = testpool.core.ext.api_ext_list()
 
-        vmpool = exts[product].pool_get(profile1)
-        self.assertEqual(len(vmpool.list(profile1)), 2)
+        pool = exts[product].pool_get(profile1)
+        self.assertEqual(len(pool.list(profile1)), 2)
 
     def test_expand(self):
         """ test_expand. """
@@ -467,13 +469,13 @@ class ModelTestCase(unittest.TestCase):
 
         (hv1, _) = models.HV.objects.get_or_create(connection=connection,
                                                    product=product)
-        defaults = {"vm_max": 3, "template_name": "fake.template"}
+        defaults = {"resource_max": 3, "template_name": "fake.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
             name=self.profile_name, hv=hv1, defaults=defaults)
 
         ##
         # Now expand to 12
-        profile1.vm_max = 12
+        profile1.resource_max = 12
         profile1.save()
         ##
 
@@ -481,33 +483,36 @@ class ModelTestCase(unittest.TestCase):
         self.assertEqual(main(args), 0)
 
         exts = testpool.core.ext.api_ext_list()
-        vmpool = exts[product].pool_get(profile1)
-        self.assertEqual(len(vmpool.list(profile1)), 12)
+        pool = exts[product].pool_get(profile1)
+        self.assertEqual(len(pool.list(profile1)), 12)
 
     def test_expiration(self):
         """ test_expiration. """
 
         product = "fake"
         connection = "localhost"
-        vm_max = 3
+        resource_max = 3
 
         (hv1, _) = models.HV.objects.get_or_create(connection=connection,
                                                    product=product)
-        defaults = {"vm_max": vm_max, "template_name": "test.template"}
+        defaults = {
+            "resource_max": resource_max,
+            "template_name": "test.template"
+        }
         (profile1, _) = models.Profile.objects.update_or_create(
             name=self.profile_name, hv=hv1, defaults=defaults)
 
         args = ModelTestCase.fake_args()
         self.assertEqual(main(args), 0)
 
-        vms = profile1.resource_set.filter(status=models.Resource.READY)
-        self.assertEqual(len(vms), vm_max)
+        rsrcs = profile1.resource_set.filter(status=models.Resource.READY)
+        self.assertEqual(len(rsrcs), resource_max)
 
-        vmh = vms[0]
+        rsrc = rsrcs[0]
 
         ##
         # Acquire for 3 seconds.
-        vmh.transition(models.Resource.RESERVED, algo.ACTION_DESTROY, 3)
+        rsrc.transition(models.Resource.RESERVED, algo.ACTION_DESTROY, 3)
         time.sleep(5)
         args.setup = False
         args.count = 2
@@ -520,11 +525,11 @@ class ModelTestCase(unittest.TestCase):
         exts = testpool.core.ext.api_ext_list()
         adapt(exts)
 
-        vms = profile1.resource_set.filter(status=models.Resource.READY)
+        rsrcs = profile1.resource_set.filter(status=models.Resource.READY)
 
         ##
         # Check to see if the expiration happens.
-        self.assertEqual(vms.count(), 2)
+        self.assertEqual(rsrcs.count(), 2)
         ##
 
     def test_profile_log(self):
@@ -532,4 +537,4 @@ class ModelTestCase(unittest.TestCase):
 
         logger1 = profile_log_create("./profile.log")
         self.assertTrue(logger1)
-        logger1.info(profile="example", vm_count=1, vm_max=2)
+        logger1.info(profile="example", resource_count=1, resource_max=2)

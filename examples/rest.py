@@ -41,8 +41,8 @@ def acquire_get(url):
         if resp.status_code == 403:
             time.sleep(60)
         else:
-            vm1 = json.loads(resp.text)
-            return vm1
+            rsrc = json.loads(resp.text)
+            return rsrc
     resp.raise_for_status()
     ##
     return None
@@ -62,55 +62,55 @@ class Testsuite(unittest.TestCase):
         self.assertEqual(len(profiles), 1)
         self.assertEqual(profiles[0]["name"], "example")
 
-        self.assertTrue("vm_max" in profiles[0])
-        self.assertTrue("vm_ready" in profiles[0])
+        self.assertTrue("resource_max" in profiles[0])
+        self.assertTrue("resource_ready" in profiles[0])
 
     def test_profile_acquire(self):
         """ test_profile_acquire acquire a VM. """
 
         url = TEST_URL + "profile/acquire/example"
         requests.get(url)
-        vm1 = acquire_get(url)
+        rsrc = acquire_get(url)
 
         ##
         # Cloned VMs begin with the name of the template.
-        self.assertTrue(vm1["name"].startswith("test.template"))
-        self.assertTrue(len(vm1["name"]) > len("test.template"))
+        self.assertTrue(rsrc["name"].startswith("test.template"))
+        self.assertTrue(len(rsrc["name"]) > len("test.template"))
         ##
 
-        vm2 = acquire_get(url)
+        rsrc2 = acquire_get(url)
 
-        self.assertTrue(vm2["name"].startswith("test.template"))
-        self.assertTrue(len(vm2["name"]) > len("test.template"))
+        self.assertTrue(rsrc2["name"].startswith("test.template"))
+        self.assertTrue(len(rsrc2["name"]) > len("test.template"))
 
-        url = TEST_URL + "profile/release/%d" % vm1["id"]
+        url = TEST_URL + "profile/release/%d" % rsrc["id"]
         acquire_get(url)
 
-        url = TEST_URL + "profile/release/%d" % vm2["id"]
+        url = TEST_URL + "profile/release/%d" % rsrc2["id"]
         acquire_get(url)
 
     def test_acquire_too_many(self):
         """ test_acquire_too_many attempt to acquire too many VMs."""
 
-        prev_vms = set()
+        prev_rsrcs = set()
         url = TEST_URL + "profile/acquire/example"
 
         ##
         # Take all of the VMs
         for _ in range(conftest.GLOBAL["count"]):
-            vm1 = acquire_get(url)
+            rsrc = acquire_get(url)
 
-            self.assertTrue(vm1["name"].startswith("test.template"))
-            self.assertFalse(vm1["name"] in prev_vms)
+            self.assertTrue(rsrc["name"].startswith("test.template"))
+            self.assertFalse(rsrc["name"] in prev_rsrcs)
 
-            prev_vms.add(vm1["id"])
+            prev_rsrcs.add(rsrc["id"])
         ##
 
         resp = requests.get(url)
         self.assertEqual(resp.status_code, 403)
 
-        for vm_id in prev_vms:
-            url = TEST_URL + "profile/release/%d" % vm_id
+        for rsrc_id in prev_rsrcs:
+            url = TEST_URL + "profile/release/%d" % rsrc_id
             acquire_get(url)
 
     def test_acquire_renew(self):
@@ -118,30 +118,30 @@ class Testsuite(unittest.TestCase):
 
         url = TEST_URL + "profile/acquire/example"
 
-        vm1 = acquire_get(url)
-        vm_id = vm1["id"]
+        rsrc = acquire_get(url)
+        rsrc_id = rsrc["id"]
 
-        url = TEST_URL + "vm/renew/%(id)s" % vm1
+        url = TEST_URL + "resource/renew/%(id)s" % rsrc
         resp = requests.get(url)
         resp.raise_for_status()
-        vm1 = json.loads(resp.text)
-        self.assertEqual(vm1["id"], vm_id)
+        rsrc = json.loads(resp.text)
+        self.assertEqual(rsrc["id"], rsrc_id)
 
         params = {"expiration": 100}
         resp = requests.get(url, urllib.urlencode(params))
         resp.raise_for_status()
-        vm1 = json.loads(resp.text)
-        self.assertEqual(vm1["id"], vm_id)
+        rsrc = json.loads(resp.text)
+        self.assertEqual(rsrc["id"], rsrc_id)
 
         ##
         # Check to see if the expiration is roughly 100 seconds.
-        timestamp = datetime.datetime.strptime(vm1["action_time"],
+        timestamp = datetime.datetime.strptime(rsrc["action_time"],
                                                "%Y-%m-%dT%H:%M:%S.%f")
         expiration_time = timestamp - datetime.datetime.now()
         self.assertTrue(expiration_time.seconds <= 100)
         self.assertTrue(expiration_time.seconds >= 90)
         ##
 
-        url = TEST_URL + "profile/release/%d" % vm_id
+        url = TEST_URL + "profile/release/%d" % rsrc_id
         resp = requests.get(url)
         resp.raise_for_status()

@@ -84,13 +84,13 @@ class Pool(object):
         raise NotImplementedError(NOT_IMPL % "start")
 
     def state_get(self, name):
-        """ Return the current vm_name. """
+        """ Return the current name. """
         raise NotImplementedError(NOT_IMPL % "state_get")
 
-    def vm_is_clone(self, profile1, vm_name):
-        """ Return True if vm1 is a clone for the profile1. """
+    def is_clone(self, profile1, name):
+        """ Return True if resource is a clone for the profile1. """
 
-        raise NotImplementedError(NOT_IMPL % "vm_is_clone")
+        raise NotImplementedError(NOT_IMPL % "is_clone")
 
     def list(self, profile1):
         """ Return the list of resources for the profile1. """

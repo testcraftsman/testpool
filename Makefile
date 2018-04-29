@@ -26,7 +26,8 @@ pylint::
 	$(PYLINT) $(PYTHON_FILES)
 
 pycodestyle::
-	pycodestyle $(PYTHON_FILES)
+	pycodestyle --exclude=testpool/db/testpooldb/migrations \
+            $(PYTHON_FILES)
 
 info::
 	@echo "version=${VERSION}"
@@ -65,4 +66,4 @@ uninstall:
 	sudo -H dpkg --remove python-testpool
 
 test::
-	make -C testpool
+	make -C testpool $@

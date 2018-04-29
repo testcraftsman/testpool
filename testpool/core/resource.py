@@ -39,7 +39,7 @@ def _do_resource_incr(args):
 
     logging.info("%s: incrementing mx Resources %d", args.profile, args.count)
     profile1 = models.Profile.objects.get(name=args.profile)
-    profile1.vm_max += args.count
+    profile1.resource_max += args.count
     profile1.save()
 
     return 0
@@ -49,10 +49,10 @@ def _do_resource_release(args):
     """ Release Resource. """
 
     logging.info("release %s %s", args.profile, args.name)
-    vm1 = models.Resource.objects.get(name=args.name,
-                                      profile__name=args.profile)
-    vm1.transition(models.Resource.PENDING, algo.ACTION_DESTROY, 0)
-    vm1.save()
+    rsrc = models.Resource.objects.get(name=args.name,
+                                       profile__name=args.profile)
+    rsrc.transition(models.Resource.PENDING, algo.ACTION_DESTROY, 0)
+    rsrc.save()
     return 0
 
 
@@ -60,24 +60,24 @@ def _do_resource_reserve(args):
     """ Reserve Resource. """
 
     logging.info("reserve %s %s", args.profile, args.name)
-    vm1 = models.Resource.objects.get(name=args.name,
-                                      profile__name=args.profile)
-    vm1.status = models.Resource.RESERVED
-    vm1.save()
+    rsrc = models.Resource.objects.get(name=args.name,
+                                       profile__name=args.profile)
+    rsrc.status = models.Resource.RESERVED
+    rsrc.save()
     return 0
 
 
 def _do_resource_detail(args):
     """ Resource Detail content. """
 
-    vm1 = models.Resource.objects.get(profile__name=args.profile,
-                                      name=args.name)
+    rsrc = models.Resource.objects.get(profile__name=args.profile,
+                                       name=args.name)
 
     exts = ext.api_ext_list()
-    vmpool = exts[vm1.profile.hv.product].pool_get(vm1.profile)
+    pool = exts[rsrc.profile.hv.product].pool_get(rsrc.profile)
 
     print "Name: %s" % args.name
-    ip_address = vmpool.ip_get(args.name)
+    ip_address = pool.ip_get(args.name)
     print "IP: %s" % ip_address
 
 
@@ -87,12 +87,12 @@ def _do_resource_list(args):
     fmt = "%-25s %-8s %-16s %s"
 
     logging.info("%s: list resources", args.profile)
-    vms = models.Resource.objects.filter(profile__name=args.profile)
+    rsrcs = models.Resource.objects.filter(profile__name=args.profile)
 
     print fmt % ("Name", "Status", "IP", "Reserved Time")
-    for vm1 in vms:
-        print fmt % (vm1.name, models.Resource.status_to_str(vm1.status),
-                     vm1.ip_addr, vm1.action_time)
+    for rsrc in rsrcs:
+        print fmt % (rsrc.name, models.Resource.status_to_str(rsrc.status),
+                     rsrc.ip_addr, rsrc.action_time)
 
 
 def _do_resource_contain(args):
@@ -101,9 +101,9 @@ def _do_resource_contain(args):
     fmt = "%-7s %-16s %-13s %-8s %-16s %s"
 
     logging.info("list resources by %s", args.patterns)
-    vms = models.Resource.objects.all()
+    rsrcs = models.Resource.objects.all()
     for pattern in args.patterns:
-        vms = vms.filter(
+        rsrcs = rsrcs.filter(
             Q(name__contains=pattern) |
             Q(profile__hv__connection__contains=pattern) |
             Q(profile__hv__product__contains=pattern) |
@@ -111,10 +111,10 @@ def _do_resource_contain(args):
 
     print fmt % ("Profile", "Connection", "Name", "Status", "IP",
                  "Reserved Time")
-    for vm1 in vms:
-        print fmt % (vm1.profile.name, vm1.profile.hv.connection, vm1.name,
-                     models.Resource.status_to_str(vm1.status), vm1.ip_addr,
-                     vm1.action_time)
+    for rsrc in rsrcs:
+        print fmt % (rsrc.profile.name, rsrc.profile.hv.connection, rsrc.name,
+                     models.Resource.status_to_str(rsrc.status), rsrc.ip_addr,
+                     rsrc.action_time)
 
     return 0
 

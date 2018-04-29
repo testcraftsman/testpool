@@ -106,7 +106,7 @@ class ResourceKVP(models.Model):
     """ Key value pair for profile. """
 
     # pylint: disable=C0103
-    vm = models.ForeignKey("Resource")
+    resource = models.ForeignKey("Resource")
     # pylint: enable=C0103
     kvp = models.ForeignKey(KVP)
 
@@ -260,7 +260,7 @@ class Profile(models.Model):
     hv = models.ForeignKey(HV, on_delete=models.CASCADE)
     template_name = models.CharField(max_length=128)
     kvps = models.ManyToManyField(KVP, through="ProfileKVP")
-    vm_max = models.IntegerField(default=1)
+    resource_max = models.IntegerField(default=1)
     expiration = models.IntegerField(default=10*60)
 
     status = models.IntegerField(default=READY)
@@ -268,7 +268,7 @@ class Profile(models.Model):
     action = models.CharField(max_length=36, default="none")
     action_time = models.DateTimeField(auto_now_add=True)
 
-    def vm_available(self):
+    def resource_available(self):
         """ Current available resources. """
         return self.resource_set.filter(status=Resource.READY).count()
 
@@ -314,13 +314,14 @@ class Profile(models.Model):
 
     def deleteable(self):
         """ Return true if the model should be deleted.
+
         Profiles can only be deleted if all of the resources have been
         deleted. Deleting a resource takes time. Only when maximum number
         is zero and all of the resources have been actualy been deleted will
         the profile be deleted.
         """
 
-        return self.vm_max == 0 and self.resource_set.count() == 0
+        return self.resource_max == 0 and self.resource_set.count() == 0
 
     def __str__(self):
         """ User representation. """

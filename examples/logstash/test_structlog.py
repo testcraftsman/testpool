@@ -36,8 +36,8 @@ def main():
     print "starting loop"
 
     log = structlog.wrap_logger(ROOT_LOGGER)
-    log.info(profile="test.example.1", vm_count=10, vm_max=10)
-    log.info(profile="test.example.2", vm_count=10, vm_max=10)
+    log.info(profile="test.example.1", resource_count=10, resource_max=10)
+    log.info(profile="test.example.2", resource_count=10, resource_max=10)
 
     count1 = 10
     count2 = 10
@@ -48,7 +48,8 @@ def main():
             count1 += 1
         count1 = max(count1, 0)
         count1 = min(count1, 10)
-        log.info(profile="test.example.1", vm_count=count1, vm_max=10)
+        log.info(profile="test.example.1", resource_count=count1,
+                 resource_max=10)
 
         if random.randint(0, 1) == 0:
             count2 -= 1
@@ -58,7 +59,8 @@ def main():
         count2 = max(count2, 0)
         count2 = min(count2, 10)
 
-        log.info(profile="test.example.2", vm_count=count2, vm_max=10)
+        log.info(profile="test.example.2", resource_count=count2,
+                 resource_max=10)
         seconds = random.randint(0, 30)
         print "test.example.1", count1, "test.example.2", count2
         time.sleep(seconds)

@@ -129,8 +129,8 @@ class Pool(testpool.core.api.Pool):
 
     def new_name_get(self, template_name, index):
         """ Given a profile, generate a new name. """
-        vm_name = template_name + ".%d" % index
-        return vm_name
+        name = template_name + ".%d" % index
+        return name
 
     def timing_get(self, request):
         """ Return algorithm timing based on the request. """
@@ -153,19 +153,19 @@ class Pool(testpool.core.api.Pool):
         except libvirt.libvirtError:
             return testpool.core.api.Pool.STATE_NONE
 
-    def destroy(self, vm_name):
+    def destroy(self, name):
         """ Destroy resource.
 
         Shutdown the resource if necessary.
         """
 
-        LOGGER.debug("%s vm_destroy", vm_name)
+        LOGGER.debug("%s resource_destroy", name)
         try:
-            vm_hndl = self.conn.lookupByName(vm_name)
+            vm_hndl = self.conn.lookupByName(name)
         except (AttributeError, libvirt.libvirtError):
             return testpool.core.api.Pool.STATE_NONE
 
-        LOGGER.debug("%s vm_destroy resource state %s", vm_name,
+        LOGGER.debug("%s resource_destroy resource state %s", name,
                      vm_state_to_str(vm_hndl))
         vm_xml = vm_hndl.XMLDesc()
 
@@ -175,15 +175,15 @@ class Pool(testpool.core.api.Pool):
 
         [state, _, _, _, _] = vm_hndl.info()
         if state != libvirt.VIR_DOMAIN_SHUTOFF:
-            LOGGER.debug("%s destroy resource", vm_name)
+            LOGGER.debug("%s destroy resource", name)
             vm_hndl.destroy()
 
         [state, _, _, _, _] = vm_hndl.info()
         if state == libvirt.VIR_DOMAIN_SHUTOFF:
-            LOGGER.debug("%s undefine resource", vm_name)
+            LOGGER.debug("%s undefine resource", name)
             vm_hndl.undefineFlags(libvirt.VIR_DOMAIN_UNDEFINE_MANAGED_SAVE)
 
-        LOGGER.debug("%s destroy volume %s", vm_name, volume_in_use)
+        LOGGER.debug("%s destroy volume %s", name, volume_in_use)
         vm_vol = self.conn.storageVolLookupByPath(volume_in_use)
         vm_vol.wipe(0)
         vm_vol.delete(0)
@@ -230,23 +230,23 @@ class Pool(testpool.core.api.Pool):
             return testpool.core.api.Pool.STATE_RUNNING
         return testpool.core.api.Pool.STATE_BAD_STATE
 
-    def ip_get(self, vm_name, source=0):
+    def ip_get(self, name, source=0):
         """ Return IP address of resource.
 
         IP address may not be found if the resource is not fully running.
         """
-        LOGGER.debug("%s: ip_get called", vm_name)
+        LOGGER.debug("%s: ip_get called", name)
 
         try:
-            dom = self.conn.lookupByName(vm_name)
-            LOGGER.debug("%s: ip_get dom %s", vm_name, dom)
+            dom = self.conn.lookupByName(name)
+            LOGGER.debug("%s: ip_get dom %s", name, dom)
         except libvirt.libvirtError:
             return None
 
         try:
-            LOGGER.debug("%s: domain not found", vm_name)
+            LOGGER.debug("%s: domain not found", name)
             ifc = dom.interfaceAddresses(0)
-            LOGGER.debug("%s: ip_get dom ifc %s", vm_name, ifc)
+            LOGGER.debug("%s: ip_get dom ifc %s", name, ifc)
         except libvirt.libvirtError:
             return None
 
@@ -254,7 +254,7 @@ class Pool(testpool.core.api.Pool):
             for (_, values) in ifc.iteritems():
                 return values["addrs"][source]["addr"]
         except KeyError:
-            LOGGER.debug("%s: ip address not set", vm_name)
+            LOGGER.debug("%s: ip address not set", name)
         return None
 
     def list(self, profile1):
@@ -263,14 +263,14 @@ class Pool(testpool.core.api.Pool):
         rtc = []
 
         for item in self.conn.listAllDomains():
-            vm_name = item.name()
-            if self.vm_is_clone(profile1, vm_name):
-                rtc.append(vm_name)
+            name = item.name()
+            if self.is_clone(profile1, name):
+                rtc.append(name)
         return rtc
 
     # pylint: disable=W0613
     # pylint: disable=R0201
-    def vm_attr_get(self, vm_name):
+    def resource_attr_get(self, name):
         """ Return the list of attributes for the resource.
 
         These attributes are stored in the database, eventually they are
@@ -279,11 +279,11 @@ class Pool(testpool.core.api.Pool):
 
         return {}
 
-    def vm_is_clone(self, profile1, vm_name):
+    def is_clone(self, profile1, name):
         """ Return True if vm1 is a clone of profile1 template. """
 
-        return (vm_name.startswith(profile1.template_name) and
-                vm_name != profile1.template_name)
+        return (name.startswith(profile1.template_name) and
+                name != profile1.template_name)
 
     def info_get(self):
         """ Return information about the hypervisor profile. """

@@ -50,7 +50,7 @@ class Testsuite(unittest.TestCase):
 
         (hv1, _) = models.HV.objects.get_or_create(
             connection=CONNECTION, product=PRODUCT)
-        defaults = {"vm_max": 3, "template_name": TEMPLATE}
+        defaults = {"resource_max": 3, "template_name": TEMPLATE}
         models.Profile.objects.update_or_create(name=TEST_PROFILE, hv=hv1,
                                                 defaults=defaults)
 
@@ -59,8 +59,8 @@ class Testsuite(unittest.TestCase):
 
         try:
             profile1 = models.Profile.objects.get(name=TEST_PROFILE)
-            for vm1 in models.Resource.objects.filter(profile=profile1):
-                vm1.delete()
+            for rsrc in models.Resource.objects.filter(profile=profile1):
+                rsrc.delete()
             profile1.delete()
         except models.Profile.DoesNotExist:
             pass
@@ -81,29 +81,29 @@ class Testsuite(unittest.TestCase):
         hv1 = libvirt.open(CONNECTION)
         self.assertTrue(hv1)
 
-        vmpool = kvm.api.Pool(CONNECTION, "test")
-        self.assertTrue(vmpool)
+        pool = kvm.api.Pool(CONNECTION, "test")
+        self.assertTrue(pool)
         for item in range(count):
-            vm_name = TEMPLATE + ".%d" % item
+            name = TEMPLATE + ".%d" % item
             try:
-                vmpool.destroy(vm_name)
+                pool.destroy(name)
             except libvirt.libvirtError:
                 continue
 
-        pool = [item for item in vmpool.conn.listAllDomains()]
+        pool = [item for item in pool.conn.listAllDomains()]
         pool = [item.name() for item in pool]
         pool = [item for item in pool if item.startswith(TEMPLATE)]
         for item in range(count):
-            vm_name = TEMPLATE + ".%d" % item
-            if vm_name not in pool:
-                logging.debug("creating %s", vm_name)
-                vmpool.clone(TEMPLATE, vm_name)
-                vmpool.start(vm_name)
+            name = TEMPLATE + ".%d" % item
+            if name not in pool:
+                logging.debug("creating %s", name)
+                pool.clone(TEMPLATE, name)
+                pool.start(name)
 
         for item in range(count):
-            vm_name = "%s.%d" % (TEMPLATE, item)
+            name = "%s.%d" % (TEMPLATE, item)
             try:
-                vmpool.destroy(vm_name)
+                pool.destroy(name)
             except libvirt.libvirtError:
                 continue
 
@@ -138,8 +138,8 @@ class Testsuite(unittest.TestCase):
         self.assertTrue(hndl)
 
         try:
-            vm_name = "%s.destroy" % TEMPLATE
-            hv1.start(vm_name)
+            name = "%s.destroy" % TEMPLATE
+            hv1.start(name)
         except libvirt.libvirtError:
             pass
 
@@ -166,8 +166,8 @@ class TestsuiteServer(unittest.TestCase):
             hv1 = models.HV.objects.get(connection=CONNECTION,
                                         product=PRODUCT)
             profile1 = models.Profile.objects.get(name=TEST_PROFILE, hv=hv1)
-            vmpool = kvm.api.pool_get(profile1)
-            algo.destroy(vmpool, profile1)
+            pool = kvm.api.pool_get(profile1)
+            algo.destroy(pool, profile1)
 
             profile1.delete()
         except models.HV.DoesNotExist:
@@ -181,7 +181,7 @@ class TestsuiteServer(unittest.TestCase):
         (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
                                                    product=PRODUCT)
 
-        defaults = {"vm_max": 1, "template_name": TEMPLATE}
+        defaults = {"resource_max": 1, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
             name=TEST_PROFILE, hv=hv1, defaults=defaults)
 
@@ -189,14 +189,14 @@ class TestsuiteServer(unittest.TestCase):
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
 
-        self.assertEqual(profile1.vm_set.all().count(), 1)
+        self.assertEqual(profile1.resource_set.all().count(), 1)
 
     def test_shrink(self):
         """ test_shrink. test when the profile shrinks. """
 
         (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
                                                    product=PRODUCT)
-        defaults = {"vm_max": 3, "template_name": TEMPLATE}
+        defaults = {"resource_max": 3, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
             name=TEST_PROFILE, hv=hv1, defaults=defaults)
 
@@ -206,7 +206,7 @@ class TestsuiteServer(unittest.TestCase):
 
         ##
         # Now shrink the pool to two
-        profile1.vm_max = 2
+        profile1.resource_max = 2
         profile1.save()
         ##
 
@@ -215,21 +215,21 @@ class TestsuiteServer(unittest.TestCase):
         self.assertEqual(server.main(args), 0)
         exts = ext.api_ext_list()
 
-        vmpool = exts[PRODUCT].pool_get(profile1)
-        self.assertEqual(len(vmpool.list(profile1)), 2)
+        pool = exts[PRODUCT].pool_get(profile1)
+        self.assertEqual(len(pool.list(profile1)), 2)
 
     def test_expand(self):
         """ test_expand. Check when profile increases. """
 
         (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
                                                    product=PRODUCT)
-        defaults = {"vm_max": 2, "template_name": TEMPLATE}
+        defaults = {"resource_max": 2, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
             name=TEST_PROFILE, hv=hv1, defaults=defaults)
 
         ##
         # Now expand to 3
-        profile1.vm_max = 3
+        profile1.resource_max = 3
         profile1.save()
         ##
 
@@ -238,17 +238,17 @@ class TestsuiteServer(unittest.TestCase):
         self.assertEqual(server.main(args), 0)
 
         exts = ext.api_ext_list()
-        vmpool = exts[PRODUCT].pool_get(profile1)
-        self.assertEqual(len(vmpool.list(profile1)), 3)
+        pool = exts[PRODUCT].pool_get(profile1)
+        self.assertEqual(len(pool.list(profile1)), 3)
 
     def test_expiration(self):
         """ test_expiration. """
 
-        vm_max = 3
+        resource_max = 3
 
         (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
                                                    product=PRODUCT)
-        defaults = {"vm_max": vm_max, "template_name": TEMPLATE}
+        defaults = {"resource_max": resource_max, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
             name=TEST_PROFILE, hv=hv1, defaults=defaults)
 
@@ -256,14 +256,14 @@ class TestsuiteServer(unittest.TestCase):
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
 
-        vms = profile1.vm_set.filter(status=models.Resource.READY)
-        self.assertEqual(len(vms), vm_max)
+        rsrcs = profile1.resource_set.filter(status=models.Resource.READY)
+        self.assertEqual(len(rsrcs), resource_max)
 
-        vmh = vms[0]
+        rsrc = rsrcs[0]
 
         ##
         # Acquire for 3 seconds.
-        vmh.transition(models.Resource.RESERVED, algo.ACTION_DESTROY, 3)
+        rsrc.transition(models.Resource.RESERVED, algo.ACTION_DESTROY, 3)
         time.sleep(5)
         args.setup = False
         args.count = 2
@@ -277,11 +277,11 @@ class TestsuiteServer(unittest.TestCase):
         exts = ext.api_ext_list()
         server.adapt(exts)
 
-        vms = profile1.vm_set.filter(status=models.Resource.READY)
+        rsrcs = profile1.resource_set.filter(status=models.Resource.READY)
 
         ##
         # Check to see if the expiration happens.
-        self.assertEqual(vms.count(), 2)
+        self.assertEqual(rsrcs.count(), 2)
         ##
 
 

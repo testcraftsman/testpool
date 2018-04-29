@@ -31,8 +31,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         """ Define what is in a serialize response. """
 
         model = Profile
-        fields = ('id', 'template_name', 'name', "vm_max", 'expiration',
-                  'kvps', "vm_available")
+        fields = ('id', 'template_name', 'name', "resource_max", 'expiration',
+                  'kvps', "resource_available")
 
 
 class KeySerializer(serializers.ModelSerializer):
@@ -72,7 +72,7 @@ class ProfileStatsSerializer(serializers.Serializer):
 
     id = serializers.IntegerField()
     name = serializers.CharField(max_length=128)
-    vm_max = serializers.IntegerField()
+    resource_max = serializers.IntegerField()
     vm_ready = serializers.IntegerField()
     vm_reserved = serializers.IntegerField()
     vm_pending = serializers.IntegerField()

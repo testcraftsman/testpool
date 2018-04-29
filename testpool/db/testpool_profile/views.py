@@ -39,7 +39,7 @@ class ProfileStats(object):
         #
         self.connection = profile.hv.connection
         self.name = profile.name
-        self.vm_max = profile.vm_max
+        self.resource_max = profile.resource_max
         self.vm_ready = 0
         self.vm_reserved = 0
         self.vm_pending = 0

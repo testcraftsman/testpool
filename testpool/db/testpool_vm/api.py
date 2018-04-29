@@ -41,29 +41,29 @@ class JSONResponse(HttpResponse):
 
 
 @csrf_exempt
-def vm_renew(request, vm_id):
+def vm_renew(request, rsrc_id):
     """
     Renew a VM currently held for testing.
 
     @param expiration The mount of time in seconds before VM expires.
     """
 
-    LOGGER.info("profile_renew %s", vm_id)
+    LOGGER.info("profile_renew %s", rsrc_id)
     if request.method == 'GET':
         expiration_seconds = int(request.GET.get("expiration", 10*60))
         LOGGER.info("expiration in seconds %s", expiration_seconds)
 
         try:
-            vm1 = VM.objects.get(id=vm_id)
-            LOGGER.info("VM %s found", vm1.name)
+            rsrc = VM.objects.get(id=rsrc_id)
+            LOGGER.info("VM %s found", rsrc.name)
         except VM.DoesNotExist:
-            raise Http404("VM %s not found" % vm_id)
+            raise Http404("VM %s not found" % rsrc_id)
 
         ##
-        # assert vm1 defined.
-        vm1.transition(VM.RESERVED, VM.ACTION_DESTROY, expiration_seconds)
+        # assert rsrc defined.
+        rsrc.transition(VM.RESERVED, VM.ACTION_DESTROY, expiration_seconds)
 
-        serializer = VMSerializer(vm1)
+        serializer = VMSerializer(rsrc)
         return JSONResponse(serializer.data)
         ##
     else:

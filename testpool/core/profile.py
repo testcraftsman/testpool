@@ -38,16 +38,16 @@ def profile_remove(profile, immediate):
     try:
         profile = models.Profile.objects.get(name=profile)
         LOGGER.debug("found profile %s", profile)
-        profile.vm_max = 0
+        profile.resource_max = 0
         profile.save()
 
         delta = 0
-        for vmh in profile.resource_set.all():
+        for rsrc in profile.resource_set.all():
             if immediate:
-                vmh.delete()
+                rsrc.delete()
             else:
-                vmh.transition(models.Resource.RESERVED,
-                               testpool.core.algo.ACTION_DESTROY, delta)
+                rsrc.transition(models.Resource.RESERVED,
+                                testpool.core.algo.ACTION_DESTROY, delta)
                 delta += 60
 
         if immediate:
@@ -58,12 +58,12 @@ def profile_remove(profile, immediate):
         return 1
 
 
-def profile_add(connection, product, profile, vm_max, template):
+def profile_add(connection, product, profile, resource_max, template):
     """ Add a profile. """
 
     (hv1, _) = models.HV.objects.get_or_create(connection=connection,
                                                product=product)
-    defaults = {"vm_max": vm_max, "template_name": template}
+    defaults = {"resource_max": resource_max, "template_name": template}
     (profile1, _) = models.Profile.objects.update_or_create(name=profile,
                                                             hv=hv1,
                                                             defaults=defaults)
@@ -71,8 +71,8 @@ def profile_add(connection, product, profile, vm_max, template):
     ##
     # Check to see if the number of Resources should change.
     exts = testpool.core.ext.api_ext_list()
-    vmpool = exts[product].pool_get(profile1)
-    testpool.core.algo.adapt(vmpool, profile1)
+    pool = exts[product].pool_get(profile1)
+    testpool.core.algo.adapt(pool, profile1)
     ##
 
     return 0
@@ -117,14 +117,14 @@ def _do_profile_detail(args):
             print "name:     ", profile.name
             print "template: ", profile.template_name
             print "status:   ", profile.status_str()
-            print "Resources available: ", profile.vm_available()
-            print "Resources maximum:   ", profile.vm_max
+            print "Resources available: ", profile.resource_available()
+            print "Resources maximum:   ", profile.resource_max
 
             ##
             # Check to see if the number of Resources should change.
             exts = testpool.core.ext.api_ext_list()
-            vmpool = exts[profile.hv.product].pool_get(profile)
-            info = vmpool.info_get()
+            pool = exts[profile.hv.product].pool_get(profile)
+            info = pool.info_get()
 
             print "Model:          " + str(info.model)
             print "Memory size:    " + str(info.memory_size) + 'MB'
@@ -159,7 +159,7 @@ def _do_profile_list(_):
     for profile in profile_list():
         print fmt % (profile.name, profile.hv.product, profile.hv.connection,
                      profile.template_name,
-                     "%s/%s" % (profile.current, profile.vm_max),
+                     "%s/%s" % (profile.current, profile.resource_max),
                      profile.status_str())
     return 0
 

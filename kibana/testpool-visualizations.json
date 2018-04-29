@@ -4,7 +4,7 @@
     "_type": "visualization",
     "_source": {
       "title": "testpool-profile-status-minimum",
-      "visState": "{\"aggs\":[{\"enabled\":true,\"id\":\"4\",\"params\":{\"customLabel\":\"Max VMs\",\"field\":\"vm_max\"},\"schema\":\"metric\",\"type\":\"max\"},{\"enabled\":true,\"id\":\"5\",\"params\":{\"customInterval\":\"2h\",\"customLabel\":\"Timestamp\",\"extended_bounds\":{},\"field\":\"@timestamp\",\"interval\":\"auto\",\"min_doc_count\":1},\"schema\":\"bucket\",\"type\":\"date_histogram\"},{\"enabled\":true,\"id\":\"6\",\"params\":{\"customLabel\":\"Min Avaliable\",\"field\":\"vm_count\"},\"schema\":\"metric\",\"type\":\"min\"}],\"listeners\":{},\"params\":{\"perPage\":10,\"showMeticsAtAllLevels\":false,\"showPartialRows\":false,\"showTotal\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"totalFunc\":\"sum\"},\"title\":\"testpool-profile-status-minimum\",\"type\":\"table\"}",
+      "visState": "{\"aggs\":[{\"enabled\":true,\"id\":\"4\",\"params\":{\"customLabel\":\"Max VMs\",\"field\":\"resource_max\"},\"schema\":\"metric\",\"type\":\"max\"},{\"enabled\":true,\"id\":\"5\",\"params\":{\"customInterval\":\"2h\",\"customLabel\":\"Timestamp\",\"extended_bounds\":{},\"field\":\"@timestamp\",\"interval\":\"auto\",\"min_doc_count\":1},\"schema\":\"bucket\",\"type\":\"date_histogram\"},{\"enabled\":true,\"id\":\"6\",\"params\":{\"customLabel\":\"Min Avaliable\",\"field\":\"resource_count\"},\"schema\":\"metric\",\"type\":\"min\"}],\"listeners\":{},\"params\":{\"perPage\":10,\"showMeticsAtAllLevels\":false,\"showPartialRows\":false,\"showTotal\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"totalFunc\":\"sum\"},\"title\":\"testpool-profile-status-minimum\",\"type\":\"table\"}",
       "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":0,\"direction\":\"desc\"}}}}",
       "description": "",
       "savedSearchId": "testpool-profile-search",
@@ -19,7 +19,7 @@
     "_type": "visualization",
     "_source": {
       "title": "testpool-profile-status",
-      "visState": "{\"title\":\"testpool-profile-status\",\"type\":\"timelion\",\"params\":{\"expression\":\".es(index=testpool-beat-*, split=\\\"profile:100\\\", metric=\\\"max:vm_count\\\").label(regex='.*profile:(.*) .*',label='$1').title(\\\"Testpool Avaliable VMs per Profile\\\")\",\"interval\":\"auto\"},\"aggs\":[],\"listeners\":{}}",
+      "visState": "{\"title\":\"testpool-profile-status\",\"type\":\"timelion\",\"params\":{\"expression\":\".es(index=testpool-beat-*, split=\\\"profile:100\\\", metric=\\\"max:resource_count\\\").label(regex='.*profile:(.*) .*',label='$1').title(\\\"Testpool Avaliable VMs per Profile\\\")\",\"interval\":\"auto\"},\"aggs\":[],\"listeners\":{}}",
       "uiStateJSON": "{}",
       "description": "",
       "version": 1,

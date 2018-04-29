@@ -41,7 +41,8 @@ class Testsuite(TestCase):
 
         hv1 = HV.objects.create(connection="localhost")
 
-        profile1 = Profile.objects.create(name="profile1", hv=hv1, vm_max=3,
+        profile1 = Profile.objects.create(name="profile1", hv=hv1,
+                                          resource_max=3,
                                           template_name="template.ubuntu1404")
         for kvp in kvps:
             profile1.kvp_get_or_create(kvp)
@@ -55,7 +56,8 @@ class Testsuite(TestCase):
         hv1 = HV.objects.create(connection="localhost")
         self.assertTrue(hv1)
 
-        profile1 = Profile.objects.create(name="profile1", hv=hv1, vm_max=3,
+        profile1 = Profile.objects.create(name="profile1", hv=hv1,
+                                          resource_max=3,
                                           template_name="template.ubuntu1404",
                                           expiration=10*60*60*10000000)
         self.assertTrue(profile1)
@@ -72,7 +74,8 @@ class Testsuite(TestCase):
         hv1 = HV.objects.create(connection="localhost")
         self.assertTrue(hv1)
 
-        profile1 = Profile.objects.create(name="profile1", hv=hv1, vm_max=3,
+        profile1 = Profile.objects.create(name="profile1", hv=hv1,
+                                          resource_max=3,
                                           template_name="template.ubuntu1404",
                                           expiration=10*60*60*10000000)
         self.assertTrue(profile1)
@@ -89,7 +92,8 @@ class Testsuite(TestCase):
 
         hv1 = HV.objects.create(connection="localhost")
         self.assertTrue(hv1)
-        profile1 = Profile.objects.create(name="profile1", hv=hv1, vm_max=3,
+        profile1 = Profile.objects.create(name="profile1", hv=hv1,
+                                          resource_max=3,
                                           template_name="template.ubuntu1404",
                                           expiration=10*60*60)
         self.assertTrue(profile1)

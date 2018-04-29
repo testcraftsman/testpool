@@ -49,13 +49,7 @@ def onerror(name):
     traceback.print_tb(trback)
 
 
-def vm_name_create(template, count):
-    """ Generate resource name based on template. """
-
-    return template + ".%d" % count
-
-
-def adapt(vmpool, profile):
+def adapt(pool, profile):
     """ Adapt the pool to the profile size.
 
     @return Returns the number of changes. Positive number indicates the
@@ -68,80 +62,79 @@ def adapt(vmpool, profile):
     ##
     # Check the database for the list of existing and pending virtual
     # items.
-    vm_current = profile.resource_set.count()
+    current = profile.resource_set.count()
 
     ##
-    if vm_current == profile.vm_max:
+    if current == profile.resource_max:
         return changes
-    elif vm_current > profile.vm_max:
-        how_many = vm_current - profile.vm_max
-        for vm1 in profile.resource_set.reverse():
-            if vm1.status in [models.Resource.READY, models.Resource.PENDING]:
-                vm1.transition(models.Resource.PENDING, ACTION_DESTROY, 1)
+    elif current > profile.resource_max:
+        how_many = current - profile.resource_max
+        for rsrc in profile.resource_set.reverse():
+            if rsrc.status in [models.Resource.READY, models.Resource.PENDING]:
+                rsrc.transition(models.Resource.PENDING, ACTION_DESTROY, 1)
                 how_many -= 1
 
             if how_many <= 0:
                 break
     else:
         ##
-        # there are not enough resources. Add more. vm_current represents
+        # there are not enough resources. Add more. current represents
         # the next slot so add that to count.
-        for count in range(profile.vm_max):
+        for count in range(profile.resource_max):
             changes += 1
-            vm_name = vmpool.new_name_get(profile.template_name,
-                                          count+vm_current)
-            logging.info("%s checking", vm_name)
-            (vm1, _) = models.Resource.objects.get_or_create(profile=profile,
-                                                             name=vm_name)
-            vm_state = vmpool.state_get(vm_name)
-            logging.debug("%s status %s", vm_name, vm_state)
-            if vm_state == testpool.core.api.Pool.STATE_NONE:
+            name = pool.new_name_get(profile.template_name, count+current)
+            logging.info("%s checking", name)
+            (rsrc, _) = models.Resource.objects.get_or_create(profile=profile,
+                                                              name=name)
+            state = pool.state_get(name)
+            logging.debug("%s status %s", name, state)
+            if state == testpool.core.api.Pool.STATE_NONE:
                 logging.debug("%s expanding pool resource with %s ",
-                              profile.name, vm_name)
-                vm1.transition(models.Resource.PENDING, ACTION_CLONE, 1)
+                              profile.name, name)
+                rsrc.transition(models.Resource.PENDING, ACTION_CLONE, 1)
     return changes
 
 
-def clone(vmpool, vm1):
+def clone(pool, rsrc):
     """ Clone a resource. """
 
-    vmpool.clone(vm1.profile.template_name, vm1.name)
-    vm_state = vmpool.start(vm1.name)
-    logging.debug("%s resource clone state %s", vm1.profile.name, vm_state)
+    pool.clone(rsrc.profile.template_name, rsrc.name)
+    state = pool.start(rsrc.name)
+    logging.debug("%s resource clone state %s", rsrc.profile.name, state)
 
-    if vm_state != testpool.core.api.Pool.STATE_RUNNING:
-        logging.error("%s resource clone %s failed", vm1.profile.name,
-                      vm1.name)
-        vm1.transition(models.Resource.BAD, ACTION_DESTROY, 1)
+    if state != testpool.core.api.Pool.STATE_RUNNING:
+        logging.error("%s resource clone %s failed", rsrc.profile.name,
+                      rsrc.name)
+        rsrc.transition(models.Resource.BAD, ACTION_DESTROY, 1)
     else:
-        logging.debug("%s resource cloned %s", vm1.profile.name, vm1.name)
-        vm1.transition(models.Resource.PENDING, ACTION_ATTR, 1)
+        logging.debug("%s resource cloned %s", rsrc.profile.name, rsrc.name)
+        rsrc.transition(models.Resource.PENDING, ACTION_ATTR, 1)
 
 
-def attr(vmpool, vm1):
+def attr(pool, rsrc):
     """ Retrieve resource attributes. """
 
-    vm1.ip_addr = vmpool.ip_get(vm1.name)
-    for (key, value) in vmpool.vm_attr_get(vm1.name).iteritems():
+    rsrc.ip_addr = pool.ip_get(rsrc.name)
+    for (key, value) in pool.resource_attr_get(rsrc.name).iteritems():
         (kvp, _) = models.KVP.get_or_create(key, value)
-        models.ResourceKVP.objects.create(vm=vm1, kvp=kvp)
-        vm1.transition(models.Resource.READY, ACTION_STATUS, 10*60)
+        models.ResourceKVP.objects.create(resource=rsrc, kvp=kvp)
+        rsrc.transition(models.Resource.READY, ACTION_STATUS, 10*60)
 
 
-def destroy(vmpool, profile):
+def destroy(pool, profile):
     """ Reset profile and remove all resources from the host. """
 
-    for vm1 in profile.resource_set.all():
-        vm_name = vm1.name
-        logging.debug("%s removing resource %s", profile.name, vm_name)
+    for rsrc in profile.resource_set.all():
+        name = rsrc.name
+        logging.debug("%s removing resource %s", profile.name, name)
 
-        vm_state = vmpool.state_get(vm_name)
-        if vm_state != testpool.core.api.Pool.STATE_NONE:
-            vmpool.destroy(vm_name)
+        state = pool.state_get(name)
+        if state != testpool.core.api.Pool.STATE_NONE:
+            pool.destroy(name)
 
         try:
-            vm1 = models.Resource.objects.get(profile=profile, name=vm_name)
-            vm1.delete()
+            rsrc = models.Resource.objects.get(profile=profile, name=name)
+            rsrc.delete()
         except models.Resource.DoesNotExist:
             pass
 
@@ -152,56 +145,56 @@ def pop(profile_name, expiration_seconds):
     logging.info("algo.pop resource from %s", profile_name)
 
     profile1 = models.Profile.objects.get(name=profile_name)
-    vms = models.Resource.objects.filter(profile=profile1,
-                                         status=models.Resource.PENDING)
+    rsrcs = models.Resource.objects.filter(profile=profile1,
+                                           status=models.Resource.PENDING)
 
-    if vms.count() == 0:
+    if rsrcs.count() == 0:
         raise NoResources("%s: all resources taken" % profile_name)
 
-    vm1 = vms[0]
-    vm1.transition(models.Resource.RESERVED, ACTION_DESTROY,
-                   expiration_seconds)
-    vm1.status = models.Resource.RESERVED
-    vm1.save()
+    rsrc = rsrcs[0]
+    rsrc.transition(models.Resource.RESERVED, ACTION_DESTROY,
+                    expiration_seconds)
+    rsrc.status = models.Resource.RESERVED
+    rsrc.save()
 
-    return vm1
+    return rsrc
 
 
-def push(vm_id):
+def push(rsrc_id):
     """ Push one resource by id. """
 
-    logging.info("push %d", vm_id)
+    logging.info("push %d", rsrc_id)
     try:
-        vm1 = models.Resource.objects.get(id=vm_id,
-                                          status=models.Resource.RESERVED)
-        vm1.release()
+        rsrc = models.Resource.objects.get(id=rsrc_id,
+                                           status=models.Resource.RESERVED)
+        rsrc.release()
         return 0
     except models.Resource.DoesNotExist:
-        raise ResourceReleased(vm_id)
+        raise ResourceReleased(rsrc_id)
 
 
-def vm_clone(vmpool, vmh):
+def resource_clone(pool, rsrc):
     """ Reclaim a resource and rebuild it. """
 
-    logging.debug("reclaiming %s", vmh.name)
+    logging.debug("reclaiming %s", rsrc.name)
 
-    vmpool.clone(vmh.profile.template_name, vmh.name)
-    vmpool.start(vmh.name)
-    vmh.transition(models.Resource.PENDING, testpool.core.algo.ACTION_ATTR, 1)
+    pool.clone(rsrc.profile.template_name, rsrc.name)
+    pool.start(rsrc.name)
+    rsrc.transition(models.Resource.PENDING, testpool.core.algo.ACTION_ATTR, 1)
 
 
-def vm_destroy(vmpool, vmh):
+def resource_destroy(pool, rsrc):
     """ Destroy a single resource. """
 
-    vm_name = vmh.name
-    logging.debug("%s removing resource %s", vmh.profile.name, vm_name)
+    name = rsrc.name
+    logging.debug("%s removing resource %s", rsrc.profile.name, name)
 
-    vm_state = vmpool.state_get(vm_name)
-    if vm_state != testpool.core.api.Pool.STATE_NONE:
-        vmpool.destroy(vm_name)
+    state = pool.state_get(name)
+    if state != testpool.core.api.Pool.STATE_NONE:
+        pool.destroy(name)
 
-    if vmh.profile.resource_set.all().count() > vmh.profile.vm_max:
+    if rsrc.profile.resource_set.all().count() > rsrc.profile.resource_max:
         try:
-            vmh.delete()
+            rsrc.delete()
         except models.Resource.DoesNotExist:
             pass

@@ -30,11 +30,11 @@ class Testsuite(unittest.TestCase):
                                                    product="fake")
         (profile1, _) = models.Profile.objects.get_or_create(
             name="fake.profile", hv=hv1, template_name="test.template",
-            vm_max=10)
+            resource_max=10)
 
-        vmpool = api.Pool("fake.profile")
-        algo.destroy(vmpool, profile1)
-        rtc = algo.adapt(vmpool, profile1)
+        pool = api.Pool("fake.profile")
+        algo.destroy(pool, profile1)
+        rtc = algo.adapt(pool, profile1)
         self.assertEqual(rtc, 10)
 
     def test_pop(self):
@@ -44,17 +44,17 @@ class Testsuite(unittest.TestCase):
                                                    product="fake")
         (profile1, _) = models.Profile.objects.get_or_create(
             name="fake.profile", hv=hv1, template_name="test.template",
-            vm_max=10)
-        vmpool = api.Pool("fake.profile")
+            resource_max=10)
+        pool = api.Pool("fake.profile")
 
-        algo.destroy(vmpool, profile1)
-        rtc = algo.adapt(vmpool, profile1)
+        algo.destroy(pool, profile1)
+        rtc = algo.adapt(pool, profile1)
         self.assertEqual(rtc, 10)
 
         for count in range(10):
             logging.debug("pop count %d", count)
-            vm1 = algo.pop("fake.profile", 1)
-            self.assertTrue(vm1)
+            rsrc = algo.pop("fake.profile", 1)
+            self.assertTrue(rsrc)
 
         with self.assertRaises(algo.NoResources):
             algo.pop("fake.profile", 1)
@@ -67,19 +67,19 @@ class Testsuite(unittest.TestCase):
         (hv1, _) = models.HV.objects.get_or_create(connection="localhost",
                                                    product="fake")
         (profile1, _) = models.Profile.objects.get_or_create(
-            name="fake.profile", hv=hv1, vm_max=10,
+            name="fake.profile", hv=hv1, resource_max=10,
             template_name="test.template")
 
-        vmpool = api.Pool("memory")
-        algo.destroy(vmpool, profile1)
-        rtc = algo.adapt(vmpool, profile1)
+        pool = api.Pool("memory")
+        algo.destroy(pool, profile1)
+        rtc = algo.adapt(pool, profile1)
         self.assertEqual(rtc, 10)
 
         for count in range(10):
             logging.debug("pop count %d", count)
 
-            vm1 = algo.pop(profile_name, 1)
-            self.assertTrue(vm1)
+            rsrc = algo.pop(profile_name, 1)
+            self.assertTrue(rsrc)
 
         with self.assertRaises(algo.NoResources):
             algo.pop(profile_name, 1)
@@ -93,20 +93,20 @@ class Testsuite(unittest.TestCase):
                                                    product="fake")
         (profile1, _) = models.Profile.objects.get_or_create(
             name="fake.profile", hv=hv1, template_name="test.template",
-            vm_max=10)
+            resource_max=10)
 
-        vmpool = api.pool_get(profile1)
-        self.assertTrue(vmpool)
-        algo.destroy(vmpool, profile1)
-        rtc = algo.adapt(vmpool, profile1)
+        pool = api.pool_get(profile1)
+        self.assertTrue(pool)
+        algo.destroy(pool, profile1)
+        rtc = algo.adapt(pool, profile1)
         self.assertEqual(rtc, 10)
 
-        vm1 = algo.pop(profile_name, 1)
-        self.assertTrue(vm1)
+        rsrc = algo.pop(profile_name, 1)
+        self.assertTrue(rsrc)
 
-        algo.push(vm1.id)
+        algo.push(rsrc.id)
         with self.assertRaises(algo.ResourceReleased):
-            algo.push(vm1.id)
+            algo.push(rsrc.id)
 
         api_exts = ext.api_ext_list()
         server.adapt(api_exts)
@@ -116,8 +116,8 @@ class Testsuite(unittest.TestCase):
 
         try:
             profile1 = models.Profile.objects.get(name="fake.profile")
-            for vm1 in models.Resource.objects.filter(profile=profile1):
-                vm1.delete()
+            for rsrc in models.Resource.objects.filter(profile=profile1):
+                rsrc.delete()
             profile1.delete()
         except models.Profile.DoesNotExist:
             pass

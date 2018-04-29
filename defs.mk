@@ -16,36 +16,27 @@ help::
 info::
 	@echo "PYTHONPATH=$(PYTHONPATH)"
 
-
-.PHONY: subdirs $(SUBMODULES)
-$(SUBMODULES):
-	make -C $@ $(MAKECMDGOALS)
-
-subdirs: $(SUBMODULES)
-
 PYLINT=export PYTHONPATH=$(PYTHONPATH):$(ROOT)/testpool/db; \
        pylint --reports=n --disable=I0011 --disable=C1801 \
        --disable=R0801 --disable=E1101 --disable=I0012 --disable=R0914 \
        --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" \
        --generated-members=objects,MultipleObjectsReturned,get_or_create 
 
-pylint:: $(addsuffix .pylint,$(PYTHON_FILES)) subdirs
+pylint:: $(addsuffix .pylint,$(PYTHON_FILES))
 
 
 .PHONY: pylint
 %.pylint::
 	@$(PYLINT) $*
 
-pylint:: $(addsuffix .pylint,$(PYTHON_FILES)) subdirs
-
-%.python27:
-	python -m compileall $*
+pylint:: $(addsuffix .pylint,$(PYTHON_FILES))
 
 .PHONY: python27
-python27:: $(addsuffix .python27,$(PYTHON_FILES))
+python27::
+	@python -m compileall $* $(PYTHON_FILES)
 
 .PHONY: test
-test:: subdirs
+test:: 
 
 .PHONY: debug_mark
 debug_mark:: 
@@ -53,7 +44,7 @@ debug_mark::
 
 pycodestyle::
 
-check:: pycodestyle pylint subdirs python27 test debug_mark
+check:: pycodestyle pylint python27 test debug_mark
 clean::
 	find . -name "#*" -delete
 	find . -name ".#*" -delete

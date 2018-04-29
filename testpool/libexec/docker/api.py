@@ -10,38 +10,21 @@ from testpool.core import logger
 LOGGER = logger.create()
 
 
-def vm_state_to_str(dom):
-    """ Return string form of state. """
-
-    states = {
-        libvirt.VIR_DOMAIN_NOSTATE: 'no state',
-        libvirt.VIR_DOMAIN_RUNNING: 'running',
-        libvirt.VIR_DOMAIN_BLOCKED: 'blocked on resource',
-        libvirt.VIR_DOMAIN_PAUSED: 'paused by user',
-        libvirt.VIR_DOMAIN_SHUTDOWN: 'being shut down',
-        libvirt.VIR_DOMAIN_SHUTOFF: 'shut off',
-        libvirt.VIR_DOMAIN_CRASHED: 'crashed',
-    }
-
-    state = dom.info()[0]
-    return '%s is %s,' % (dom.name(), states.get(state, state))
-
-
 class HostInfo(testpool.core.api.HostInfo):
     """ Hold container information. """
     # pylint: disable=too-few-public-methods
     # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, kvm_info):
+    def __init__(self, info):
         testpool.core.api.HostInfo.__init__(self)
-        self.model = str(kvm_info[0])
-        self.memory_size = kvm_info[1]
-        self.cpus = kvm_info[2]
-        self.cpu_mhz = kvm_info[3]
-        self.numa_nodes = kvm_info[4]
-        self.cpu_sockets = kvm_info[5]
-        self.cores_per_socket = kvm_info[6]
-        self.threads_per_core = kvm_info[7]
+        self.model = str(info[0])
+        self.memory_size = info[1]
+        self.cpus = info[2]
+        self.cpu_mhz = info[3]
+        self.numa_nodes = info[4]
+        self.cpu_sockets = info[5]
+        self.cores_per_socket = info[6]
+        self.threads_per_core = info[7]
 
 
 class Pool(testpool.core.api.Pool):
@@ -149,7 +132,7 @@ class Pool(testpool.core.api.Pool):
 
     # pylint: disable=W0613
     # pylint: disable=R0201
-    def vm_attr_get(self, vm_name):
+    def resource_attr_get(self, name):
         """ Return the list of attributes for the resource.
 
         These attributes are stored in the database, eventually they are
@@ -158,11 +141,11 @@ class Pool(testpool.core.api.Pool):
 
         return {}
 
-    def vm_is_clone(self, profile1, vm_name):
+    def is_clone(self, profile1, name):
         """ Return True if vm1 is a clone of profile1 template. """
 
-        return (vm_name.startswith(profile1.template_name) and
-                vm_name != profile1.template_name)
+        return (name.startswith(profile1.template_name) and
+                name != profile1.template_name)
 
     def info_get(self):
         """ Return information about the hypervisor profile. """
