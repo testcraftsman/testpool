@@ -41,9 +41,6 @@ steps to install a testpool's server:
       sudo apt-file update
       sudo pip install --upgrade pip
       sudo pip install -qr requirements.txt
-      sudo pip install easydict
-      sudo pip install django-pure-pagination==0.2.1
-      sudo pip install django-split-settings==0.1.3
 
   #. Create debian packages,in  a shell run::
 

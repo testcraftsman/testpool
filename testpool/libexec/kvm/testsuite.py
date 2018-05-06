@@ -90,12 +90,12 @@ class Testsuite(unittest.TestCase):
             except libvirt.libvirtError:
                 continue
 
-        pool = [item for item in pool.conn.listAllDomains()]
-        pool = [item.name() for item in pool]
-        pool = [item for item in pool if item.startswith(TEMPLATE)]
+        names = [item for item in pool.conn.listAllDomains()]
+        names = [item.name() for item in names]
+        names = [item for item in names if item.startswith(TEMPLATE)]
         for item in range(count):
             name = TEMPLATE + ".%d" % item
-            if name not in pool:
+            if name not in names:
                 logging.debug("creating %s", name)
                 pool.clone(TEMPLATE, name)
                 pool.start(name)

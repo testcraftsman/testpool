@@ -1,5 +1,7 @@
 apt-file
 virtinst
+libvirt-bin
+qemu-system
 debhelper
 python-yaml
 python-pip
