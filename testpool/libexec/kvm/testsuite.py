@@ -207,13 +207,16 @@ class TestsuiteServer(unittest.TestCase):
         ##
         # Now shrink the pool to two
         profile1.resource_max = 2
+        logging.debug("shrinking pool to %d", profile1.resource_max)
         profile1.save()
         ##
 
         args = FakeArgs()
+        args.setup = False
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
         exts = ext.api_ext_list()
+        logging.debug("process resource size")
 
         pool = exts[PRODUCT].pool_get(profile1)
         self.assertEqual(len(pool.list(profile1)), 2)

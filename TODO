@@ -1,13 +1,11 @@
 -Generate a release on all tools.
+-Jenkins support
 -Setup CI build
 -Look at tox
--finish vsphere
 -Figure out best way to connect to KVM, ssh password is cumbersome.
  -Catch exception in setup to mark profile as bad
  -Look into openssh-askpass
--Look at integration with MAAS
 -action datetime should be local time
--Container support
 -If profile add fails do not create a profile
 -Handle when a profile maps to the same template.
 -Check to see what happens when tpl-daemon starts but profile bogus
@@ -23,3 +21,4 @@
 -Adapt sphinx documentation style
 -Store latest log to show progress.
 -Have tpl use REST interface.
+-Look at integration with MAAS

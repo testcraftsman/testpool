@@ -1,2 +1,3 @@
-""" Product version. """
-PACKAGE_VERSION = "0.1.0"
+""" Version. """
+
+PACKAGE_VERSION = "0.0.8"

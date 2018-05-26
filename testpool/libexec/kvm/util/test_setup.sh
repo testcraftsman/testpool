@@ -1,7 +1,7 @@
 #!/bin/bash
 ##
-# ubuntu 16.04
-# --graphics none 
+# Create test.template VM used for testing.
+#   ubuntu 16.04
 #
 virt-install \
 --connect qemu:///system \

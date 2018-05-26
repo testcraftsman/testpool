@@ -68,6 +68,8 @@ def adapt(pool, profile):
     if current == profile.resource_max:
         return changes
     elif current > profile.resource_max:
+        ##
+        # Too many resources we need to remove one.
         how_many = current - profile.resource_max
         for rsrc in profile.resource_set.reverse():
             if rsrc.status in [models.Resource.READY, models.Resource.PENDING]:

@@ -158,7 +158,6 @@ def adapt(exts):
 
 def action_destroy(exts, rsrc):
     """ Reclaim any resources released. """
-
     LOGGER.info("%s: action_destroy started %s %s",
                 rsrc.profile.name, rsrc.profile.hv.product, rsrc.name)
 
