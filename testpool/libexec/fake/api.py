@@ -95,7 +95,8 @@ class Pool(testpool.core.api.Pool):
         return name
 
     def timing_get(self, request):
-        """ Return algorithm timing based on the request. """
+        """ Return algorithm timing based on the request.
+        :return time (sec) Return the amount of time to wait in seconds. """
 
         if request == testpool.core.api.Pool.TIMING_REQUEST_DESTROY:
             return 1
@@ -139,7 +140,7 @@ class Pool(testpool.core.api.Pool):
             return testpool.core.api.Pool.STATE_BAD_STATE
 
     def state_get(self, name):
-        """ Start resource. """
+        """ Return the state of a resource. """
         logging.debug("fake state_get %s", name)
 
         with db_ctx(self.context) as rsrcs:

@@ -17,6 +17,7 @@ class TestpoolError(Exception):
         """ Constructor. """
         super(TestpoolError, self).__init__(message)
 
+
 class ConnectionError(Exception):
     """ When unable to connect to a resource. """
 

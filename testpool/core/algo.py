@@ -6,6 +6,7 @@ import logging
 import traceback
 from testpooldb import models
 import testpool.core.api
+import testpool.core.ext
 
 
 ACTION_ATTR = "attr"
@@ -79,21 +80,48 @@ def adapt(pool, profile):
             if how_many <= 0:
                 break
     else:
+        missing = profile.resource_max - current
+        logging.debug("%s: adapt too few make %d more", profile.name, missing)
         ##
-        # there are not enough resources. Add more. current represents
-        # the next slot so add that to count.
+        # There are not enough resources. Try to reuse the range of
+        # names from 0 to resource_max. Start at 0 and walk up the range
+        # looking for free slots.
         for count in range(profile.resource_max):
-            changes += 1
-            name = pool.new_name_get(profile.template_name, count+current)
+            name = pool.new_name_get(profile.template_name, count)
             logging.info("%s checking", name)
-            (rsrc, _) = models.Resource.objects.get_or_create(profile=profile,
-                                                              name=name)
+            (rsrc, action) = models.Resource.objects.get_or_create(
+                profile=profile, name=name)
+
+            if not action:
+                # This is an existing resource. Keep looking
+                continue
+
             state = pool.state_get(name)
             logging.debug("%s status %s", name, state)
+
+            # If action is true then the database entry was just created.
+            # If state == STATE_NONE then this name does not exist.
             if state == testpool.core.api.Pool.STATE_NONE:
+                # This is a new database entry and the resource does
+                # not exist. Clone this.
                 logging.debug("%s expanding pool resource with %s ",
                               profile.name, name)
                 rsrc.transition(models.Resource.PENDING, ACTION_CLONE, 1)
+                changes += 1
+                missing -= 1
+            else:
+                logging.warning("%s: lost track of resource %s reclaiming",
+                                profile.name, rsrc.name)
+                ##
+                # Need to destroy the resource because we do not know its
+                # real state.
+                rsrc.transition(models.Resource.PENDING, ACTION_DESTROY, 1)
+                ##
+                changes += 1
+                missing -= 1
+
+            if missing == 0:
+                break
     return changes
 
 
@@ -182,7 +210,7 @@ def resource_clone(pool, rsrc):
 
     pool.clone(rsrc.profile.template_name, rsrc.name)
     pool.start(rsrc.name)
-    rsrc.transition(models.Resource.PENDING, testpool.core.algo.ACTION_ATTR, 1)
+    rsrc.transition(models.Resource.PENDING, ACTION_ATTR, 1)
 
 
 def resource_destroy(pool, rsrc):
@@ -192,11 +220,58 @@ def resource_destroy(pool, rsrc):
     logging.debug("%s removing resource %s", rsrc.profile.name, name)
 
     state = pool.state_get(name)
-    if state != testpool.core.api.Pool.STATE_NONE:
+    if state == testpool.core.api.Pool.STATE_NONE:
+        ##
+        # actual resource is gone.
+        rsrc.delete()
+        ##
+    else:
         pool.destroy(name)
+        ##
+        # Attempted to destroy the resource. Check back some later time.
+        delta = pool.timing_get(testpool.core.api.Pool.TIMING_REQUEST_DESTROY)
+        rsrc.transition(rsrc.status, rsrc.action, delta)
+        ##
 
-    if rsrc.profile.resource_set.all().count() > rsrc.profile.resource_max:
-        try:
+
+def profile_add(connection, product, profile, resource_max, template):
+    """ Add a profile. """
+
+    logging.debug("profile_add %s %s", profile, template)
+    (hv1, _) = models.HV.objects.get_or_create(connection=connection,
+                                               product=product)
+    defaults = {"resource_max": resource_max, "template_name": template}
+    (profile1, _) = models.Profile.objects.update_or_create(name=profile,
+                                                            hv=hv1,
+                                                            defaults=defaults)
+    ##
+    # Check to see if the number of Resources should change.
+    exts = testpool.core.ext.api_ext_list()
+    pool = exts[product].pool_get(profile1)
+    adapt(pool, profile1)
+    ##
+    return profile1
+
+
+def profile_remove(name, immediate):
+    """ Remove a profile.
+
+    Profiles can't be removed immediately, Resources are marked for purge
+    and when all Resources are gone the profile will be removed.
+    """
+
+    profile = models.Profile.objects.get(name=name)
+    logging.debug("found profile %s", profile)
+    profile.resource_max = 0
+    profile.save()
+
+    delta = 0
+    for rsrc in profile.resource_set.all():
+        if immediate:
             rsrc.delete()
-        except models.Resource.DoesNotExist:
-            pass
+        else:
+            rsrc.transition(models.Resource.RESERVED, ACTION_DESTROY, delta)
+            delta += 60
+
+    if immediate:
+        profile.delete()

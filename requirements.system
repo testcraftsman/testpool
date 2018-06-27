@@ -1,8 +1,12 @@
 apt-file
+libvirt0
 virtinst
+pm-utils
 libvirt-bin
+libvirt-dev
 qemu-system
 debhelper
 python-yaml
 python-pip
 python-all
+enchant

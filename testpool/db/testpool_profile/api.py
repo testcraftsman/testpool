@@ -22,15 +22,16 @@ import logging
 
 from rest_framework.renderers import JSONRenderer
 from django.http import HttpResponse
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.http import Http404
 from django.core.exceptions import PermissionDenied
 from testpooldb.models import Profile
-from testpooldb.models import VM
+from testpooldb.models import Resource
 from testpool_profile.views import ProfileStats
 from testpool_profile.serializers import ProfileSerializer
 from testpool_profile.serializers import ProfileStatsSerializer
-from testpool_profile.serializers import VMSerializer
+from testpool_profile.serializers import ResourceSerializer
+import testpool.core.algo
 
 LOGGER = logging.getLogger("django.testpool")
 
@@ -58,7 +59,9 @@ def profile_list(request):
         serializer = ProfileStatsSerializer(profiles, many=True)
         return JSONResponse(serializer.data)
     else:
-        raise Http404("profile_list %s unsupported" % request.method)
+        msg = "profile_list method %s unsupported" % request.method
+        logging.error(msg)
+        return JsonResponse({"msg": msg}, status=405)
 
 
 @csrf_exempt
@@ -70,19 +73,23 @@ def profile_detail(request, profile_name):
     try:
         profile = Profile.objects.get(name=profile_name)
     except Profile.DoesNotExist:
-        raise Http404("profile %d not found" % profile_name)
+        msg = "profile %s not found" % profile_name
+        logging.error(msg)
+        return JsonResponse({"msg": msg}, status=404)
 
     if request.method == "GET":
         serializer = ProfileSerializer(profile)
         return JSONResponse(serializer.data)
     else:
-        raise Http404("profile_detail %s unsupported" % request.method)
+        msg = "profile_detail method %s unsupported" % request.method
+        logging.error(msg)
+        return JsonResponse({"msg": msg}, status=405)
 
 
 @csrf_exempt
 def profile_acquire(request, profile_name):
     """
-    Ac_seconds quire a VM that is ready.
+    Ac_seconds quire a Resource that is ready.
 
     @param expiration The mount of time in seconds before entry expires.
     """
@@ -94,61 +101,94 @@ def profile_acquire(request, profile_name):
         try:
             profile = Profile.objects.get(name=profile_name)
         except Profile.DoesNotExist:
-            raise Http404("profile %s not found" % profile_name)
+            msg = "profile %s not found" % profile_name
+            logging.error(msg)
+            return JsonResponse({"msg": msg}, status=403)
 
         LOGGER.info("profile_acquire found %s", profile_name)
 
         try:
-            vms = profile.vm_set.filter(status=VM.READY)
+            vms = profile.resource_set.filter(status=Resource.READY)
 
             if vms.count() == 0:
-                LOGGER.info("profile_acquire %s all VMs taken", profile_name)
-                raise PermissionDenied("all VMs taken for profile %s" %
-                                       profile_name)
+                msg = "profile_acquire %s all resources taken" % profile_name
+                LOGGER.info(msg)
+                return JsonResponse({"msg": msg}, status=403)
             ##
-            # Pick the first VM.
+            # Pick the first resource.
             vm1 = vms[0]
             ##
-        except VM.DoesNotExist:
-            LOGGER.info("profile %s full", profile_name)
-            raise PermissionDenied("profile %s empty" % profile_name)
+        except Resource.DoesNotExist:
+            msg = "profile %s empty" % profile_name
+            LOGGER.error(msg)
+            return JsonResponse({"msg": msg}, status=403)
 
         ##
         # assert vm1 defined.
-        vm1.transition(VM.RESERVED, VM.ACTION_DESTROY, expiration_seconds)
+        vm1.transition(Resource.RESERVED, Resource.ACTION_DESTROY,
+                       expiration_seconds)
 
         ##
-        LOGGER.info("profile %s VM acquired %s", profile_name, vm1.name)
-        serializer = VMSerializer(vm1)
+        LOGGER.info("profile %s resource acquired %s", profile_name, vm1.name)
+        serializer = ResourceSerializer(vm1)
         return JSONResponse(serializer.data)
         ##
     else:
-        logging.error("profile_acquire method %s unsupported", request.method)
-        raise Http404("profile_acquire method only get supported")
+        msg = "profile_acquire method %s unsupported" % request.method
+        logging.error(msg)
+        return JsonResponse({"msg": msg}, status=405)
 
 
 @csrf_exempt
 def profile_release(request, vm_id):
-    """ Release VM. """
+    """ Release Resource. """
 
     LOGGER.info("testpool_profile.api.profile_release %s", vm_id)
 
     if request.method == 'GET':
         try:
-            vm1 = VM.objects.get(id=vm_id)
-        except VM.DoesNotExist:
-            raise Http404("profile %s not found" % vm_id)
+            vm1 = Resource.objects.get(id=vm_id)
+        except Resource.DoesNotExist:
+            msg = "profile for %s not found" % vm_id
+            logging.error(msg)
+            return JsonResponse({"msg": msg}, status=403)
 
-        if vm1.status != VM.RESERVED:
-            raise PermissionDenied("VM %s is not reserved" % vm_id)
+        if vm1.status != Resource.RESERVED:
+            raise PermissionDenied("Resource %s is not reserved" % vm_id)
 
         ##
         # assert vm1 defined.
-        vm1.transition(VM.PENDING, VM.ACTION_DESTROY, 1)
+        vm1.transition(Resource.PENDING, Resource.ACTION_DESTROY, 1)
         ##
-        content = {"detail": "VM %s released" % vm_id}
+        content = {"detail": "Resource %s released" % vm_id}
 
         return JSONResponse(content)
     else:
-        logging.error("profile_release method %s unsupported", request.method)
-        raise Http404("profile_release method only get supported")
+        msg = "profile_release method %s unsupported" % request.method
+        logging.error(msg)
+        return JsonResponse({"msg": msg}, status=405)
+
+
+@csrf_exempt
+def profile_remove(request, profile_name):
+    """ Release Resource. """
+
+    LOGGER.info("testpool_profile.api.profile_remove %s", profile_name)
+
+    if request.method == 'DELETE':
+        immediate = request.GET.get("immediate", False)
+        try:
+            testpool.core.algo.profile_remove(profile_name, immediate)
+            content = {"detail": "profile %s removed" % profile_name}
+            return JSONResponse(content)
+        except Profile.DoesNotExist:
+            msg = "profile %s not found" % profile_name
+            logging.error(msg)
+            return JsonResponse({"msg": msg}, status=403)
+        except Exception as arg:
+            logging.error(arg)
+            return JsonResponse({"msg": arg}, status=500)
+    else:
+        msg = "profile_release method %s unsupported" % request.method
+        logging.error(msg)
+        return JsonResponse({"msg": msg}, status=405)

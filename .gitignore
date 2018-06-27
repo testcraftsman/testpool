@@ -18,3 +18,4 @@ deb_dist
 t.sh
 .coverage
 .coveragerc
+#*.py#

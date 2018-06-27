@@ -19,7 +19,7 @@ Profile serializers for model data.
 """
 from rest_framework import serializers
 from testpooldb.models import Profile
-from testpooldb.models import VM
+from testpooldb.models import Resource
 from testpooldb.models import Key
 
 
@@ -53,15 +53,15 @@ class KVPListSerializer(serializers.ModelSerializer):
 
 
 # pylint: disable=R0903
-class VMSerializer(serializers.ModelSerializer):
-    """ Serialize VM. """
+class ResourceSerializer(serializers.ModelSerializer):
+    """ Serialize Resource. """
 
     kvps = KVPListSerializer(many=True, read_only=True)
 
     class Meta(object):
         """ Define what is in a serialize response. """
 
-        model = VM
+        model = Resource
         fields = ('id', 'name', "status", 'ip_addr', 'action_time', 'kvps')
 
 

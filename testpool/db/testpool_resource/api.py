@@ -24,8 +24,8 @@ from rest_framework.renderers import JSONRenderer
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.http import Http404
-from testpooldb.models import VM
-from testpool_profile.serializers import VMSerializer
+from testpooldb.models import Resource
+from testpool_profile.serializers import ResourceSerializer
 
 LOGGER = logging.getLogger("django.testpool")
 
@@ -41,11 +41,11 @@ class JSONResponse(HttpResponse):
 
 
 @csrf_exempt
-def vm_renew(request, rsrc_id):
+def resource_renew(request, rsrc_id):
     """
-    Renew a VM currently held for testing.
+    Renew a Resource currently held for testing.
 
-    @param expiration The mount of time in seconds before VM expires.
+    @param expiration The mount of time in seconds before Resource expires.
     """
 
     LOGGER.info("profile_renew %s", rsrc_id)
@@ -54,16 +54,17 @@ def vm_renew(request, rsrc_id):
         LOGGER.info("expiration in seconds %s", expiration_seconds)
 
         try:
-            rsrc = VM.objects.get(id=rsrc_id)
-            LOGGER.info("VM %s found", rsrc.name)
-        except VM.DoesNotExist:
-            raise Http404("VM %s not found" % rsrc_id)
+            rsrc = Resource.objects.get(id=rsrc_id)
+            LOGGER.info("Resource %s found", rsrc.name)
+        except Resource.DoesNotExist:
+            raise Http404("Resource %s not found" % rsrc_id)
 
         ##
         # assert rsrc defined.
-        rsrc.transition(VM.RESERVED, VM.ACTION_DESTROY, expiration_seconds)
+        rsrc.transition(Resource.RESERVED, Resource.ACTION_DESTROY,
+                        expiration_seconds)
 
-        serializer = VMSerializer(rsrc)
+        serializer = ResourceSerializer(rsrc)
         return JSONResponse(serializer.data)
         ##
     else:

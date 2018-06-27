@@ -20,7 +20,7 @@ PYLINT=export PYTHONPATH=$(PYTHONPATH):$(ROOT)/testpool/db; \
        pylint --reports=n --disable=I0011 --disable=C1801 \
        --disable=R0801 --disable=E1101 --disable=I0012 --disable=R0914 \
        --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" \
-       --generated-members=objects,MultipleObjectsReturned,get_or_create 
+       --generated-members=objects,MultipleObjectsReturned,get_or_create  
 
 pylint:: $(addsuffix .pylint,$(PYTHON_FILES))
 

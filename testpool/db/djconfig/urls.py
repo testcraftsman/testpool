@@ -13,18 +13,19 @@ Including another URLconf
     1. Add an import:  from blog import urls as blog_urls
     2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.generic import RedirectView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 import testpool_profile.urls
-import testpool_vm.urls
+import testpool_resource.urls
+import testpool_fake.urls
 
-urlpatterns = patterns(
-    "",
+urlpatterns = [
     url(r'^testpool/admin/', include(admin.site.urls)),
+    url(r'^testpool/', include(testpool_fake.urls)),
     url(r'^testpool/', include(testpool_profile.urls)),
-    url(r'^testpool/', include(testpool_vm.urls)),
-)
+    url(r'^testpool/', include(testpool_resource.urls)),
+]
 
 urlpatterns += staticfiles_urlpatterns()

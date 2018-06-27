@@ -270,7 +270,13 @@ class Profile(models.Model):
 
     def resource_available(self):
         """ Current available resources. """
+
         return self.resource_set.filter(status=Resource.READY).count()
+
+    def resource_used(self):
+        """ Current used resources. """
+
+        return self.resource_max - self.resource_available()
 
     def stacktrace_set(self, msg, stack_trace):
         """ Store the exception received while operating on a profile. """

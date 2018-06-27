@@ -25,64 +25,23 @@ import testpool.core.ext
 import testpool.core.algo
 from testpooldb import models
 
-LOGGER = logging.getLogger("testpool.core.profile")
+LOGGER = logging.getLogger(__name__)
 
 
-def profile_remove(profile, immediate):
+def _do_profile_remove(args):
     """ Remove a profile.
 
     Profiles can't be removed immediately, Resources are marked for purge
     and when all Resources are gone the profile will be removed.
     """
 
-    LOGGER.debug("profile_remove %s", profile)
+    LOGGER.debug("profile_remove %s", args.profile)
     try:
-        profile = models.Profile.objects.get(name=profile)
-        LOGGER.debug("found profile %s", profile)
-        profile.resource_max = 0
-        profile.save()
-
-        delta = 0
-        for rsrc in profile.resource_set.all():
-            if immediate:
-                rsrc.delete()
-            else:
-                rsrc.transition(models.Resource.RESERVED,
-                                testpool.core.algo.ACTION_DESTROY, delta)
-                delta += 60
-
-        if immediate:
-            profile.delete()
+        testpool.core.algo.profile_remove(args.profile, args.immediate)
         return 0
     except models.Profile.DoesNotExist:
-        LOGGER.warning("profile %s not found", profile)
+        LOGGER.warning("profile %s not found", args.profile)
         return 1
-
-
-def profile_add(connection, product, profile, resource_max, template):
-    """ Add a profile. """
-
-    (hv1, _) = models.HV.objects.get_or_create(connection=connection,
-                                               product=product)
-    defaults = {"resource_max": resource_max, "template_name": template}
-    (profile1, _) = models.Profile.objects.update_or_create(name=profile,
-                                                            hv=hv1,
-                                                            defaults=defaults)
-
-    ##
-    # Check to see if the number of Resources should change.
-    exts = testpool.core.ext.api_ext_list()
-    pool = exts[product].pool_get(profile1)
-    testpool.core.algo.adapt(pool, profile1)
-    ##
-
-    return 0
-
-
-def _do_profile_remove(args):
-    """ Remove a profile. """
-
-    return profile_remove(args.profile, args.immediate)
 
 
 def _do_profile_add(args):
@@ -104,8 +63,9 @@ def _do_profile_add(args):
 
         raise ValueError("product %s not supported" % args.product)
 
-    return profile_add(args.connection, args.product, args.profile, args.max,
-                       args.template)
+    testpool.core.algo.profile_add(args.connection, args.product,
+                                   args.profile, args.max, args.template)
+    return 0
 
 
 def _do_profile_detail(args):
@@ -138,16 +98,6 @@ def _do_profile_detail(args):
             ##
 
 
-def profile_list():
-    """ Return a list of profiles. """
-
-    for profile in models.Profile.objects.all():
-        current = profile.resource_set.filter(
-            status=models.Resource.READY).count()
-        profile.current = current
-        yield profile
-
-
 def _do_profile_list(_):
     """ List all profiles. """
     fmt = "%-12s %-5s %-32s %-16s %-5s %-5s"
@@ -157,10 +107,11 @@ def _do_profile_list(_):
     # \todo provide a dynamically adjusting column width
     print fmt % ("Name", "Prod", "Connection", "Template", "Resources",
                  "Status")
-    for profile in profile_list():
+    for profile in models.Profile.objects.all():
+        current = profile.resource_available()
         print fmt % (profile.name, profile.hv.product, profile.hv.connection,
                      profile.template_name,
-                     "%s/%s" % (profile.current, profile.resource_max),
+                     "%s/%s" % (current, profile.resource_max),
                      profile.status_str())
     return 0
 

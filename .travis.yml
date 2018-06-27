@@ -1,12 +1,9 @@
 language: python
+python:
+  - "2.7"
 install:
-   - sudo apt install -yq libvirt-bin virtinst libvirt0 libvirt-dev enchant
-   - cat requirements.system | sudo xargs apt -yq install
-   - pip install tox-travis
-   - pip install -r requirements.txt
-   - pip install -r requirements.dev
+  - sudo -H pip install --upgrade pip
+  - sudo -H pip install -qr requirements.txt -qr requirements.dev
 script:
-   - pushd testpool/db ; ./manage.py syncdb --noinput ; popd
-   - make check
-   - make deb.build
-#   - make rpm.build
+  - make pylint pycodestyle
+  - make deb.build

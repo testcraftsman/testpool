@@ -39,7 +39,6 @@ from testpool.core import algo
 from testpool.core import api
 from testpool.core import logger
 from testpool.core import commands
-from testpool.core import profile
 from testpool.core import exceptions
 from testpool.core import coding
 from testpool.core import cfgcheck
@@ -158,29 +157,31 @@ def adapt(exts):
 
 def action_destroy(exts, rsrc):
     """ Reclaim any resources released. """
-    LOGGER.info("%s: action_destroy started %s %s",
-                rsrc.profile.name, rsrc.profile.hv.product, rsrc.name)
-
-    ext1 = exts[rsrc.profile.hv.product]
-    pool = ext1.pool_get(rsrc.profile)
 
     try:
+        rsrc_name = rsrc.name
+        LOGGER.info("%s: action_destroy started %s %s",
+                    rsrc.profile.name, rsrc.profile.hv.product, rsrc.name)
+
+        ext1 = exts[rsrc.profile.hv.product]
+        pool = ext1.pool_get(rsrc.profile)
+
         profile1 = rsrc.profile
+
         algo.resource_destroy(pool, rsrc)
-        algo.adapt(pool, profile1)
 
         ##
         # If all of the resources have been removed and the max is zero then
         # remove the resource.
         if profile1.deleteable():
-            LOGGER.info("%s: action_destroy profile deleted",
-                        rsrc.profile.name)
             profile1.delete()
+            LOGGER.info("%s: action_destroy profile deleted", profile1.name)
+        else:
+            algo.adapt(pool, profile1)
         ##
-        LOGGER.info("%s: action_destroy %s done", profile1.name, rsrc.name)
+        LOGGER.info("%s: action_destroy %s done", profile1.name, rsrc_name)
     except Exception, arg:
-        LOGGER.debug("%s: action_destroy %s interrupted", profile1.name,
-                     rsrc.name)
+        LOGGER.debug("action_destroy %s interrupted", rsrc_name)
         LOGGER.exception(arg)
         delta = pool.timing_get(api.Pool.TIMING_REQUEST_DESTROY)
         rsrc.transition(rsrc.status, rsrc.action, delta)
@@ -189,18 +190,22 @@ def action_destroy(exts, rsrc):
 def action_clone(exts, rsrc):
     """ Clone a new resource. """
 
-    LOGGER.info("%s: action_clone started %s %s",
-                rsrc.profile.name, rsrc.profile.hv.product, rsrc.name)
-
-    ext1 = exts[rsrc.profile.hv.product]
-    pool = ext1.pool_get(rsrc.profile)
     try:
+        rsrc_name = rsrc.name
+        LOGGER.info("%s: action_clone started %s %s",
+                    rsrc.profile.name, rsrc.profile.hv.product, rsrc.name)
+
+        ext1 = exts[rsrc.profile.hv.product]
+        pool = ext1.pool_get(rsrc.profile)
+
+        profile1 = rsrc.profile
+
         algo.resource_clone(pool, rsrc)
+
         algo.adapt(pool, rsrc.profile)
-        adapt(exts)
+        LOGGER.info("%s: action_clone %s done", profile1.name, rsrc_name)
     except Exception:
-        LOGGER.exception("%s: action_clone %s interrupted", rsrc.profile.name,
-                         rsrc.name)
+        LOGGER.exception("action_clone %s interrupted", rsrc.name)
         delta = pool.timing_get(api.Pool.TIMING_REQUEST_DESTROY)
         rsrc.transition(rsrc.status, rsrc.action, delta)
 
@@ -215,6 +220,32 @@ def setup(exts):
     """
 
     LOGGER.info("setup started")
+
+    ##
+    # Check for dangling items in the database. They are created when
+    # the database crashes in the middle of changes across multiple
+    # tables.
+    # Delete profiles first in case we create dangling resources from it.
+    for profile1 in models.Profile.objects.all():
+        if profile1.deleteable():
+            LOGGER.warning("deleting profile %s because max resource is 0",
+                           profile1.name)
+            profile1.delete()
+            profile1.save()
+
+    for profile1 in models.Profile.objects.filter(template_name__isnull=True):
+        LOGGER.warning("deleting resource %s because template is unknown",
+                       profile1.name)
+        profile1.delete()
+        profile1.save()
+
+    for rsrc in models.Resource.objects.filter(profile__isnull=True):
+        LOGGER.warning("deleting resource %s because profile is unknown",
+                       rsrc.name)
+        rsrc.delete()
+        rsrc.save()
+
+    ##
 
     for profile1 in models.Profile.objects.all():
         rsrcs = profile1.resource_set.all()
@@ -233,11 +264,11 @@ def setup(exts):
         # destroyed through the normal event engine.
         for count in range(profile1.resource_max):
             name = pool.new_name_get(profile1.template_name, count)
-            (rsrc, _) = models.Resource.objects.get_or_create(profile=profile1,
-                                                              name=name)
-            # Mark bad just to figure out which to delete immediately.
-            rsrc.status = models.Resource.BAD
-            rsrc.save()
+            for rsrc in models.Resource.objects.filter(profile=profile1,
+                                                       name=name):
+                # Mark bad just to figure out which to delete immediately.
+                rsrc.status = models.Resource.BAD
+                rsrc.save()
 
         ##
         # Quickly go through all of the resources to reclaim them by
@@ -246,12 +277,12 @@ def setup(exts):
         names = pool.list(profile1)
         for name in names:
             try:
-                rsrc = models.Resource.objects.get(profile=profile1,
-                                                   name=name)
-                rsrc.transition(models.Resource.PENDING, algo.ACTION_DESTROY,
-                                delta)
-                LOGGER.info("setup mark resource %s to be destroyed",
-                            rsrc.name)
+                for rsrc in models.Resource.objects.filter(profile=profile1,
+                                                           name=name):
+                    rsrc.transition(models.Resource.PENDING,
+                                    algo.ACTION_DESTROY, delta)
+                    LOGGER.info("setup mark resource %s to be destroyed",
+                                rsrc.name)
                 delta += pool.timing_get(api.Pool.TIMING_REQUEST_DESTROY)
             except models.Resource.DoesNotExist:
                 pass
@@ -286,7 +317,7 @@ def action_attr(exts, rsrc):
         LOGGER.info("%s: resource %s ip %s", rsrc.profile.name, rsrc.name,
                     rsrc.ip_addr)
         rsrc.transition(models.Resource.READY, algo.ACTION_NONE, 1)
-        adapt(exts)
+        algo.adapt(pool, rsrc.profile)
     else:
         LOGGER.info("%s: resource %s waiting for ip addr", rsrc.profile.name,
                     rsrc.name)
@@ -318,9 +349,16 @@ def events_show(banner):
         action_delay = rsrc.action_time - datetime.datetime.now()
         action_delay = action_delay.seconds
 
-        LOGGER.info("%s: %s %s action %s at %s", rsrc.name, banner,
-                    models.Resource.status_to_str(rsrc.status), rsrc.action,
-                    rsrc.action_time.strftime("%Y-%m-%d %H:%M:%S"))
+        try:
+            LOGGER.debug("%s: %s.%s %s action %s at %s", banner,
+                         rsrc.profile.name, rsrc.name,
+                         models.Resource.status_to_str(rsrc.status),
+                         rsrc.action,
+                         rsrc.action_time.strftime("%Y-%m-%d %H:%M:%S"))
+        except models.Profile.DoesNotExist:
+            # If at any time resource becomes unattached to a profile
+            # then delete the resource.
+            rsrc.delete()
 
 
 def action_resource(rsrc):
@@ -334,14 +372,18 @@ def action_resource(rsrc):
                 models.Resource.status_to_str(rsrc.status), rsrc.action,
                 rsrc.action_time.strftime("%Y-%m-%d %H:%M:%S"))
 
-    if rsrc.action == algo.ACTION_DESTROY:
-        action_destroy(exts, rsrc)
-    elif rsrc.action == algo.ACTION_CLONE:
-        action_clone(exts, rsrc)
-    elif rsrc.action == algo.ACTION_ATTR:
-        action_attr(exts, rsrc)
-    elif rsrc.action == algo.ACTION_NONE:
-        pass
+    try:
+        if rsrc.action == algo.ACTION_DESTROY:
+            action_destroy(exts, rsrc)
+        elif rsrc.action == algo.ACTION_CLONE:
+            action_clone(exts, rsrc)
+        elif rsrc.action == algo.ACTION_ATTR:
+            action_attr(exts, rsrc)
+        elif rsrc.action == algo.ACTION_NONE:
+            pass
+    except models.Profile.DoesNotExist:
+        LOGGER.debug("action %s deleted because profile missing.", rsrc.name)
+        rsrc.delete()
 
 
 def main(args):
@@ -354,7 +396,9 @@ def main(args):
         raise ValueError("count should be a positive number or FOREVER")
 
     ##
-    # Restart the daemon if extensions change.
+    # Restart the daemon if extensions change. Keep a handle to the extensions.
+    # if the list of extensions changes, this daemon must be restarted to
+    # retrive the new extensions.
     exts = ext.api_ext_list()
     if args.setup:
         exceptions.try_catch(coding.Curry(setup, exts))
@@ -377,6 +421,7 @@ def main(args):
                         args.max_sleep_time)
             time.sleep(args.max_sleep_time)
         elif rsrc.action_time < current or args.max_sleep_time == 0:
+            LOGGER.info("testpool actions fired")
             exceptions.try_catch(coding.Curry(action_resource, rsrc))
         else:
             action_delay = abs(rsrc.action_time - current).seconds
@@ -409,6 +454,8 @@ class FakeArgs(object):
 class ModelTestCase(unittest.TestCase):
     """ Test model output. """
 
+    ##
+    # Re-use this name in the tests to make it easy to clean up.
     profile_name = "test.server.profile"
 
     @staticmethod
@@ -426,12 +473,17 @@ class ModelTestCase(unittest.TestCase):
         (profile1, _) = models.Profile.objects.update_or_create(
             name=self.profile_name, hv=hv1, defaults=defaults)
 
+        self.assertTrue(profile1)
         args = ModelTestCase.fake_args()
         self.assertEqual(main(args), 0)
-        profile1.delete()
 
     def tearDown(self):
-        profile.profile_remove("test.server.profile", True)
+        """ Remove any test resources. """
+
+        try:
+            algo.profile_remove(self.profile_name, True)
+        except models.Profile.DoesNotExist:
+            pass
         if os.path.exists("/tmp/testpool/fake/localhost/test.server.profile"):
             os.remove("/tmp/testpool/fake/localhost/test.server.profile")
 
@@ -492,6 +544,8 @@ class ModelTestCase(unittest.TestCase):
         connection = "localhost"
         resource_max = 3
 
+        ##
+        # Create three resources.
         (hv1, _) = models.HV.objects.get_or_create(connection=connection,
                                                    product=product)
         defaults = {
@@ -502,17 +556,21 @@ class ModelTestCase(unittest.TestCase):
             name=self.profile_name, hv=hv1, defaults=defaults)
 
         args = ModelTestCase.fake_args()
+        # Run the main so that the state-machine runs to build the three
+        # resources.
         self.assertEqual(main(args), 0)
-
         rsrcs = profile1.resource_set.filter(status=models.Resource.READY)
         self.assertEqual(len(rsrcs), resource_max)
-
-        rsrc = rsrcs[0]
+        ##
 
         ##
-        # Acquire for 3 seconds.
-        rsrc.transition(models.Resource.RESERVED, algo.ACTION_DESTROY, 3)
-        time.sleep(5)
+        # Pick a resource and mark it ready to be destroyed.
+
+        rsrc = rsrcs[0]
+        rsrc.transition(models.Resource.RESERVED, algo.ACTION_DESTROY, 1)
+
+        ##
+        time.sleep(2)
         args.setup = False
         args.count = 2
         args.sleep_time = 1

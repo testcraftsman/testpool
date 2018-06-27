@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
-""" Client python API to reserve VMs. """
+""" Client python API to reserve resources. """
 
 import json
 import time
@@ -32,7 +32,7 @@ class ResourceError(testpool.core.exceptions.TestpoolError):
 
 
 def _renew(*args, **kwargs):
-    """ Renew VM acquisition. """
+    """ Renew resource acquisition. """
     # pylint: disable=unused-argument
 
     hndl = args[0]
@@ -41,17 +41,17 @@ def _renew(*args, **kwargs):
     hndl.threading = threading.Timer(interval, _renew, args=(hndl,))
 
 
-class VMHndl(object):
-    """ Acquires a VM and renews its usage until this object is deleted.
+class ResourceHndl(object):
+    """ Acquires a resource and renews its usage until this object is deleted.
 
-    As long as the object exists, the VM acquired will be renewed.
+    As long as the object exists, the resource acquired will be renewed.
     """
     def __init__(self, ip_addr, profile_name, expiration=60,
                  blocking=False):
-        """ Acquire a VM given the parameters.
+        """ Acquire a resource given the parameters.
 
         @param expiration The time in seconds.
-        @param blocking Wait for VM to be available.
+        @param blocking Wait for resource to be available.
         """
         # pylint: disable=invalid-name
 
@@ -72,7 +72,7 @@ class VMHndl(object):
         self.release()
 
     def acquire(self, blocking=None):
-        """ Acquire an available VM. """
+        """ Acquire an available resource. """
 
         self.release()
 
@@ -95,11 +95,11 @@ class VMHndl(object):
                 if blocking:
                     time.sleep(interval)
                     continue
-                raise ResourceError("all VMs busy or pending")
+                raise ResourceError("all resources busy or pending")
         return None
 
     def release(self):
-        """ Release VM resource. """
+        """ Release resource. """
 
         if self.threading is None:
             return
@@ -114,7 +114,7 @@ class VMHndl(object):
         self.vm = None
 
     def renew(self):
-        """ Return usage of the VM. """
+        """ Return usage of the resource. """
 
         params = {"id": self.vm.id,
                   "expiration": 100}

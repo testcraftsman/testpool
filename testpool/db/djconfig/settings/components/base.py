@@ -59,7 +59,7 @@ INSTALLED_APPS = (
     'testpooldb',
     'rest_framework',
     'testpool_profile',
-    'testpool_vm',
+    'testpool_resource',
 )
 
 REST_FRAMEWORK = {

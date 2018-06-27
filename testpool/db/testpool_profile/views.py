@@ -17,6 +17,7 @@
 """
 View profile information.
 """
+import json
 import logging
 from django.shortcuts import render_to_response
 from testpooldb import models
@@ -56,7 +57,7 @@ class ProfileStats(object):
                 self.vm_bad += 1
 
 
-def index(_):
+def profile_list(_):
     """ Summarize product information. """
     LOGGER.debug("profile")
 
@@ -64,7 +65,7 @@ def index(_):
     profiles = [ProfileStats(item) for item in profiles]
 
     html_data = {"profiles": profiles}
-    return render_to_response("profile/index.html", html_data)
+    return render_to_response("profile/list.html", html_data)
 
 
 def detail(_, profile):
@@ -80,3 +81,59 @@ def detail(_, profile):
     }
 
     return render_to_response("profile/detail.html", html_data)
+
+
+def dashboard(_):
+    """ Provide summary of all profiles. """
+
+    LOGGER.debug("index")
+
+    categories = ["Available", "Used"]
+
+    dataset = models.Profile.objects.all().order_by("name")
+
+    series = []
+    x_axis = []
+    max_tick = 10  # Just some value to help render the graph.
+
+    x_axis = [item.name for item in dataset]
+    value = {
+        "name": "Available",
+        "color": "green",
+        "data": [item.resource_available() for item in dataset]
+    }
+    series.append(value)
+
+    value = {
+        "name": "Used",
+        "color": "red",
+        "data": [item.resource_used() for item in dataset]
+    }
+    series.append(value)
+
+    if dataset:
+        max_tick = max([item.resource_max for item in dataset])
+
+    chart = {
+        "chart": {
+          'type': "bar",
+          "animation": "false",
+        },
+        "title": {'text': 'Available Resources by Profile'},
+        "xAxis": {
+            "categories": x_axis
+        },
+        "yAxis": {
+            "min": 0,
+            "max": max_tick,
+            "allowDecimals": "false",
+            "endOnTick": "true",
+            "title": {"text": "Profile Usage"},
+         },
+        "legend": {"reversed": "true"},
+        "plotOptions": {"series": {"stacking": "normal"}},
+        "series": series
+    }
+
+    dump = json.dumps(chart, indent=2)
+    return render_to_response('profile/index.html', {'chart': dump})

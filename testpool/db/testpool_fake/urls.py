@@ -14,15 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
-"""
-URLS for VM content.
-"""
-from django.conf.urls import patterns, url
+""" URLS profiles. """
+
+from django.conf.urls import url
 from . import api
 
-
 # pylint: disable=C0103
-urlpatterns = patterns(
-    "",
-    url(r'api/vm/renew/(?P<vm_id>[\d]+$)', api.vm_renew),
-)
+urlpatterns = [
+    url(r'api/profile/add/fake/(?P<name>.+)', api.profile_add),
+]

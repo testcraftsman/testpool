@@ -1,23 +1,10 @@
 {% extends "base.html" %}
-
 {% block content %}
+<meta http-equiv="refresh" content="5" />
 
-<H1>Profiles Statistics</H1>
-<table>
- <tr>
-  <th>Host</th><th>Profile</th><th>Ready</th><th>Reserved</th><th>Pending</th><th>Bad</th><th>Max</th>
- </tr>
- {% for profile in profiles %}
-  <tr>
-   <td>{{profile.hostname}}</td>
-   <td>{{profile.name}}</td>
-   <td>{{profile.vm_ready}}</td>
-   <td>{{profile.vm_reserved}}</td>
-   <td>{{profile.vm_pending}}</td>
-   <td>{{profile.vm_bad}}</td>
-   <td>{{profile.resource_max}}</td>
-   <td><a href="profile/detail/{{profile.name}}">detail</a></td>
-  </tr>
- {% endfor %}
-</table>
+<div id="container"></div>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script>Highcharts.chart('container', {{ chart|safe }});</script>
 {% endblock %}
