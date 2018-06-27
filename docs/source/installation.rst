@@ -32,15 +32,15 @@ steps to install a testpool's server:
 
   #. Skip this step if you are installing Testpool on the KVM hypervisor, most likely these packages are already installed.
      
-      sudo apt-get install -y libvirt-dev libxen-dev virtinst
+      sudo -H apt-get install -y libvirt-dev libxen-dev virtinst
 
   #. Install several required packages::
 
       cd testpool-0.1.0
       cat requirements.system | sudo xargs apt-get -y install
-      sudo apt-file update
-      sudo pip install --upgrade pip
-      sudo pip install -qr requirements.txt
+      sudo -H apt-file update
+      sudo -H pip install --upgrade pip
+      sudo -H pip install -qr requirements.txt
 
   #. Create debian packages,in  a shell run::
 
@@ -48,4 +48,4 @@ steps to install a testpool's server:
 
   #. Install::
 
-      sudo make install
+      sudo -H make install

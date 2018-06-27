@@ -3,6 +3,13 @@
 Development
 ***********
 
+Prior to developing in testpool:
+
+  sudo -H make setup
+  ./bin/tpl-db migrate
+
+Additionally docker must be installed, tests and development rely on it.
+
 Web Development
 ===============
 

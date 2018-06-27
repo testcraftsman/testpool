@@ -67,3 +67,11 @@ uninstall:
 
 test::
 	make -C testpool $@
+
+setup:
+	cat requirements.system | xargs apt-get -y install
+	apt-file update
+	pip install --upgrade pip
+	pip install -qr requirements.dev
+	pip install -qr requirements.txt
+
