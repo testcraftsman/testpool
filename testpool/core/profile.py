@@ -34,6 +34,7 @@ def profile_remove(profile, immediate):
     Profiles can't be removed immediately, Resources are marked for purge
     and when all Resources are gone the profile will be removed.
     """
+
     LOGGER.debug("profile_remove %s", profile)
     try:
         profile = models.Profile.objects.get(name=profile)

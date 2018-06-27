@@ -54,6 +54,12 @@ class Testsuite(unittest.TestCase):
         models.Profile.objects.update_or_create(name=TEST_PROFILE, hv=hv1,
                                                 defaults=defaults)
 
+        pool = api.Pool(CONNECTION, "test")
+        try:
+            pool.check()
+        except Exception as arg:  # pylint: disable=broad-except
+            assert False, arg
+
     def tearDown(self):
         """ Remove any previous test profiles1. """
         logging.debug("tearDown")

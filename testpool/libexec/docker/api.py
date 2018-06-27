@@ -41,6 +41,13 @@ class Pool(testpool.core.api.Pool):
         self.url_name = url_name
         self.conn = docker.from_env()
 
+    def check(self):
+        """ Check connection to docker container.
+
+        :raise ConnectionError: Fail to connect to docker engine. """
+
+        self.conn.ping()
+
     def new_name_get(self, template_name, index):
         """ Given a profile and index, return a new container name. """
 

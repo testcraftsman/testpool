@@ -17,6 +17,13 @@ class TestpoolError(Exception):
         """ Constructor. """
         super(TestpoolError, self).__init__(message)
 
+class ConnectionError(Exception):
+    """ When unable to connect to a resource. """
+
+    def __init__(self, message):  # pylint: disable=W0235
+        """ Constructor. """
+        super(ConnectionError, self).__init__(message)
+
 
 class ProfileError(TestpoolError):
     """ Thrown when a profile is considered bad. """
