@@ -1,6 +1,9 @@
 language: python
 python:
   - "2.7"
+before_install:
+  - sudo -H apt-get update
+  - sudo -H apt install apt-file libvirt0
 install:
   - pip install -qr requirements.txt
   - pip install -qr requirements.dev
