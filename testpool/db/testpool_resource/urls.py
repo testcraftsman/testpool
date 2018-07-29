@@ -23,5 +23,5 @@ from . import api
 
 # pylint: disable=C0103
 urlpatterns = [
-    url(r'api/resource/renew/(?P<rsrc_id>[\d]+$)', api.resource_renew),
+    url(r'api/v1/resource/renew/(?P<rsrc_id>[\d]+$)', api.resource_renew),
 ]

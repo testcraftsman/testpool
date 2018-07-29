@@ -22,12 +22,13 @@ from . import api
 
 # pylint: disable=C0103
 urlpatterns = [
-    url(r'api/profile/release/(?P<vm_id>[\d]+$)', api.profile_release),
-    url(r'api/profile/acquire/(?P<profile_name>[\.\w]+$)',
+    url(r'api/v1/profile/release/(?P<vm_id>[\d]+$)', api.profile_release),
+    url(r'api/v1/profile/acquire/(?P<profile_name>[\.\w]+$)',
         api.profile_acquire),
-    url(r'api/profile/detail/(?P<profile_name>[\.\w]+$)', api.profile_detail),
-    url(r'api/profile/list', api.profile_list),
-    url(r'api/profile/remove/(?P<profile_name>[\.\w]+$)', api.profile_remove),
+    url(r'api/v1/profile/detail/(?P<profile_name>[\.\w]+$)',
+        api.profile_detail),
+    url(r'api/v1/profile/list', api.profile_list),
+    url(r'api/v1/profile/remove/(?P<profile_name>[\.\w]+$)', api.profile_remove),
     url(r"view/profile/detail/(?P<profile>.+)", views.detail),
     url(r"view/profiles", views.profile_list),
     url(r"view/dashboard", views.dashboard),
