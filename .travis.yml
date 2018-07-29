@@ -3,7 +3,7 @@ python:
   - "2.7"
 before_install:
   - sudo -H apt-get update -qq
-  - sudo -H apt install -qq apt-file libvirt0
+  - sudo -H apt install -qq apt-file libvirt0 virtinst pm-utils libvirt-bin libvirt-dev
 install:
   - pip install -qr requirements.txt
   - pip install -qr requirements.dev
