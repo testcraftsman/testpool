@@ -74,4 +74,3 @@ setup:
 	pip install --upgrade pip
 	pip install -qr requirements.dev
 	pip install -qr requirements.txt
-

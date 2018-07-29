@@ -1,14 +1,21 @@
 language: python
 python:
-  - "2.7"
+- '2.7'
 before_install:
-  - sudo -H apt-get update -qq
-  - sudo -H cat requirements.system | sudo xargs apt-get -y install
+- sudo -H apt-get update -qq
+- sudo -H cat requirements.system | sudo xargs apt-get -y install
 install:
-  - pip install -qr requirements.txt
-  - pip install -qr requirements.dev
+- pip install -qr requirements.txt
+- pip install -qr requirements.dev
 script:
-  - ./bin/tpl-db makemigrations
-  - ./bin/tpl-db migrate
-  - make check
-  - make deb.build
+- "./bin/tpl-db makemigrations"
+- "./bin/tpl-db migrate"
+- make check
+- make deb.build
+deploy:
+  provider: release
+  skip_cleanup: true
+  on:
+    tags
+  api_key:
+    secure: e6AAUXpsO+U+5KRscUnTwDmLFOF/n1vzCv1nhcA3WUWdGwddpTpmqOGiNRC8mPEX3aJpI/wjcdTRFeRSB1MfbKNprzuBa5D6OhawMUIOc4o2cCQrK8Aua4Ue8RVWQXRR6kx3owgY4NfXpuMNZ9maL0PtZVuWSQTZLRiMVFNNWy1K+Ux6vcQlIJGrbrqspmHbRkUoQM1SmoKH2x4kFfbjpJ2V5OHkHKgaPr/j+9sTUZdyxTCVKMmjDzY51p92Q7jk5TtWFDyEqhXMv3M4ktHGllovE56o5R1/8K0/IrpIbgFb3eRmodg8krqxa3vXRw3s51wxpUd7g8fGPHRwaGc3TNg9JpHOnUy4swg+4pq2eXusewVJkp8jdEtGMVRvtuHdixpNIAWRpnvtsynd2eDSHlxfmeYOOnbAF9/dOLFFgBu/9tf0a+xxd1fMskiD4Mg3ceHgfrXLVTZrhkH2GtRyaAq0n7vJlkVsVjDqaKooLu/FdWwPSSIM+sMT5AtYdVxK2lSYpCIte4G3XFhojTjpeSRayMv/cQ88Vp9eYZR8WzESURuufUgX9egCAIyiTxopmUfY7ek9k8+3bRF85zuxHBtQ44alVuTULjpY6LdOiGCqbcw/29AXgW6YRWWnD6MawO7Ic5h5/sbAyXGJGoaYyYWEkFfOtHxUd8V443FuiuM=

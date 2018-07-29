@@ -12,3 +12,4 @@ structlog>=16.1.0
 pyyaml
 easydict
 pyenchant==2.0.0
+pybuild==0.2.6

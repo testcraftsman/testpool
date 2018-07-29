@@ -11,3 +11,4 @@ python-pip
 python-all
 enchant
 fakeroot
+dh-python

@@ -7,7 +7,17 @@ Testpool maintains a pool of pristine VMs cloned from a template. Users
 can immediate acquire a VM, use it and then throw it away. Testpool
 then replaces discarded VMs with a fresh clone.  Cloning VMs can take a
 considerable amount of time, but with a pool of VMs, acquiring a single VM
-is immediate.
+is immediate. Testpool supports KVM and docker.
+
+There are two demonstrations of Testpool. One provides a functional simulation
+using fake resources. The second uses KVM on an actual hypervisors.
+
+Simulation Demonstration 
+------------------------
+
+
+KVM Hypervisor Demonstration
+----------------------------
 
 Normally Testpool is installed on a central server and configured to
 manage several hypervisors. Testpool supports KVM which is required for 
