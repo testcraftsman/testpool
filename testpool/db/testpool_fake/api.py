@@ -25,7 +25,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.http import Http404
 from django.core.exceptions import PermissionDenied
-from testpooldb.models import HV
+from testpooldb.models import Host
 from testpooldb.models import Profile
 from testpooldb.models import Resource
 from testpool_profile.views import ProfileStats

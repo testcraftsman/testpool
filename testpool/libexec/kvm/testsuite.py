@@ -48,10 +48,10 @@ class Testsuite(unittest.TestCase):
     def setUp(self):
         """ Create KVM profile. """
 
-        (hv1, _) = models.HV.objects.get_or_create(
+        (host1, _) = models.Host.objects.get_or_create(
             connection=CONNECTION, product=PRODUCT)
         defaults = {"resource_max": 3, "template_name": TEMPLATE}
-        models.Profile.objects.update_or_create(name=TEST_PROFILE, hv=hv1,
+        models.Profile.objects.update_or_create(name=TEST_PROFILE, host=host1,
                                                 defaults=defaults)
 
     def tearDown(self):
@@ -66,10 +66,10 @@ class Testsuite(unittest.TestCase):
             pass
 
         try:
-            hv1 = models.HV.objects.get(connection=CONNECTION,
-                                        product=PRODUCT)
-            hv1.delete()
-        except models.HV.DoesNotExist:
+            host1 = models.Host.objects.get(connection=CONNECTION,
+                                            product=PRODUCT)
+            host1.delete()
+        except models.Host.DoesNotExist:
             pass
 
     def test_clone(self):
@@ -78,8 +78,8 @@ class Testsuite(unittest.TestCase):
         Clone three resources. """
         count = 2
 
-        hv1 = libvirt.open(CONNECTION)
-        self.assertTrue(hv1)
+        host1 = libvirt.open(CONNECTION)
+        self.assertTrue(host1)
 
         pool = kvm.api.Pool(CONNECTION, "test")
         self.assertTrue(pool)
@@ -131,15 +131,15 @@ class Testsuite(unittest.TestCase):
 
         profile1 = models.Profile.objects.get(name=TEST_PROFILE)
 
-        hv1 = kvm.api.pool_get(profile1)
-        self.assertTrue(hv1)
+        host1 = kvm.api.pool_get(profile1)
+        self.assertTrue(host1)
 
         hndl = libvirt.open(CONNECTION)
         self.assertTrue(hndl)
 
         try:
             name = "%s.destroy" % TEMPLATE
-            hv1.start(name)
+            host1.start(name)
         except libvirt.libvirtError:
             pass
 
@@ -163,14 +163,15 @@ class TestsuiteServer(unittest.TestCase):
     def tearDown(self):
         """ Make sure profile is removed. """
         try:
-            hv1 = models.HV.objects.get(connection=CONNECTION,
-                                        product=PRODUCT)
-            profile1 = models.Profile.objects.get(name=TEST_PROFILE, hv=hv1)
+            host1 = models.Host.objects.get(connection=CONNECTION,
+                                            product=PRODUCT)
+            profile1 = models.Profile.objects.get(name=TEST_PROFILE,
+                                                  host=host1)
             pool = kvm.api.pool_get(profile1)
             algo.destroy(pool, profile1)
 
             profile1.delete()
-        except models.HV.DoesNotExist:
+        except models.Host.DoesNotExist:
             pass
         except models.Profile.DoesNotExist:
             pass
@@ -178,12 +179,12 @@ class TestsuiteServer(unittest.TestCase):
     def test_setup(self):
         """ test_setup. """
 
-        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
-                                                   product=PRODUCT)
+        (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
+                                                       product=PRODUCT)
 
         defaults = {"resource_max": 1, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, hv=hv1, defaults=defaults)
+            name=TEST_PROFILE, host=host1, defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
@@ -194,11 +195,11 @@ class TestsuiteServer(unittest.TestCase):
     def test_shrink(self):
         """ test_shrink. test when the profile shrinks. """
 
-        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
-                                                   product=PRODUCT)
+        (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
+                                                       product=PRODUCT)
         defaults = {"resource_max": 3, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, hv=hv1, defaults=defaults)
+            name=TEST_PROFILE, host=host1, defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
@@ -224,11 +225,11 @@ class TestsuiteServer(unittest.TestCase):
     def test_expand(self):
         """ test_expand. Check when profile increases. """
 
-        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
-                                                   product=PRODUCT)
+        (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
+                                                       product=PRODUCT)
         defaults = {"resource_max": 2, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, hv=hv1, defaults=defaults)
+            name=TEST_PROFILE, host=host1, defaults=defaults)
 
         ##
         # Now expand to 3
@@ -249,11 +250,11 @@ class TestsuiteServer(unittest.TestCase):
 
         resource_max = 3
 
-        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
-                                                   product=PRODUCT)
+        (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
+                                                       product=PRODUCT)
         defaults = {"resource_max": resource_max, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, hv=hv1, defaults=defaults)
+            name=TEST_PROFILE, host=host1, defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)

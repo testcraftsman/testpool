@@ -195,7 +195,7 @@ class Pool(testpool.core.api.Pool):
 def pool_get(profile1):
     """ Return a handle to the KVM API. """
 
-    context = "%s/%s" % (profile1.hv.connection, profile1.name)
+    context = "%s/%s" % (profile1.host.connection, profile1.name)
     return Pool(context)
 
 

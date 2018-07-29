@@ -229,7 +229,7 @@ class ProfileKVP(models.Model):
         return "%s %s" % (str(self.profile), str(self.kvp))
 
 
-class HV(models.Model):
+class Host(models.Model):
     """ Hypervisor. """
 
     connection = models.CharField(max_length=128)
@@ -257,7 +257,7 @@ class Profile(models.Model):
     BAD = 0
 
     name = models.CharField(max_length=128, unique=True)
-    hv = models.ForeignKey(HV, on_delete=models.CASCADE)
+    host = models.ForeignKey(Host, on_delete=models.CASCADE)
     template_name = models.CharField(max_length=128)
     kvps = models.ManyToManyField(KVP, through="ProfileKVP")
     resource_max = models.IntegerField(default=1)
@@ -300,7 +300,7 @@ class Profile(models.Model):
 
         if srch in str(self.name):
             return True
-        if self.hv.__contains__(srch):
+        if self.host.__contains__(srch):
             return True
         if srch in str(self.template_name):
             return True

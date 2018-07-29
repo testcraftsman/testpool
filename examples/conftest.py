@@ -55,11 +55,11 @@ def teardown_db():
     # assert testpool.core.commands.args_process(None, args) == 0
     profiles = testpool.core.profile.profile_list()
     for profile in profiles:
-        if profile.hv.product != "fake":
+        if profile.host.product != "fake":
             continue
         if profile.name != GLOBAL["profile"]:
             continue
-        if profile.hv.connection != GLOBAL["connection"]:
+        if profile.host.connection != GLOBAL["connection"]:
             continue
         testpool.core.profile.profile_remove(GLOBAL["profile"], True)
 

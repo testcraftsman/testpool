@@ -301,7 +301,7 @@ def pool_get(profile):
     # or
     # User qemu+tcp://username@hostname/system list --all
     try:
-        return Pool(profile.hv.connection, profile.name)
+        return Pool(profile.host.connection, profile.name)
     except libvirt.libvirtError, arg:
         # LOGGER.exception(arg)
         raise exceptions.ProfileError(str(arg), profile)

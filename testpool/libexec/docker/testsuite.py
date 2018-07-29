@@ -48,10 +48,10 @@ class Testsuite(unittest.TestCase):
     def setUp(self):
         """ Create docker profile. """
 
-        (hv1, _) = models.HV.objects.get_or_create(
+        (host1, _) = models.Host.objects.get_or_create(
             connection=CONNECTION, product=PRODUCT)
         defaults = {"resource_max": 3, "template_name": TEMPLATE}
-        models.Profile.objects.update_or_create(name=TEST_PROFILE, hv=hv1,
+        models.Profile.objects.update_or_create(name=TEST_PROFILE, host=host1,
                                                 defaults=defaults)
 
         pool = api.Pool(CONNECTION, "test")
@@ -73,9 +73,10 @@ class Testsuite(unittest.TestCase):
             pass
 
         try:
-            hv1 = models.HV.objects.get(connection=CONNECTION, product=PRODUCT)
-            hv1.delete()
-        except models.HV.DoesNotExist:
+            host1 = models.Host.objects.get(connection=CONNECTION,
+                                            product=PRODUCT)
+            host1.delete()
+        except models.Host.DoesNotExist:
             pass
 
     def test_clone(self):
@@ -83,8 +84,8 @@ class Testsuite(unittest.TestCase):
 
         count = 3
 
-        hv1 = docker.from_env()
-        self.assertTrue(hv1)
+        host1 = docker.from_env()
+        self.assertTrue(host1)
 
         pool = api.Pool(CONNECTION, "test")
         self.assertIsNotNone(pool)
@@ -109,11 +110,11 @@ class Testsuite(unittest.TestCase):
 
         profile1 = models.Profile.objects.get(name=TEST_PROFILE)
 
-        hv1 = api.pool_get(profile1)
-        self.assertTrue(hv1)
+        host1 = api.pool_get(profile1)
+        self.assertTrue(host1)
 
         name = "%s.destroy" % TEMPLATE
-        hv1.destroy(name)
+        host1.destroy(name)
 
 
 # pylint: disable=R0903
@@ -136,29 +137,30 @@ class TestsuiteServer(unittest.TestCase):
         """ Make sure profile is removed. """
 
         try:
-            hv1 = models.HV.objects.get(connection=CONNECTION,
-                                        product=PRODUCT)
-            profile1 = models.Profile.objects.get(name=TEST_PROFILE, hv=hv1)
+            host1 = models.Host.objects.get(connection=CONNECTION,
+                                            product=PRODUCT)
+            profile1 = models.Profile.objects.get(name=TEST_PROFILE,
+                                                  host=host1)
             pool = api.pool_get(profile1)
             algo.destroy(pool, profile1)
             profile1.delete()
-        except models.HV.DoesNotExist:
+        except models.Host.DoesNotExist:
             pass
         except models.Profile.DoesNotExist:
             pass
 
-        hv1 = docker.from_env()
+        host1 = docker.from_env()
         pool = api.Pool(CONNECTION, "test")
 
     def test_setup(self):
         """ test_setup. """
 
-        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
-                                                   product=PRODUCT)
+        (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
+                                                       product=PRODUCT)
 
         defaults = {"resource_max": 1, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, hv=hv1, defaults=defaults)
+            name=TEST_PROFILE, host=host1, defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
@@ -168,10 +170,10 @@ class TestsuiteServer(unittest.TestCase):
     def test_create_one(self):
         """ Create one container. """
 
-        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
-                                                   product=PRODUCT)
+        (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
+                                                       product=PRODUCT)
         defaults = {"resource_max": 1, "template_name": TEMPLATE}
-        models.Profile.objects.update_or_create(name=TEST_PROFILE, hv=hv1,
+        models.Profile.objects.update_or_create(name=TEST_PROFILE, host=host1,
                                                 defaults=defaults)
 
         args = FakeArgs()
@@ -181,10 +183,10 @@ class TestsuiteServer(unittest.TestCase):
     def test_create_two(self):
         """ Create one container. """
 
-        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
-                                                   product=PRODUCT)
+        (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
+                                                       product=PRODUCT)
         defaults = {"resource_max": 2, "template_name": TEMPLATE}
-        models.Profile.objects.update_or_create(name=TEST_PROFILE, hv=hv1,
+        models.Profile.objects.update_or_create(name=TEST_PROFILE, host=host1,
                                                 defaults=defaults)
 
         args = FakeArgs()
@@ -194,11 +196,11 @@ class TestsuiteServer(unittest.TestCase):
     def test_shrink(self):
         """ test_shrink. test when the profile shrinks. """
 
-        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
-                                                   product=PRODUCT)
+        (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
+                                                       product=PRODUCT)
         defaults = {"resource_max": 3, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, hv=hv1, defaults=defaults)
+            name=TEST_PROFILE, host=host1, defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
@@ -222,11 +224,11 @@ class TestsuiteServer(unittest.TestCase):
     def test_expand(self):
         """ test_expand. Check when profile increases. """
 
-        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
-                                                   product=PRODUCT)
+        (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
+                                                       product=PRODUCT)
         defaults = {"resource_max": 2, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, hv=hv1, defaults=defaults)
+            name=TEST_PROFILE, host=host1, defaults=defaults)
 
         ##
         #  Now expand to 3
@@ -247,11 +249,11 @@ class TestsuiteServer(unittest.TestCase):
 
         resource_max = 3
 
-        (hv1, _) = models.HV.objects.get_or_create(connection=CONNECTION,
-                                                   product=PRODUCT)
+        (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
+                                                       product=PRODUCT)
         defaults = {"resource_max": resource_max, "template_name": TEMPLATE}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, hv=hv1, defaults=defaults)
+            name=TEST_PROFILE, host=host1, defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)

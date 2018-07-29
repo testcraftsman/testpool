@@ -238,11 +238,11 @@ def profile_add(connection, product, profile, resource_max, template):
     """ Add a profile. """
 
     logging.debug("profile_add %s %s", profile, template)
-    (hv1, _) = models.HV.objects.get_or_create(connection=connection,
-                                               product=product)
+    (host1, _) = models.Host.objects.get_or_create(connection=connection,
+                                                   product=product)
     defaults = {"resource_max": resource_max, "template_name": template}
     (profile1, _) = models.Profile.objects.update_or_create(name=profile,
-                                                            hv=hv1,
+                                                            host=host1,
                                                             defaults=defaults)
     ##
     # Check to see if the number of Resources should change.

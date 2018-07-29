@@ -166,7 +166,7 @@ class Pool(testpool.core.api.Pool):
 def pool_get(profile):
     """ Return a handle to the KVM API. """
     try:
-        return Pool(profile.hv.connection, profile.name)
+        return Pool(profile.host.connection, profile.name)
     except libvirt.libvirtError, arg:
         # LOGGER.exception(arg)
         raise exceptions.ProfileError(str(arg), profile)

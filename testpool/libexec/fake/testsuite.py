@@ -26,10 +26,10 @@ class Testsuite(unittest.TestCase):
     def test_setup(self):
         """ test clone """
 
-        (hv1, _) = models.HV.objects.get_or_create(connection="localhost",
-                                                   product="fake")
+        (host1, _) = models.Host.objects.get_or_create(connection="localhost",
+                                                       product="fake")
         (profile1, _) = models.Profile.objects.get_or_create(
-            name="fake.profile", hv=hv1, template_name="test.template",
+            name="fake.profile", host=host1, template_name="test.template",
             resource_max=10)
 
         pool = api.Pool("fake.profile")
@@ -40,10 +40,10 @@ class Testsuite(unittest.TestCase):
     def test_pop(self):
         """ test_pop Popping resources. """
 
-        (hv1, _) = models.HV.objects.get_or_create(connection="localhost",
-                                                   product="fake")
+        (host1, _) = models.Host.objects.get_or_create(connection="localhost",
+                                                       product="fake")
         (profile1, _) = models.Profile.objects.get_or_create(
-            name="fake.profile", hv=hv1, template_name="test.template",
+            name="fake.profile", host=host1, template_name="test.template",
             resource_max=10)
         pool = api.Pool("fake.profile")
 
@@ -64,10 +64,10 @@ class Testsuite(unittest.TestCase):
 
         profile_name = "fake.profile"
 
-        (hv1, _) = models.HV.objects.get_or_create(connection="localhost",
-                                                   product="fake")
+        (host1, _) = models.Host.objects.get_or_create(connection="localhost",
+                                                       product="fake")
         (profile1, _) = models.Profile.objects.get_or_create(
-            name="fake.profile", hv=hv1, resource_max=10,
+            name="fake.profile", host=host1, resource_max=10,
             template_name="test.template")
 
         pool = api.Pool("memory")
@@ -89,10 +89,10 @@ class Testsuite(unittest.TestCase):
 
         profile_name = "fake.profile"
 
-        (hv1, _) = models.HV.objects.get_or_create(connection="localhost",
-                                                   product="fake")
+        (host1, _) = models.Host.objects.get_or_create(connection="localhost",
+                                                       product="fake")
         (profile1, _) = models.Profile.objects.get_or_create(
-            name="fake.profile", hv=hv1, template_name="test.template",
+            name="fake.profile", host=host1, template_name="test.template",
             resource_max=10)
 
         pool = api.pool_get(profile1)
@@ -123,9 +123,10 @@ class Testsuite(unittest.TestCase):
             pass
 
         try:
-            hv1 = models.HV.objects.get(connection="localhost", product="fake")
-            hv1.delete()
-        except models.HV.DoesNotExist:
+            host1 = models.Host.objects.get(connection="localhost",
+                                            product="fake")
+            host1.delete()
+        except models.Host.DoesNotExist:
             pass
 
 

@@ -84,7 +84,7 @@ def _do_profile_detail(args):
             ##
             # Check to see if the number of Resources should change.
             exts = testpool.core.ext.api_ext_list()
-            pool = exts[profile.hv.product].pool_get(profile)
+            pool = exts[profile.host.product].pool_get(profile)
             info = pool.info_get()
 
             print "Model:          " + str(info.model)
@@ -109,8 +109,8 @@ def _do_profile_list(_):
                  "Status")
     for profile in models.Profile.objects.all():
         current = profile.resource_available()
-        print fmt % (profile.name, profile.hv.product, profile.hv.connection,
-                     profile.template_name,
+        print fmt % (profile.name, profile.host.product,
+                     profile.host.connection, profile.template_name,
                      "%s/%s" % (current, profile.resource_max),
                      profile.status_str())
     return 0

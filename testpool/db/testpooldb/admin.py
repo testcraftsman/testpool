@@ -49,14 +49,14 @@ class ProfileAdmin(admin.ModelAdmin):
     model = models.Profile
 
 
-class HVAdmin(admin.ModelAdmin):
+class HostAdmin(admin.ModelAdmin):
     """ Administrate testplan content. """
 
-    model = models.HV
+    model = models.Host
 
 
 admin.site.register(models.Key, KeyAdmin)
 admin.site.register(models.KVP, KVPAdmin)
 admin.site.register(models.Resource, ResourceAdmin)
 admin.site.register(models.Profile, ProfileAdmin)
-admin.site.register(models.HV, HVAdmin)
+admin.site.register(models.Host, HostAdmin)

@@ -148,7 +148,7 @@ def adapt(exts):
             PROFILE_LOGGER.info(profile=profile1.name,
                                 resource_count=profile1.resource_available(),
                                 resource_max=profile1.resource_max)
-        ext1 = exts[profile1.hv.product]
+        ext1 = exts[profile1.host.product]
         pool = ext1.pool_get(profile1)
         algo.adapt(pool, profile1)
 
@@ -161,9 +161,9 @@ def action_destroy(exts, rsrc):
     try:
         rsrc_name = rsrc.name
         LOGGER.info("%s: action_destroy started %s %s",
-                    rsrc.profile.name, rsrc.profile.hv.product, rsrc.name)
+                    rsrc.profile.name, rsrc.profile.host.product, rsrc.name)
 
-        ext1 = exts[rsrc.profile.hv.product]
+        ext1 = exts[rsrc.profile.host.product]
         pool = ext1.pool_get(rsrc.profile)
 
         profile1 = rsrc.profile
@@ -193,9 +193,9 @@ def action_clone(exts, rsrc):
     try:
         rsrc_name = rsrc.name
         LOGGER.info("%s: action_clone started %s %s",
-                    rsrc.profile.name, rsrc.profile.hv.product, rsrc.name)
+                    rsrc.profile.name, rsrc.profile.host.product, rsrc.name)
 
-        ext1 = exts[rsrc.profile.hv.product]
+        ext1 = exts[rsrc.profile.host.product]
         pool = ext1.pool_get(rsrc.profile)
 
         profile1 = rsrc.profile
@@ -253,7 +253,7 @@ def setup(exts):
                     profile1.template_name, rsrcs.count(),
                     profile1.resource_max)
 
-        ext1 = exts[profile1.hv.product]
+        ext1 = exts[profile1.host.product]
         pool = ext1.pool_get(profile1)
 
         ##
@@ -306,11 +306,11 @@ def action_attr(exts, rsrc):
     """ Retrieve attributes. """
 
     LOGGER.info("%s: action_attr started %s %s",
-                rsrc.profile.name, rsrc.profile.hv.product, rsrc.name)
+                rsrc.profile.name, rsrc.profile.host.product, rsrc.name)
 
     ##
     #  If resource expires reclaim it.
-    ext1 = exts[rsrc.profile.hv.product]
+    ext1 = exts[rsrc.profile.host.product]
     pool = ext1.pool_get(rsrc.profile)
     rsrc.ip_addr = pool.ip_get(rsrc.name)
     if rsrc.ip_addr:
@@ -466,12 +466,12 @@ class ModelTestCase(unittest.TestCase):
     def test_setup(self):
         """ test_setup. """
 
-        (hv1, _) = models.HV.objects.get_or_create(connection="localhost",
-                                                   product="fake")
+        (host1, _) = models.Host.objects.get_or_create(connection="localhost",
+                                                       product="fake")
 
         defaults = {"resource_max": 1, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=self.profile_name, hv=hv1, defaults=defaults)
+            name=self.profile_name, host=host1, defaults=defaults)
 
         self.assertTrue(profile1)
         args = ModelTestCase.fake_args()
@@ -493,11 +493,11 @@ class ModelTestCase(unittest.TestCase):
         product = "fake"
         connection = "localhost"
 
-        (hv1, _) = models.HV.objects.get_or_create(connection=connection,
-                                                   product=product)
+        (host1, _) = models.Host.objects.get_or_create(connection=connection,
+                                                       product=product)
         defaults = {"resource_max": 10, "template_name": "test.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=self.profile_name, hv=hv1, defaults=defaults)
+            name=self.profile_name, host=host1, defaults=defaults)
 
         ##
         # Now shrink the pool to two
@@ -518,11 +518,11 @@ class ModelTestCase(unittest.TestCase):
         product = "fake"
         connection = "localhost"
 
-        (hv1, _) = models.HV.objects.get_or_create(connection=connection,
-                                                   product=product)
+        (host1, _) = models.Host.objects.get_or_create(connection=connection,
+                                                       product=product)
         defaults = {"resource_max": 3, "template_name": "fake.template"}
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=self.profile_name, hv=hv1, defaults=defaults)
+            name=self.profile_name, host=host1, defaults=defaults)
 
         ##
         # Now expand to 12
@@ -546,14 +546,14 @@ class ModelTestCase(unittest.TestCase):
 
         ##
         # Create three resources.
-        (hv1, _) = models.HV.objects.get_or_create(connection=connection,
-                                                   product=product)
+        (host1, _) = models.Host.objects.get_or_create(connection=connection,
+                                                       product=product)
         defaults = {
             "resource_max": resource_max,
             "template_name": "test.template"
         }
         (profile1, _) = models.Profile.objects.update_or_create(
-            name=self.profile_name, hv=hv1, defaults=defaults)
+            name=self.profile_name, host=host1, defaults=defaults)
 
         args = ModelTestCase.fake_args()
         # Run the main so that the state-machine runs to build the three

@@ -30,8 +30,8 @@ from testpooldb import models
 def _profile_get(connection, product, profile):
     """ Return the profile given the parameters. """
 
-    hv1 = models.HV.objects.get(connection=connection, product=product)
-    return models.Profile.objects.get(name=profile, hv=hv1)
+    host1 = models.Host.objects.get(connection=connection, product=product)
+    return models.Profile.objects.get(name=profile, host=host1)
 
 
 def _do_resource_incr(args):
@@ -74,7 +74,7 @@ def _do_resource_detail(args):
                                        name=args.name)
 
     exts = ext.api_ext_list()
-    pool = exts[rsrc.profile.hv.product].pool_get(rsrc.profile)
+    pool = exts[rsrc.profile.host.product].pool_get(rsrc.profile)
 
     print "Name: %s" % args.name
     ip_address = pool.ip_get(args.name)
@@ -105,16 +105,16 @@ def _do_resource_contain(args):
     for pattern in args.patterns:
         rsrcs = rsrcs.filter(
             Q(name__contains=pattern) |
-            Q(profile__hv__connection__contains=pattern) |
-            Q(profile__hv__product__contains=pattern) |
+            Q(profile__host__connection__contains=pattern) |
+            Q(profile__host__product__contains=pattern) |
             Q(profile__name__contains=pattern)).order_by("name")
 
     print fmt % ("Profile", "Connection", "Name", "Status", "IP",
                  "Reserved Time")
     for rsrc in rsrcs:
-        print fmt % (rsrc.profile.name, rsrc.profile.hv.connection, rsrc.name,
-                     models.Resource.status_to_str(rsrc.status), rsrc.ip_addr,
-                     rsrc.action_time)
+        print fmt % (rsrc.profile.name, rsrc.profile.host.connection,
+                     rsrc.name, models.Resource.status_to_str(rsrc.status),
+                     rsrc.ip_addr, rsrc.action_time)
 
     return 0
 

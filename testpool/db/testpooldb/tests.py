@@ -23,7 +23,7 @@ from django.test import TestCase
 from .models import Profile
 from .models import Key
 from .models import KVP
-from .models import HV
+from .models import Host
 from .models import Resource
 from .models import ResourceKVP
 
@@ -39,9 +39,9 @@ class Testsuite(TestCase):
         kvps = (KVP.objects.create(key=key1, value="value1"),
                 KVP.objects.create(key=key2, value="value2"))
 
-        hv1 = HV.objects.create(connection="localhost")
+        host1 = Host.objects.create(connection="localhost")
 
-        profile1 = Profile.objects.create(name="profile1", hv=hv1,
+        profile1 = Profile.objects.create(name="profile1", host=host1,
                                           resource_max=3,
                                           template_name="template.ubuntu1404")
         for kvp in kvps:
@@ -53,10 +53,10 @@ class Testsuite(TestCase):
     def test_vm(self):
         """ Generate several resource instances. """
 
-        hv1 = HV.objects.create(connection="localhost")
-        self.assertTrue(hv1)
+        host1 = Host.objects.create(connection="localhost")
+        self.assertTrue(host1)
 
-        profile1 = Profile.objects.create(name="profile1", hv=hv1,
+        profile1 = Profile.objects.create(name="profile1", host=host1,
                                           resource_max=3,
                                           template_name="template.ubuntu1404",
                                           expiration=10*60*60*10000000)
@@ -71,10 +71,10 @@ class Testsuite(TestCase):
     def test_vm_attr(self):
         """ Test adding attribute to a resource. """
 
-        hv1 = HV.objects.create(connection="localhost")
-        self.assertTrue(hv1)
+        host1 = Host.objects.create(connection="localhost")
+        self.assertTrue(host1)
 
-        profile1 = Profile.objects.create(name="profile1", hv=hv1,
+        profile1 = Profile.objects.create(name="profile1", host=host1,
                                           resource_max=3,
                                           template_name="template.ubuntu1404",
                                           expiration=10*60*60*10000000)
@@ -90,9 +90,9 @@ class Testsuite(TestCase):
     def test_exception(self):
         """ Test storing an exception in a profile. """
 
-        hv1 = HV.objects.create(connection="localhost")
-        self.assertTrue(hv1)
-        profile1 = Profile.objects.create(name="profile1", hv=hv1,
+        host1 = Host.objects.create(connection="localhost")
+        self.assertTrue(host1)
+        profile1 = Profile.objects.create(name="profile1", host=host1,
                                           resource_max=3,
                                           template_name="template.ubuntu1404",
                                           expiration=10*60*60)

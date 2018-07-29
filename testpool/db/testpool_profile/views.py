@@ -38,7 +38,7 @@ class ProfileStats(object):
         # The ID is needed for the JSON view.
         self.id = profile.id
         #
-        self.connection = profile.hv.connection
+        self.connection = profile.host.connection
         self.name = profile.name
         self.resource_max = profile.resource_max
         self.vm_ready = 0
