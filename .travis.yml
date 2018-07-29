@@ -8,5 +8,7 @@ install:
   - pip install -qr requirements.txt
   - pip install -qr requirements.dev
 script:
-  - make pylint pycodestyle
+  - ./bin/tpl-db makemigrations
+  - ./bin/tpl-db migrate
+  - make check
   - make deb.build
