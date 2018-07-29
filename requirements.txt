@@ -1,7 +1,7 @@
 docker==3.4.1
 docker-pycreds==0.3.0
 requests>=2.19.1
-pytz>=2015.7
+pytz>=2018.5
 Django==1.11.13
 djangorestframework>=3.8.2
 django-pure-pagination==0.3.0
