@@ -11,3 +11,4 @@ ipaddr>=2.1.11
 structlog>=16.1.0
 pyyaml
 easydict
+pyenchant==2.0.0
