@@ -3,7 +3,8 @@ python:
   - "2.7"
 install:
   - sudo -H pip install --upgrade pip
-  - sudo -H pip install -qr requirements.txt -qr requirements.dev
+  - sudo -H pip install -qr requirements.txt
+  - sudo -H pip install -qr requirements.dev
 script:
   - make pylint pycodestyle
   - make deb.build
