@@ -1,19 +1,19 @@
 language: python
 python:
-- '2.7'
+  - '2.7'
 before_install:
-- sudo -H apt-get update -qq
-- sudo -H cat requirements.system | sudo xargs apt-get -y install
+  - sudo -H apt-get update -qq
+  - sudo -H cat requirements.system | sudo xargs apt-get -y install
 install:
-- pip install -qr requirements.txt
-- pip install -qr requirements.dev
+  - pip install -qr requirements.txt
+  - pip install -qr requirements.dev
 script:
-- "./bin/tpl-db makemigrations"
-- "./bin/tpl-db migrate"
-- make check
-- make deb.build
+  - "./bin/tpl-db makemigrations"
+  - "./bin/tpl-db migrate"
+  - make check
+  - make deb.build
 deploy:
-  provider: release
+  provider: releases
   skip_cleanup: true
   file: 'deb_dist/*.deb'
   on:
