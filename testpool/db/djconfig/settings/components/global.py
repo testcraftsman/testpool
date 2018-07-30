@@ -13,7 +13,7 @@ sqllite_path = os.path.join("/var", "tmp", 'testpooldb.sqlite3')
 if os.path.exists(CONF):
     DEFAULT_PORT = "8000"
     logging.debug("loading %s" % CONF)
-    #DEBUG = False
+    #  DEBUG = False
     DEBUG = True
     DATABASES["global"] = {
         'ENGINE': 'django.db.backends.sqlite3',
