@@ -28,7 +28,7 @@ import requests
 import conftest
 
 
-TEST_URL = "http://%(hostname)s:8000/testpool/api/" % conftest.GLOBAL
+TEST_URL = "http://%(hostname)s:8000/testpool/api/v1/" % conftest.GLOBAL
 
 
 def acquire_get(url):

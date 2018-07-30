@@ -21,7 +21,7 @@ class Rest(object):
     """ Example calling REST interface. """
 
     def __init__(self, hostname):
-        fmt = "http://%s:8000/testpool/api/"
+        fmt = "http://%s:8000/testpool/api/v1/"
         self.url = fmt % hostname
 
     def profile_add(self, product, name, template_name, resource_max):

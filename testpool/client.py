@@ -125,7 +125,7 @@ class ResourceHndl(object):
 
         ##
         # This should be a config.
-        url = "http://%s:8000/testpool/api/" % self.ip_addr
+        url = "http://%s:8000/testpool/api/v1/" % self.ip_addr
         return url + "profile/%s/%s" % (action, self.profile_name)
 
     def detail_get(self):
