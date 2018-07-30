@@ -46,14 +46,14 @@ class ProfileStats(object):
         self.vm_pending = 0
         self.vm_bad = 0
 
-        for item in models.Host.objects.filter(profile=profile):
-            if item.status == models.Host.RESERVED:
+        for item in models.Resource.objects.filter(profile=profile):
+            if item.status == models.Resource.RESERVED:
                 self.vm_reserved += 1
-            elif item.status == models.Host.PENDING:
+            elif item.status == models.Resource.PENDING:
                 self.vm_pending += 1
-            elif item.status == models.Host.READY:
+            elif item.status == models.Resource.READY:
                 self.vm_ready += 1
-            elif item.status == models.Host.BAD:
+            elif item.status == models.Resource.BAD:
                 self.vm_bad += 1
 
 
