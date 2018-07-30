@@ -17,11 +17,6 @@ VERSION = testpool.version.PACKAGE_VERSION
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
     README = readme.read()
 
-FPATH = os.path.join(os.path.dirname(__file__), 'requirements.txt')
-
-with open(FPATH) as hdl:
-    REQUIREMENTS = hdl.read()
-
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
@@ -49,7 +44,8 @@ SETUP_ARGS = {
     "version": VERSION,
     "packages": find_packages(),
     "include_package_data": True,
-    "scripts": ["bin/tpl", "bin/tpl-daemon", "bin/tpl-db", "bin/tplcfgcheck", "examples/tpl-demo"],
+    "scripts": ["bin/tpl", "bin/tpl-daemon", "bin/tpl-db", "bin/tplcfgcheck",
+                "examples/tpl-demo"],
     "license": 'GPLv3',
     "description": 'Manage and recycle pools of VMs.',
     "long_description": README,
@@ -59,7 +55,6 @@ SETUP_ARGS = {
     "maintainer_email": AUTHOR_EMAIL,
     "author": AUTHOR,
     "author_email": AUTHOR_EMAIL,
-    #"install_requires": REQUIREMENTS,
     "data_files": [
         ("testpool/db/templates/", ["testpool/db/templates/base.html"]),
         ("/var/log/testpool/", []),
