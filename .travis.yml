@@ -17,6 +17,7 @@ deploy:
   skip_cleanup: true
   file: 'deb_dist/*.deb'
   on:
-    tags
+    all_branches: true
+    tags: true
   api_key:
     secure: e6AAUXpsO+U+5KRscUnTwDmLFOF/n1vzCv1nhcA3WUWdGwddpTpmqOGiNRC8mPEX3aJpI/wjcdTRFeRSB1MfbKNprzuBa5D6OhawMUIOc4o2cCQrK8Aua4Ue8RVWQXRR6kx3owgY4NfXpuMNZ9maL0PtZVuWSQTZLRiMVFNNWy1K+Ux6vcQlIJGrbrqspmHbRkUoQM1SmoKH2x4kFfbjpJ2V5OHkHKgaPr/j+9sTUZdyxTCVKMmjDzY51p92Q7jk5TtWFDyEqhXMv3M4ktHGllovE56o5R1/8K0/IrpIbgFb3eRmodg8krqxa3vXRw3s51wxpUd7g8fGPHRwaGc3TNg9JpHOnUy4swg+4pq2eXusewVJkp8jdEtGMVRvtuHdixpNIAWRpnvtsynd2eDSHlxfmeYOOnbAF9/dOLFFgBu/9tf0a+xxd1fMskiD4Mg3ceHgfrXLVTZrhkH2GtRyaAq0n7vJlkVsVjDqaKooLu/FdWwPSSIM+sMT5AtYdVxK2lSYpCIte4G3XFhojTjpeSRayMv/cQ88Vp9eYZR8WzESURuufUgX9egCAIyiTxopmUfY7ek9k8+3bRF85zuxHBtQ44alVuTULjpY6LdOiGCqbcw/29AXgW6YRWWnD6MawO7Ic5h5/sbAyXGJGoaYyYWEkFfOtHxUd8V443FuiuM=
