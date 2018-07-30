@@ -46,14 +46,14 @@ class ProfileStats(object):
         self.vm_pending = 0
         self.vm_bad = 0
 
-        for item in models.VM.objects.filter(profile=profile):
-            if item.status == models.VM.RESERVED:
+        for item in models.Host.objects.filter(profile=profile):
+            if item.status == models.Host.RESERVED:
                 self.vm_reserved += 1
-            elif item.status == models.VM.PENDING:
+            elif item.status == models.Host.PENDING:
                 self.vm_pending += 1
-            elif item.status == models.VM.READY:
+            elif item.status == models.Host.READY:
                 self.vm_ready += 1
-            elif item.status == models.VM.BAD:
+            elif item.status == models.Host.BAD:
                 self.vm_bad += 1
 
 
@@ -74,7 +74,7 @@ def detail(_, profile):
     LOGGER.debug("profile/detail/%s", profile)
 
     profile1 = models.Profile.objects.get(name=profile)
-    vms = [item for item in models.VM.objects.filter(profile=profile1)]
+    vms = [item for item in models.Host.objects.filter(profile=profile1)]
     html_data = {
         "vms": vms,
         "profile": profile1

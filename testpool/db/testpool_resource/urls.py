@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
 """
-URLS for VM content.
+URLS for Host content.
 """
 from django.conf.urls import url
 from . import api

@@ -3,10 +3,12 @@ include README
 include README.md
 include CHANGES.rst
 include requirements.txt
+recursive-include examples *.py
 recursive-include testpool *.py
 recursive-include bin *.py
 recursive-include scripts *.service
-recursive-include testpool/db/static
+recursive-include testpool/db/static *.css *.js *.text
+recursive-include testpool/db *.html
 recursive-include etc *.json
 recursive-include etc *.yml
 include bin/tpl
