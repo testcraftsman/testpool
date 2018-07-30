@@ -15,6 +15,56 @@ using fake resources. The second uses KVM on an actual hypervisors.
 Simulation Demonstration 
 ------------------------
 
+Installation
+------------
+
+We'll install Testpool from Debian.
+
+  #. Install several required packages::
+
+       sudo apt-get install -y apt-file libvirt0 virtinst pm-utils
+       sudo apt-get install -y libvirt-bin libvirt-dev qemu-system debhelper
+       sudo apt-get install -y python-yaml python-pip python-all enchant
+       sudo apt-get install -y fakeroot dh-python
+       sudo apt-file update
+       sudo pip install -qr requirements.txt
+       sudo pip install -q docker==3.4.1 docker-pycreds==0.3.0 requests>=2.19.1
+       sudo pip install -q pytz>=2018.5 Django==1.11.13
+       sudo pip install -q djangorestframework>=3.8.2
+       sudo pip install -q django-pure-pagination==0.3.0
+       sudo pip install -q django-split-settings==0.3.0
+       sudo pip install -q libvirt-python==4.0 ipaddr>=2.1.11 structlog>=16.1.0
+       sudo pip install -q pyyaml easydict pyenchant==2.0.0 pybuild==0.2.6
+
+  #. Download Testpool from github release page::
+   
+    Check for the latest release, below is an example:
+
+    https://github.com/testcraftsman/testpool/releases/download/v0.1.2/python-testpool_0.1.3-1_all.deb
+    sudo dpkg -i python-testpool_0.1.3-1_all.deb
+
+  #. Check testpool services are running:
+
+       systemctl status tpl-daemon
+       systemctl status tpl-db
+
+  #. Run the Testpool demo that ships with the product
+
+       tpl-demo -v 
+
+     The demo creates several fake profiles, then periodically 
+     acquires a resource then releases it. After 60 seconds, all 
+     resources are released for 1 minute. The dashboard shows the
+     status of the various resources:
+   
+       http://127.0.0.1:8000/testpool/view/dashboard
+
+A Short Tour
+------------
+
+In order for Testpool to manage VMs, Hypervisor information is registered
+with Testpool along with a VM template.
+
 
 KVM Hypervisor Demonstration
 ----------------------------
