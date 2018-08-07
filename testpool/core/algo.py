@@ -69,12 +69,13 @@ def adapt(pool, profile):
     if current == profile.resource_max:
         return changes
     elif current > profile.resource_max:
+        delta = pool.timing_get(testpool.core.api.Pool.TIMING_REQUEST_DESTROY)
         ##
         # Too many resources we need to remove one.
         how_many = current - profile.resource_max
         for rsrc in profile.resource_set.reverse():
             if rsrc.status in [models.Resource.READY, models.Resource.PENDING]:
-                rsrc.transition(models.Resource.PENDING, ACTION_DESTROY, 1)
+                rsrc.transition(models.Resource.PENDING, ACTION_DESTROY, delta)
                 how_many -= 1
 
             if how_many <= 0:
@@ -106,7 +107,9 @@ def adapt(pool, profile):
                 # not exist. Clone this.
                 logging.debug("%s expanding pool resource with %s ",
                               profile.name, name)
-                rsrc.transition(models.Resource.PENDING, ACTION_CLONE, 1)
+                key = testpool.core.api.Pool.TIMING_REQUEST_CLONE
+                delta = pool.timing_get(key)
+                rsrc.transition(models.Resource.PENDING, ACTION_CLONE, delta)
                 changes += 1
                 missing -= 1
             else:
@@ -115,7 +118,9 @@ def adapt(pool, profile):
                 ##
                 # Need to destroy the resource because we do not know its
                 # real state.
-                rsrc.transition(models.Resource.PENDING, ACTION_DESTROY, 1)
+                key = testpool.core.api.Pool.TIMING_REQUEST_DESTROY
+                delta = pool.timing_get(key)
+                rsrc.transition(models.Resource.PENDING, ACTION_DESTROY, delta)
                 ##
                 changes += 1
                 missing -= 1
@@ -135,10 +140,12 @@ def clone(pool, rsrc):
     if state != testpool.core.api.Pool.STATE_RUNNING:
         logging.error("%s resource clone %s failed", rsrc.profile.name,
                       rsrc.name)
-        rsrc.transition(models.Resource.BAD, ACTION_DESTROY, 1)
+        delta = pool.timing_get(testpool.core.api.Pool.TIMING_REQUEST_DESTROY)
+        rsrc.transition(models.Resource.BAD, ACTION_DESTROY, delta)
     else:
         logging.debug("%s resource cloned %s", rsrc.profile.name, rsrc.name)
-        rsrc.transition(models.Resource.PENDING, ACTION_ATTR, 1)
+        delta = pool.timing_get(testpool.core.api.Pool.TIMING_REQUEST_ATTR)
+        rsrc.transition(models.Resource.PENDING, ACTION_ATTR, delta)
 
 
 def attr(pool, rsrc):
@@ -210,7 +217,8 @@ def resource_clone(pool, rsrc):
 
     pool.clone(rsrc.profile.template_name, rsrc.name)
     pool.start(rsrc.name)
-    rsrc.transition(models.Resource.PENDING, ACTION_ATTR, 1)
+    delta = pool.timing_get(testpool.core.api.Pool.TIMING_REQUEST_ATTR)
+    rsrc.transition(models.Resource.PENDING, ACTION_ATTR, delta)
 
 
 def resource_destroy(pool, rsrc):
@@ -265,13 +273,14 @@ def profile_remove(name, immediate):
     profile.resource_max = 0
     profile.save()
 
-    delta = 0
+    next_delta = 0
     for rsrc in profile.resource_set.all():
         if immediate:
             rsrc.delete()
         else:
-            rsrc.transition(models.Resource.RESERVED, ACTION_DESTROY, delta)
-            delta += 60
+            rsrc.transition(models.Resource.RESERVED, ACTION_DESTROY,
+                            next_delta)
+            next_delta += 60
 
     if immediate:
         profile.delete()

@@ -190,11 +190,11 @@ class Resource(models.Model):
     def transition(self, status, action, action_time_delta):
         """ Transition Resource through states. """
 
-        LOGGER.info("%s: transition %s to %s in %d (sec)", self.name,
+        LOGGER.info("%s: transition %s to %s in %f (sec)", self.name,
                     Resource.status_to_str(status), action, action_time_delta)
         self.status = status
         self.action = action
-        delta = datetime.timedelta(seconds=action_time_delta+1)
+        delta = datetime.timedelta(seconds=action_time_delta)
         self.action_time = datetime.datetime.now() + delta
         self.save()
 

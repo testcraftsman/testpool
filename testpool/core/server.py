@@ -316,7 +316,8 @@ def action_attr(exts, rsrc):
     if rsrc.ip_addr:
         LOGGER.info("%s: resource %s ip %s", rsrc.profile.name, rsrc.name,
                     rsrc.ip_addr)
-        rsrc.transition(models.Resource.READY, algo.ACTION_NONE, 1)
+        delta = pool.timing_get(api.Pool.TIMING_REQUEST_NONE)
+        rsrc.transition(models.Resource.READY, algo.ACTION_NONE, delta)
         algo.adapt(pool, rsrc.profile)
     else:
         LOGGER.info("%s: resource %s waiting for ip addr", rsrc.profile.name,

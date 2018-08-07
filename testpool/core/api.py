@@ -39,6 +39,9 @@ class Pool(object):
     """ Pool API. """
 
     TIMING_REQUEST_DESTROY = "timing.request.destroy"
+    TIMING_REQUEST_ATTR = "timing.request.attr"
+    TIMING_REQUEST_CLONE = "timing.request.clone"
+    TIMING_REQUEST_NONE = "timing.request.none"
 
     STATE_RUNNING = 1
     """ The resource is running. """

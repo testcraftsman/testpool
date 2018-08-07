@@ -96,10 +96,17 @@ class Pool(testpool.core.api.Pool):
 
     def timing_get(self, request):
         """ Return algorithm timing based on the request.
+
         :return time (sec) Return the amount of time to wait in seconds. """
 
         if request == testpool.core.api.Pool.TIMING_REQUEST_DESTROY:
-            return 1
+            return 0.25
+        elif request == testpool.core.api.Pool.TIMING_REQUEST_ATTR:
+            return 0.25
+        elif request == testpool.core.api.Pool.TIMING_REQUEST_CLONE:
+            return 0.25
+        elif request == testpool.core.api.Pool.TIMING_REQUEST_NONE:
+            return 0.25
         else:
             raise ValueError("unknown timing request %s" % request)
 
