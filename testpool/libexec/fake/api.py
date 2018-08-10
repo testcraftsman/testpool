@@ -12,7 +12,7 @@ import testpool.core.api
 __STORE_PATH__ = "/tmp/testpool/fake"
 
 
-def db_vm_read(context):
+def db_read(context):
     """ Read the current database of resources. """
 
     store_path = os.path.join(__STORE_PATH__, context)
@@ -53,7 +53,7 @@ def db_ctx(context):
     except OSError:
         pass
     ##
-    rsrcs = db_vm_read(context)
+    rsrcs = db_read(context)
 
     yield rsrcs
 
@@ -160,7 +160,7 @@ class Pool(testpool.core.api.Pool):
 
         logging.debug("fake list")
 
-        result = list(db_vm_read(self.context))
+        result = list(db_read(self.context))
 
         result = [item for item in result if self.is_clone(profile1, item)]
 
