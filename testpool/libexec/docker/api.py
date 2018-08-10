@@ -155,7 +155,7 @@ class Pool(testpool.core.api.Pool):
         return {}
 
     def is_clone(self, profile1, name):
-        """ Return True if vm1 is a clone of profile1 template. """
+        """ Return True if resource is a clone of profile1 template. """
 
         return (name.startswith(profile1.template_name) and
                 name != profile1.template_name)

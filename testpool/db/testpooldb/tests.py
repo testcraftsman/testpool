@@ -50,7 +50,7 @@ class Testsuite(TestCase):
         self.assertEqual(profile1.kvp_value_get("key1"), "value1")
         self.assertEqual(profile1.kvp_value_get("key2"), "value2")
 
-    def test_vm(self):
+    def test_resource(self):
         """ Generate several resource instances. """
 
         host1 = Host.objects.create(connection="localhost")
@@ -63,12 +63,12 @@ class Testsuite(TestCase):
         self.assertTrue(profile1)
 
         for item in range(3):
-            vm1 = Resource.objects.create(profile=profile1,
-                                          name="template.ubuntu1404.%d" % item,
-                                          status=Resource.PENDING)
-            self.assertTrue(vm1)
+            name = "template.ubuntu1404.%d" % item
+            rsrc1 = Resource.objects.create(profile=profile1, name=name,
+                                            status=Resource.PENDING)
+            self.assertTrue(rsrc1)
 
-    def test_vm_attr(self):
+    def test_rsrc_attr(self):
         """ Test adding attribute to a resource. """
 
         host1 = Host.objects.create(connection="localhost")
@@ -80,12 +80,12 @@ class Testsuite(TestCase):
                                           expiration=10*60*60*10000000)
         self.assertTrue(profile1)
 
-        vm1 = Resource.objects.create(profile=profile1,
-                                      name="template.ubuntu1404.0",
-                                      status=Resource.PENDING)
-        self.assertTrue(vm1)
+        rsrc = Resource.objects.create(profile=profile1,
+                                       name="template.ubuntu1404.0",
+                                       status=Resource.PENDING)
+        self.assertTrue(rsrc1)
         (kvp, _) = KVP.get_or_create("key1", "value1")
-        ResourceKVP.objects.create(vm=vm1, kvp=kvp)
+        ResourceKVP.objects.create(vm=rsrc, kvp=kvp)
 
     def test_exception(self):
         """ Test storing an exception in a profile. """

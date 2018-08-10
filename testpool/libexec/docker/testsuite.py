@@ -66,8 +66,8 @@ class Testsuite(unittest.TestCase):
 
         try:
             profile1 = models.Profile.objects.get(name=TEST_PROFILE)
-            for vm1 in models.Resource.objects.filter(profile=profile1):
-                vm1.delete()
+            for rsrc1 in models.Resource.objects.filter(profile=profile1):
+                rsrc1.delete()
             profile1.delete()
         except models.Profile.DoesNotExist:
             pass

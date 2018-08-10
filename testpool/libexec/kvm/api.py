@@ -72,7 +72,7 @@ def get_clone_diskfile(design):
             LOGGER.warning("disk size limit exceeded")
 
 
-def vm_state_to_str(dom):
+def _vm_state_to_str(dom):
     """ Return string form of state. """
 
     states = {
@@ -172,7 +172,7 @@ class Pool(testpool.core.api.Pool):
             return testpool.core.api.Pool.STATE_NONE
 
         LOGGER.debug("%s resource_destroy resource state %s", name,
-                     vm_state_to_str(vm_hndl))
+                     _vm_state_to_str(vm_hndl))
         vm_xml = vm_hndl.XMLDesc()
 
         root = ElementTree.fromstring(vm_xml)
