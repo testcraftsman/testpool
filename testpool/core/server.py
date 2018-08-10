@@ -122,7 +122,7 @@ def argparser():
     parser.add_argument('--count', type=int, default=FOREVER,
                         help="The numnber events to process and then quit."
                         "Used for debugging.")
-    parser.add_argument('--max-sleep-time', type=int, default=60,
+    parser.add_argument('--max-sleep-time', type=int, default=10,
                         help="Maximum time between checking for changes.")
     parser.add_argument('--min-sleep-time', type=int, default=1,
                         help="Minimum time between checking for changes.")
@@ -413,25 +413,44 @@ def main(args):
         if mode_test_stop(args):
             return 0
 
+        ##
+        # Retrieve resources. For action items that are ready run the
+        # required action.
         current = datetime.datetime.now()
-        rsrc = models.Resource.objects.exclude(
-            status=models.Resource.READY).order_by("action_time").first()
+        rsrcs = models.Resource.objects.exclude(status=models.Resource.READY)
+        rsrcs = rsrcs.order_by("action_time")
 
-        if not rsrc:
+        if not rsrcs:
             LOGGER.info("testpool no actions sleeping %s (seconds)",
                         args.max_sleep_time)
             time.sleep(args.max_sleep_time)
-        elif rsrc.action_time < current or args.max_sleep_time == 0:
-            LOGGER.info("testpool actions fired")
-            exceptions.try_catch(coding.Curry(action_resource, rsrc))
-        else:
+            continue
+
+        ##
+        # Check the first action. If its not ready to fire then all
+        # actions are not ready to fire. Calculate the amount of time
+        # to sleep but take into consideration the minimum and maximum
+        # sleep times as well.
+        #
+        # The maximum amount of sleep time should be reasonable so that
+        # changes to the database will be detected in a reasonable amount
+        # of time.
+        rsrc = rsrcs.first()
+        if rsrc.action_time > current and args.max_sleep_time != 0:
             action_delay = abs(rsrc.action_time - current).seconds
 
             sleep_time = min(args.max_sleep_time, action_delay)
             sleep_time = max(args.min_sleep_time, sleep_time)
-
             LOGGER.info("testpool sleeping %s (seconds)", sleep_time)
             time.sleep(sleep_time)
+            continue
+
+        LOGGER.info("testpool actions fired")
+        for rsrc in rsrcs:
+            if rsrc.action_time < current or args.max_sleep_time == 0:
+                exceptions.try_catch(coding.Curry(action_resource, rsrc))
+            else:
+                break
 
         if count != FOREVER:
             count -= 1
