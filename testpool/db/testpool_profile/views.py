@@ -41,20 +41,20 @@ class ProfileStats(object):
         self.connection = profile.host.connection
         self.name = profile.name
         self.resource_max = profile.resource_max
-        self.vm_ready = 0
-        self.vm_reserved = 0
-        self.vm_pending = 0
-        self.vm_bad = 0
+        self.rsrc_ready = 0
+        self.rsrc_reserved = 0
+        self.rsrc_pending = 0
+        self.rsrc_bad = 0
 
         for item in models.Resource.objects.filter(profile=profile):
             if item.status == models.Resource.RESERVED:
-                self.vm_reserved += 1
+                self.rsrc_reserved += 1
             elif item.status == models.Resource.PENDING:
-                self.vm_pending += 1
+                self.rsrc_pending += 1
             elif item.status == models.Resource.READY:
-                self.vm_ready += 1
+                self.rsrc_ready += 1
             elif item.status == models.Resource.BAD:
-                self.vm_bad += 1
+                self.rsrc_bad += 1
 
 
 def profile_list(_):
@@ -74,9 +74,9 @@ def detail(_, profile):
     LOGGER.debug("profile/detail/%s", profile)
 
     profile1 = models.Profile.objects.get(name=profile)
-    vms = [item for item in models.Host.objects.filter(profile=profile1)]
+    rsrcs = [item for item in models.Host.objects.filter(profile=profile1)]
     html_data = {
-        "vms": vms,
+        "rsrcs": rsrcs,
         "profile": profile1
     }
 

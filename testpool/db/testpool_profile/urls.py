@@ -22,7 +22,7 @@ from . import api
 
 # pylint: disable=C0103
 urlpatterns = [
-    url(r'api/v1/profile/release/(?P<vm_id>[\d]+$)', api.profile_release),
+    url(r'api/v1/profile/release/(?P<rsrc_id>[\d]+$)', api.profile_release),
     url(r'api/v1/profile/acquire/(?P<profile_name>[\.\w]+$)',
         api.profile_acquire),
     url(r'api/v1/profile/detail/(?P<profile_name>[\.\w]+$)',

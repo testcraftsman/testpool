@@ -108,15 +108,15 @@ def profile_acquire(request, profile_name):
         LOGGER.info("profile_acquire found %s", profile_name)
 
         try:
-            vms = profile.resource_set.filter(status=Resource.READY)
+            rsrcs = profile.resource_set.filter(status=Resource.READY)
 
-            if vms.count() == 0:
+            if rsrcs.count() == 0:
                 msg = "profile_acquire %s all resources taken" % profile_name
                 LOGGER.info(msg)
                 return JsonResponse({"msg": msg}, status=403)
             ##
             # Pick the first resource.
-            vm1 = vms[0]
+            rsrc = rsrcs[0]
             ##
         except Resource.DoesNotExist:
             msg = "profile %s empty" % profile_name
@@ -124,13 +124,13 @@ def profile_acquire(request, profile_name):
             return JsonResponse({"msg": msg}, status=403)
 
         ##
-        # assert vm1 defined.
-        vm1.transition(Resource.RESERVED, Resource.ACTION_DESTROY,
-                       expiration_seconds)
+        # assert resource defined.
+        rsrc.transition(Resource.RESERVED, Resource.ACTION_DESTROY,
+                        expiration_seconds)
 
         ##
-        LOGGER.info("profile %s resource acquired %s", profile_name, vm1.name)
-        serializer = ResourceSerializer(vm1)
+        LOGGER.info("profile %s resource acquired %s", profile_name, rsrc.name)
+        serializer = ResourceSerializer(rsrc)
         return JSONResponse(serializer.data)
         ##
     else:
@@ -140,27 +140,27 @@ def profile_acquire(request, profile_name):
 
 
 @csrf_exempt
-def profile_release(request, vm_id):
+def profile_release(request, rsrc_id):
     """ Release Resource. """
 
-    LOGGER.info("testpool_profile.api.profile_release %s", vm_id)
+    LOGGER.info("testpool_profile.api.profile_release %s", rsrc_id)
 
     if request.method == 'GET':
         try:
-            vm1 = Resource.objects.get(id=vm_id)
+            rsrc = Resource.objects.get(id=rsrc_id)
         except Resource.DoesNotExist:
-            msg = "profile for %s not found" % vm_id
+            msg = "profile for %s not found" % rsrc_id
             logging.error(msg)
             return JsonResponse({"msg": msg}, status=403)
 
-        if vm1.status != Resource.RESERVED:
-            raise PermissionDenied("Resource %s is not reserved" % vm_id)
+        if rsrc.status != Resource.RESERVED:
+            raise PermissionDenied("Resource %s is not reserved" % rsrc_id)
 
         ##
-        # assert vm1 defined.
-        vm1.transition(Resource.PENDING, Resource.ACTION_DESTROY, 1)
+        # assert rsrc defined.
+        rsrc.transition(Resource.PENDING, Resource.ACTION_DESTROY, 1)
         ##
-        content = {"detail": "Resource %s released" % vm_id}
+        content = {"detail": "Resource %s released" % rsrc_id}
 
         return JSONResponse(content)
     else:

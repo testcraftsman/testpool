@@ -11,7 +11,7 @@
  </tr><tr>
   <th>Status</th><td>{{ profile.status_str }}</td>
  </tr><tr>
-  <th>Hosts</th><td>{{profile.vm_set.count}}/{{ profile.resource_max}}</td>
+  <th>Hosts</th><td>{{profile.resource_set.count}}/{{ profile.resource_max}}</td>
  </tr>
 </table>
 
@@ -27,11 +27,11 @@
  <tr>
   <th>Name</th><th>IP Addr</th><th>Status</th>
  </tr>
- {% for vm in vms %}
+ {% for rsrc in rsrcs %}
   <tr>
-   <td>{{ vm.name }}</td>
-   <td>{{ vm.ip_addr }}</td>
-   <td>{{ vm.status_as_str }}</td>
+   <td>{{ rsrc.name }}</td>
+   <td>{{ rsrc.ip_addr }}</td>
+   <td>{{ rsrc.status_as_str }}</td>
   </tr>
  {% endfor %}
 </table>
