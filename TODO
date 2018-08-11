@@ -1,6 +1,6 @@
 -Generate a release on all tools.
+-Profile add docker if missing template then fail.
 -Jenkins support
--Setup CI build
 -Look at tox
 -Figure out best way to connect to KVM, ssh password is cumbersome.
  -Catch exception in setup to mark profile as bad
@@ -10,9 +10,7 @@
 -Handle when a profile maps to the same template.
 -Check to see what happens when tpl-daemon starts but profile bogus
 -Show actions in web pages and CLI
--Create a style for the web pages
 -Look at Graphana
--add requirements to setup.py
 -tpl-db figure out auto setup
 -DEBUG=False when testpool is installed
 -Change JSON output to named tuple

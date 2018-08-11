@@ -3,8 +3,10 @@
 A demo exercising testpool behavior. Read the quick start guide in
 order to configure Testpool server and then come back to this script.
 
-As this demo is running, use virt-manager and browse to testpool server
-to see changes. Check the dashboard to see the status of the various
+This demo supports both the fake and docker products. Fake is a good
+tool for seeing behavior and development without having to setup additional
+tools. The docker product requires install docker locally in order to
+see the demo in action. Check the dashboard to see the status of the various
 pool of resources at:
 
   http://127.0.0.1:8000/testpool/view/dashboard
@@ -20,17 +22,23 @@ import requests
 class Rest(object):
     """ Example calling REST interface. """
 
+    # pylint: disable=too-many-arguments
+
     def __init__(self, hostname):
         fmt = "http://%s:8000/testpool/api/v1/"
         self.url = fmt % hostname
 
-    def profile_add(self, product, name, template_name, resource_max):
+    def profile_add(self, name, connection, product, template_name,
+                    resource_max):
         """ Add a profile. """
+
         params = {
+            "connection": connection,
+            "product": product,
             "resource_max": resource_max,
             "template_name": template_name
         }
-        url = self.url + "profile/add/%s/%s" % (product, name)
+        url = self.url + "profile/add/%s" % name
         rtc = requests.post(url, params=params)
         rtc.raise_for_status()
         return rtc
@@ -54,24 +62,37 @@ class Rest(object):
         return requests.get(url)
 
 
-PROFILE_NAMES = ["ubuntu16.04", "centos7.0", "vmware", "ESX6.5"]
+FAKE_PROFILE_NAMES = ["ubuntu16.04", "centos7.0", "vmware", "ESX6.5"]
+DOCKER_PROFILE_NAMES = ["nginx"]
 
 
 def add_profiles(rest, args):
     """ Create all of the profiles. """
 
-    resource_maxes = [10, 40, 100, 50]
-
-    for (name, resource_max) in zip(PROFILE_NAMES, resource_maxes):
-        template_name = "template_name.%s" % name
-        logging.info("adding profile %s", name)
-        rest.profile_add(args.product, name, template_name, resource_max)
+    if args.product == "fake":
+        resource_maxes = [10, 40, 100, 50]
+        for (name, resource_max) in zip(FAKE_PROFILE_NAMES, resource_maxes):
+            template_name = "template_name.%s" % name
+            logging.info("adding profile %s", name)
+            rest.profile_add(name, "localhost", args.product, template_name,
+                             resource_max)
+        return FAKE_PROFILE_NAMES
+    elif args.product == "docker":
+        resource_maxes = [10]
+        template_name = "nginx:latest"
+        for (name, resource_max) in zip(DOCKER_PROFILE_NAMES, resource_maxes):
+            logging.info("adding profile %s", name)
+            rest.profile_add(name, "localhost", args.product, template_name,
+                             resource_max)
+        return DOCKER_PROFILE_NAMES
+    else:
+        raise ValueError("unsupported product %s" % args.product)
 
 
 def remove_profiles(rest):
     """ Create all of the profiles. """
 
-    for name in PROFILE_NAMES:
+    for name in FAKE_PROFILE_NAMES + DOCKER_PROFILE_NAMES:
         try:
             logging.info("remove profile %s", name)
             rest.profile_remove(name, immediate=True)
@@ -119,7 +140,9 @@ def do_start(args):
     acquired_resources = []
 
     remove_profiles(rest)
-    add_profiles(rest, args)
+    if args.cleanup:
+        return 0
+    profile_names = add_profiles(rest, args)
     count = 0
 
     state = State()
@@ -129,7 +152,7 @@ def do_start(args):
         if value == State.ACTIVE:
             logging.info("acquire and releasing resources")
             action = random.choice(actions)
-            profile = random.choice(PROFILE_NAMES)
+            profile = random.choice(profile_names)
             if action == "acquire":
                 logging.info("acquire %s", profile)
                 resp = rest.acquire(profile)
@@ -180,6 +203,8 @@ def argparser(progname):
                             help="Location of the testpool daemon")
     arg_parser.add_argument('--product', default="fake",
                             help="Product used for the demo")
+    arg_parser.add_argument('--cleanup', default=False, action="store_true",
+                            help="Remove all demo profiles")
     return arg_parser
 
 

@@ -58,13 +58,13 @@ class Pool(testpool.core.api.Pool):
         """ Return algorithm timing based on the request. """
 
         if request == testpool.core.api.Pool.TIMING_REQUEST_DESTROY:
-            return 60
+            return 10
         elif request == testpool.core.api.Pool.TIMING_REQUEST_ATTR:
-            return 1
+            return 5
         elif request == testpool.core.api.Pool.TIMING_REQUEST_CLONE:
-            return 30
+            return 20
         elif request == testpool.core.api.Pool.TIMING_REQUEST_NONE:
-            return 1
+            return 30
         else:
             raise ValueError("unknown timing request %s" % request)
 

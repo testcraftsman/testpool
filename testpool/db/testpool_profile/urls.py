@@ -30,6 +30,8 @@ urlpatterns = [
     url(r'api/v1/profile/list', api.profile_list),
     url(r'api/v1/profile/remove/(?P<profile_name>[\.\w]+$)',
         api.profile_remove),
+    url(r'api/v1/profile/add/(?P<profile_name>[\.\w]+$)',
+        api.profile_add),
     url(r"view/profile/detail/(?P<profile>.+)", views.detail),
     url(r"view/profiles", views.profile_list),
     url(r"view/dashboard", views.dashboard),

@@ -192,3 +192,59 @@ def profile_remove(request, profile_name):
         msg = "profile_release method %s unsupported" % request.method
         logging.error(msg)
         return JsonResponse({"msg": msg}, status=405)
+
+
+@csrf_exempt
+def profile_add(request, profile_name):
+    """ Add a profile .  """
+
+    print "MARK: 1"
+
+    LOGGER.info("testpool_profile.api.profile_add %s", profile_name)
+
+    if request.method != 'POST':
+        msg = "profile_add method %s unsupported" % request.method
+        logging.error(msg)
+        return JsonResponse({"msg": msg}, status=405)
+
+    if "resource_max" not in request.GET:
+        msg = "profile_add requires resource_max"
+        return JsonResponse({"msg": msg}, status=404)
+
+    if "template_name" not in request.GET:
+        msg = "profile_add requires template_name"
+        return JsonResponse({"msg": msg}, status=404)
+
+    print "MARK: 2"
+
+    if "connection" not in request.GET:
+        msg = "profile_add requires connection"
+        return JsonResponse({"msg": msg}, status=404)
+    print "MARK: 3"
+
+    if "product" not in request.GET:
+        msg = "profile_add requires product"
+        return JsonResponse({"msg": msg}, status=404)
+
+    print "MARK: 4"
+
+    resource_max = request.GET["resource_max"]
+    template_name = request.GET["template_name"]
+    connection = request.GET["connection"]
+    product = request.GET["product"]
+
+    try:
+        resource_max = int(resource_max)
+        profile1 = testpool.core.algo.profile_add(connection, product,
+                                                  profile_name, resource_max,
+                                                  template_name)
+        serializer = ProfileSerializer(profile1)
+
+        return JSONResponse(serializer.data)
+    except Profile.DoesNotExist, arg:
+        msg = "profile %s not found" % profile_name
+        logging.error(msg)
+        return JsonResponse({"msg": msg}, status=403)
+    except Exception, arg:
+        logging.error(arg)
+        return JsonResponse({"msg": arg}, status=500)

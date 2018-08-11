@@ -42,7 +42,7 @@ LOGGER = logging.getLogger("django.testpool")
 def profile_add(request, name):
     """ Create a profile .  """
 
-    LOGGER.info("testpool_fake.api.profile_add %s", name)
+    LOGGER.info("testpool_docker.api.profile_add %s", name)
 
     if request.method != 'POST':
         msg = "profile_add method %s unsupported" % request.method
@@ -62,7 +62,7 @@ def profile_add(request, name):
 
     try:
         resource_max = int(resource_max)
-        profile1 = testpool.core.algo.profile_add("localhost", "fake", name,
+        profile1 = testpool.core.algo.profile_add("localhost", "docker", name,
                                                   resource_max, template_name)
         serializer = ProfileSerializer(profile1)
 

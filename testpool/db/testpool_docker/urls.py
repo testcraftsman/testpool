@@ -21,5 +21,5 @@ from . import api
 
 # pylint: disable=C0103
 urlpatterns = [
-    url(r'api/v1/profile/add/fake/(?P<name>.+)', api.profile_add),
+    url(r'api/v1/profile/add/docker/(?P<name>.+)', api.profile_add),
 ]

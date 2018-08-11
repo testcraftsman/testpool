@@ -417,6 +417,7 @@ def main(args):
         # Retrieve resources. For action items that are ready run the
         # required action.
         current = datetime.datetime.now()
+        LOGGER.info("checking actions %s", current)
         rsrcs = models.Resource.objects.exclude(status=models.Resource.READY)
         rsrcs = rsrcs.order_by("action_time")
 
