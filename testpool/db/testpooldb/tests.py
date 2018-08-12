@@ -20,7 +20,7 @@
 import sys
 
 from django.test import TestCase
-from .models import Profile
+from .models import Pool
 from .models import Key
 from .models import KVP
 from .models import Host
@@ -31,8 +31,8 @@ from .models import ResourceKVP
 class Testsuite(TestCase):
     """ Test model output. """
 
-    def test_profile(self):
-        """ test_profile. """
+    def test_pool(self):
+        """ test_pool. """
 
         key1 = Key.objects.create(value="key1")
         key2 = Key.objects.create(value="key2")
@@ -41,14 +41,13 @@ class Testsuite(TestCase):
 
         host1 = Host.objects.create(connection="localhost")
 
-        profile1 = Profile.objects.create(name="profile1", host=host1,
-                                          resource_max=3,
-                                          template_name="template.ubuntu1404")
+        pool1 = Pool.objects.create(name="pool1", host=host1, resource_max=3,
+                                    template_name="template.ubuntu1404")
         for kvp in kvps:
-            profile1.kvp_get_or_create(kvp)
+            pool1.kvp_get_or_create(kvp)
 
-        self.assertEqual(profile1.kvp_value_get("key1"), "value1")
-        self.assertEqual(profile1.kvp_value_get("key2"), "value2")
+        self.assertEqual(pool1.kvp_value_get("key1"), "value1")
+        self.assertEqual(pool1.kvp_value_get("key2"), "value2")
 
     def test_resource(self):
         """ Generate several resource instances. """
@@ -56,15 +55,14 @@ class Testsuite(TestCase):
         host1 = Host.objects.create(connection="localhost")
         self.assertTrue(host1)
 
-        profile1 = Profile.objects.create(name="profile1", host=host1,
-                                          resource_max=3,
-                                          template_name="template.ubuntu1404",
-                                          expiration=10*60*60*10000000)
-        self.assertTrue(profile1)
+        pool1 = Pool.objects.create(name="pool1", host=host1, resource_max=3,
+                                    template_name="template.ubuntu1404",
+                                    expiration=10*60*60*10000000)
+        self.assertTrue(pool1)
 
         for item in range(3):
             name = "template.ubuntu1404.%d" % item
-            rsrc1 = Resource.objects.create(profile=profile1, name=name,
+            rsrc1 = Resource.objects.create(pool=pool1, name=name,
                                             status=Resource.PENDING)
             self.assertTrue(rsrc1)
 
@@ -74,13 +72,12 @@ class Testsuite(TestCase):
         host1 = Host.objects.create(connection="localhost")
         self.assertTrue(host1)
 
-        profile1 = Profile.objects.create(name="profile1", host=host1,
-                                          resource_max=3,
-                                          template_name="template.ubuntu1404",
-                                          expiration=10*60*60*10000000)
-        self.assertTrue(profile1)
+        pool1 = Pool.objects.create(name="pool1", host=host1, resource_max=3,
+                                    template_name="template.ubuntu1404",
+                                    expiration=10*60*60*10000000)
+        self.assertTrue(pool1)
 
-        rsrc = Resource.objects.create(profile=profile1,
+        rsrc = Resource.objects.create(pool=pool1,
                                        name="template.ubuntu1404.0",
                                        status=Resource.PENDING)
         self.assertTrue(rsrc1)
@@ -88,21 +85,20 @@ class Testsuite(TestCase):
         ResourceKVP.objects.create(vm=rsrc, kvp=kvp)
 
     def test_exception(self):
-        """ Test storing an exception in a profile. """
+        """ Test storing an exception in a pool. """
 
         host1 = Host.objects.create(connection="localhost")
         self.assertTrue(host1)
-        profile1 = Profile.objects.create(name="profile1", host=host1,
-                                          resource_max=3,
-                                          template_name="template.ubuntu1404",
-                                          expiration=10*60*60)
-        self.assertTrue(profile1)
+        pool1 = Pool.objects.create(name="pool1", host=host1, resource_max=3,
+                                    template_name="template.ubuntu1404",
+                                    expiration=10*60*60)
+        self.assertTrue(pool1)
 
         try:
             1/0
         except ZeroDivisionError, arg:
             stack_trace = sys.exc_info()[2]
-            profile1.stacktrace_set(str(arg), stack_trace)
+            pool1.stacktrace_set(str(arg), stack_trace)
 
-        levels = profile1.traceback_set.order_by("level")
+        levels = pool1.traceback_set.order_by("level")
         self.assertTrue(len(levels), 1)

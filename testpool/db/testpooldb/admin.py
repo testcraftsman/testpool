@@ -43,10 +43,10 @@ class ResourceAdmin(admin.ModelAdmin):
     model = models.Resource
 
 
-class ProfileAdmin(admin.ModelAdmin):
+class PoolAdmin(admin.ModelAdmin):
     """ Show set of keys that associate a testsuite. """
 
-    model = models.Profile
+    model = models.Pool
 
 
 class HostAdmin(admin.ModelAdmin):
@@ -58,5 +58,5 @@ class HostAdmin(admin.ModelAdmin):
 admin.site.register(models.Key, KeyAdmin)
 admin.site.register(models.KVP, KVPAdmin)
 admin.site.register(models.Resource, ResourceAdmin)
-admin.site.register(models.Profile, ProfileAdmin)
+admin.site.register(models.Pool, PoolAdmin)
 admin.site.register(models.Host, HostAdmin)

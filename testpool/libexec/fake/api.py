@@ -89,7 +89,7 @@ class Pool(testpool.core.api.Pool):
         testpool.core.api.Pool.__init__(self, context)
 
     def new_name_get(self, template_name, index):
-        """ Given a profile, generate a new name. """
+        """ Given a pool, generate a new name. """
 
         name = template_name + ".%d" % index
         return name
@@ -155,14 +155,14 @@ class Pool(testpool.core.api.Pool):
                 return testpool.core.api.Pool.STATE_RUNNING
             return testpool.core.api.Pool.STATE_NONE
 
-    def list(self, profile1):
+    def list(self, pool1):
         """ Start resource. """
 
         logging.debug("fake list")
 
         result = list(db_read(self.context))
 
-        result = [item for item in result if self.is_clone(profile1, item)]
+        result = [item for item in result if self.is_clone(pool1, item)]
 
         return result
 
@@ -186,23 +186,23 @@ class Pool(testpool.core.api.Pool):
 
         return {"ip": "127.0.0.1"}
 
-    def is_clone(self, profile1, name):
-        """ Return True if resource is a clone of profile1 template. """
+    def is_clone(self, pool1, name):
+        """ Return True if resource is a clone of pool1 template. """
 
-        return (name.startswith(profile1.template_name) and
-                name != profile1.template_name)
+        return (name.startswith(pool1.template_name) and
+                name != pool1.template_name)
 
     def info_get(self):
-        """ Return information about the hypervisor profile. """
+        """ Return information about the hypervisor pool. """
 
         ret_value = HostInfo()
         return ret_value
 
 
-def pool_get(profile1):
+def pool_get(pool1):
     """ Return a handle to the KVM API. """
 
-    context = "%s/%s" % (profile1.host.connection, profile1.name)
+    context = "%s/%s" % (pool1.host.connection, pool1.name)
     return Pool(context)
 
 

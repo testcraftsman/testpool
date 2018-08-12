@@ -49,7 +49,7 @@ class Pool(testpool.core.api.Pool):
         self.conn.ping()
 
     def new_name_get(self, template_name, index):
-        """ Given a profile and index, return a new container name. """
+        """ Given a pool and index, return a new container name. """
 
         base_name = template_name.split(":")[0]
         return base_name + ".%d" % index
@@ -136,10 +136,10 @@ class Pool(testpool.core.api.Pool):
         except KeyError:
             return None
 
-    def list(self, profile1):
+    def list(self, pool1):
         """ Return the list of resources. """
 
-        filters = {"ancestor":  profile1.template_name}
+        filters = {"ancestor":  pool1.template_name}
         cntnrs = self.conn.containers.list(filters=filters)
         return [item.name for item in cntnrs]
 
@@ -154,14 +154,14 @@ class Pool(testpool.core.api.Pool):
 
         return {}
 
-    def is_clone(self, profile1, name):
-        """ Return True if resource is a clone of profile1 template. """
+    def is_clone(self, pool1, name):
+        """ Return True if resource is a clone of pool1 template. """
 
-        return (name.startswith(profile1.template_name) and
-                name != profile1.template_name)
+        return (name.startswith(pool1.template_name) and
+                name != pool1.template_name)
 
     def info_get(self):
-        """ Return information about the hypervisor profile. """
+        """ Return information about the hypervisor pool. """
 
         host_info = self.conn.getInfo()
 
@@ -169,10 +169,10 @@ class Pool(testpool.core.api.Pool):
         return ret_value
 
 
-def pool_get(profile):
+def pool_get(pool):
     """ Return a handle to the KVM API. """
     try:
-        return Pool(profile.host.connection, profile.name)
+        return Pool(pool.host.connection, pool.name)
     except libvirt.libvirtError, arg:
         # LOGGER.exception(arg)
-        raise exceptions.ProfileError(str(arg), profile)
+        raise exceptions.PoolError(str(arg), pool)

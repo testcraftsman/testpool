@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
 """
-Fake profiles used for development.
+Fake pools used for development.
 
-This profile pretends to manage a pool of Resources which are merely pretend
+This pool pretends to manage a pool of Resources which are merely pretend
 ResourceS which do not exist.
 """
 import logging
@@ -27,20 +27,20 @@ from testpool.core import ext
 from testpooldb import models
 
 
-def _profile_get(connection, product, profile):
-    """ Return the profile given the parameters. """
+def _pool_get(connection, product, pool):
+    """ Return the pool given the parameters. """
 
     host1 = models.Host.objects.get(connection=connection, product=product)
-    return models.Profile.objects.get(name=profile, host=host1)
+    return models.Pool.objects.get(name=pool, host=host1)
 
 
 def _do_resource_incr(args):
     """ Increment or decrement the number of Resources. """
 
-    logging.info("%s: incrementing mx Resources %d", args.profile, args.count)
-    profile1 = models.Profile.objects.get(name=args.profile)
-    profile1.resource_max += args.count
-    profile1.save()
+    logging.info("%s: incrementing mx Resources %d", args.pool, args.count)
+    pool1 = models.Pool.objects.get(name=args.pool)
+    pool1.resource_max += args.count
+    pool1.save()
 
     return 0
 
@@ -48,9 +48,9 @@ def _do_resource_incr(args):
 def _do_resource_release(args):
     """ Release Resource. """
 
-    logging.info("release %s %s", args.profile, args.name)
+    logging.info("release %s %s", args.pool, args.name)
     rsrc = models.Resource.objects.get(name=args.name,
-                                       profile__name=args.profile)
+                                       pool__name=args.pool)
     rsrc.transition(models.Resource.PENDING, algo.ACTION_DESTROY, 0)
     rsrc.save()
     return 0
@@ -59,9 +59,9 @@ def _do_resource_release(args):
 def _do_resource_reserve(args):
     """ Reserve Resource. """
 
-    logging.info("reserve %s %s", args.profile, args.name)
+    logging.info("reserve %s %s", args.pool, args.name)
     rsrc = models.Resource.objects.get(name=args.name,
-                                       profile__name=args.profile)
+                                       pool__name=args.pool)
     rsrc.status = models.Resource.RESERVED
     rsrc.save()
     return 0
@@ -70,11 +70,11 @@ def _do_resource_reserve(args):
 def _do_resource_detail(args):
     """ Resource Detail content. """
 
-    rsrc = models.Resource.objects.get(profile__name=args.profile,
+    rsrc = models.Resource.objects.get(pool__name=args.pool,
                                        name=args.name)
 
     exts = ext.api_ext_list()
-    pool = exts[rsrc.profile.host.product].pool_get(rsrc.profile)
+    pool = exts[rsrc.pool.host.product].pool_get(rsrc.pool)
 
     print "Name: %s" % args.name
     ip_address = pool.ip_get(args.name)
@@ -86,8 +86,8 @@ def _do_resource_list(args):
 
     fmt = "%-25s %-8s %-16s %s"
 
-    logging.info("%s: list resources", args.profile)
-    rsrcs = models.Resource.objects.filter(profile__name=args.profile)
+    logging.info("%s: list resources", args.pool)
+    rsrcs = models.Resource.objects.filter(pool__name=args.pool)
 
     print fmt % ("Name", "Status", "IP", "Reserved Time")
     for rsrc in rsrcs:
@@ -105,14 +105,14 @@ def _do_resource_contain(args):
     for pattern in args.patterns:
         rsrcs = rsrcs.filter(
             Q(name__contains=pattern) |
-            Q(profile__host__connection__contains=pattern) |
-            Q(profile__host__product__contains=pattern) |
-            Q(profile__name__contains=pattern)).order_by("name")
+            Q(pool__host__connection__contains=pattern) |
+            Q(pool__host__product__contains=pattern) |
+            Q(pool__name__contains=pattern)).order_by("name")
 
-    print fmt % ("Profile", "Connection", "Name", "Status", "IP",
+    print fmt % ("Pool", "Connection", "Name", "Status", "IP",
                  "Reserved Time")
     for rsrc in rsrcs:
-        print fmt % (rsrc.profile.name, rsrc.profile.host.connection,
+        print fmt % (rsrc.pool.name, rsrc.pool.host.connection,
                      rsrc.name, models.Resource.status_to_str(rsrc.status),
                      rsrc.ip_addr, rsrc.action_time)
 
@@ -133,7 +133,7 @@ def add_subparser(subparser):
                                    description=_do_resource_incr.__doc__,
                                    help="Increment the number of Resources")
     parser.set_defaults(func=_do_resource_incr)
-    parser.add_argument("profile", type=str, help="The profile name to clone.")
+    parser.add_argument("pool", type=str, help="The pool name to clone.")
     parser.add_argument("--count", type=int, default=1,
                         help="Increment/decrement the maximum number "
                         "of resources.")
@@ -142,14 +142,14 @@ def add_subparser(subparser):
     parser = rootparser.add_parser("release",
                                    description=_do_resource_incr.__doc__,
                                    help="Release Resource to be reclaimed.")
-    parser.add_argument("profile", type=str, help="The profile name to clone.")
+    parser.add_argument("pool", type=str, help="The pool name to clone.")
     parser.add_argument("name", type=str, help="The Resource name.")
     parser.set_defaults(func=_do_resource_release)
 
     parser = rootparser.add_parser("reserve",
                                    description=_do_resource_incr.__doc__,
                                    help="Reserve Resource.")
-    parser.add_argument("profile", type=str, help="Profile name.")
+    parser.add_argument("pool", type=str, help="Pool name.")
     parser.add_argument("name", type=str, help="The Resource name.")
     parser.set_defaults(func=_do_resource_reserve)
 
@@ -158,8 +158,8 @@ def add_subparser(subparser):
     parser = rootparser.add_parser("list",
                                    description=_do_resource_list.__doc__,
                                    help="List resources that contain pattern")
-    parser.add_argument("profile", type=str,
-                        help="list Resources that for profile")
+    parser.add_argument("pool", type=str,
+                        help="list Resources that for pool")
     parser.set_defaults(func=_do_resource_list)
     ##
 
@@ -179,7 +179,7 @@ def add_subparser(subparser):
     parser = rootparser.add_parser("detail",
                                    description=_do_resource_detail.__doc__,
                                    help="Show Resource details")
-    parser.add_argument("profile", type=str, help="Profile name")
+    parser.add_argument("pool", type=str, help="Pool name")
     parser.add_argument("name", type=str, help="Resource name")
     parser.set_defaults(func=_do_resource_detail)
     ##

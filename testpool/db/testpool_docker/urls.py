@@ -14,12 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
-""" URLS profiles. """
+""" URLS pools. """
 
 from django.conf.urls import url
 from . import api
 
 # pylint: disable=C0103
 urlpatterns = [
-    url(r'api/v1/profile/add/docker/(?P<name>.+)', api.profile_add),
+    url(r'api/v1/pool/add/docker/(?P<name>.+)', api.pool_add),
 ]

@@ -1,10 +1,10 @@
 [
   {
-    "_id": "testpool-profile-status",
+    "_id": "testpool-pool-status",
     "_type": "visualization",
     "_source": {
-      "title": "testpool-profile-status",
-      "visState": "{\"title\":\"testpool-profile-status\",\"type\":\"timelion\",\"params\":{\"expression\":\".es(index=testpool-beat-*, split=\\\"profile:100\\\", metric=\\\"max:resource_count\\\").label(regex='.*profile:(.*) .*',label='$1').title(\\\"Testpool Avaliable VMs per Profile\\\")\",\"interval\":\"auto\"},\"aggs\":[],\"listeners\":{}}",
+      "title": "testpool-pool-status",
+      "visState": "{\"title\":\"testpool-pool-status\",\"type\":\"timelion\",\"params\":{\"expression\":\".es(index=testpool-beat-*, split=\\\"pool:100\\\", metric=\\\"max:resource_count\\\").label(regex='.*pool:(.*) .*',label='$1').title(\\\"Testpool Avaliable VMs per Pool\\\")\",\"interval\":\"auto\"},\"aggs\":[],\"listeners\":{}}",
       "uiStateJSON": "{}",
       "description": "",
       "version": 1,

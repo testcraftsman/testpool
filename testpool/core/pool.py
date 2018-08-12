@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
 """
-Fake profiles used for development.
+Fake pools used for development.
 
-This profile pretends to manage a pool of Resources which are merely pretend
+This pool pretends to manage a pool of Resources which are merely pretend
 ResourceS which do not exist.
 """
 import logging
@@ -28,31 +28,31 @@ from testpooldb import models
 LOGGER = logging.getLogger(__name__)
 
 
-def _do_profile_remove(args):
-    """ Remove a profile.
+def _do_pool_remove(args):
+    """ Remove a pool.
 
-    Profiles can't be removed immediately, Resources are marked for purge
-    and when all Resources are gone the profile will be removed.
+    Pools can't be removed immediately, Resources are marked for purge
+    and when all Resources are gone the pool will be removed.
     """
 
-    LOGGER.debug("profile_remove %s", args.profile)
+    LOGGER.debug("pool_remove %s", args.pool)
     try:
-        testpool.core.algo.profile_remove(args.profile, args.immediate)
+        testpool.core.algo.pool_remove(args.pool, args.immediate)
         return 0
-    except models.Profile.DoesNotExist:
-        LOGGER.warning("profile %s not found", args.profile)
+    except models.Pool.DoesNotExist:
+        LOGGER.warning("pool %s not found", args.pool)
         return 1
 
 
-def _do_profile_add(args):
-    """ Add or modify a profile.
+def _do_pool_add(args):
+    """ Add or modify a pool.
 
-    If the profile exists, calling this again will change the maximum number
+    If the pool exists, calling this again will change the maximum number
     of ResourceS and the template name. The connection parameter supported
     format: account@hypervisor account and connection of the hypervisor.
     """
 
-    LOGGER.info("add a profile %s", args.profile)
+    LOGGER.info("add a pool %s", args.pool)
 
     extensions = testpool.core.ext.list_get()
 
@@ -63,28 +63,28 @@ def _do_profile_add(args):
 
         raise ValueError("product %s not supported" % args.product)
 
-    testpool.core.algo.profile_add(args.connection, args.product,
-                                   args.profile, args.max, args.template)
+    testpool.core.algo.pool_add(args.connection, args.product, args.pool,
+                                args.max, args.template)
     return 0
 
 
-def _do_profile_detail(args):
-    """ show details of a profile. """
+def _do_pool_detail(args):
+    """ show details of a pool. """
 
-    for profile in models.Profile.objects.all():
-        contains = [srch in profile for srch in args.srch]
+    for pool in models.Pool.objects.all():
+        contains = [srch in pool for srch in args.srch]
 
         if all(contains):
-            print "name:     ", profile.name
-            print "template: ", profile.template_name
-            print "status:   ", profile.status_str()
-            print "Resources available: ", profile.resource_available()
-            print "Resources maximum:   ", profile.resource_max
+            print "name:     ", pool.name
+            print "template: ", pool.template_name
+            print "status:   ", pool.status_str()
+            print "Resources available: ", pool.resource_available()
+            print "Resources maximum:   ", pool.resource_max
 
             ##
             # Check to see if the number of Resources should change.
             exts = testpool.core.ext.api_ext_list()
-            pool = exts[profile.host.product].pool_get(profile)
+            pool = exts[pool.host.product].pool_get(pool)
             info = pool.info_get()
 
             print "Model:          " + str(info.model)
@@ -98,38 +98,38 @@ def _do_profile_detail(args):
             ##
 
 
-def _do_profile_list(_):
-    """ List all profiles. """
+def _do_pool_list(_):
+    """ List all pools. """
     fmt = "%-12s %-5s %-32s %-16s %-5s %-5s"
 
-    LOGGER.info("list profiles")
+    LOGGER.info("list pools")
 
     # \todo provide a dynamically adjusting column width
     print fmt % ("Name", "Prod", "Connection", "Template", "Resources",
                  "Status")
-    for profile in models.Profile.objects.all():
-        current = profile.resource_available()
-        print fmt % (profile.name, profile.host.product,
-                     profile.host.connection, profile.template_name,
-                     "%s/%s" % (current, profile.resource_max),
-                     profile.status_str())
+    for pool in models.Pool.objects.all():
+        current = pool.resource_available()
+        print fmt % (pool.name, pool.host.product,
+                     pool.host.connection, pool.template_name,
+                     "%s/%s" % (current, pool.resource_max),
+                     pool.status_str())
     return 0
 
 
 def add_subparser(subparser):
     """ Create testsuite CLI commands. """
 
-    parser = subparser.add_parser("profile",
-                                  help="Commands to manage fake profiles",
+    parser = subparser.add_parser("pool",
+                                  help="Commands to manage fake pools",
                                   description=__doc__)
     rootparser = parser.add_subparsers()
 
     ##
     # Add
-    parser = rootparser.add_parser("add", description=_do_profile_add.__doc__,
-                                   help="Add a profile")
-    parser.set_defaults(func=_do_profile_add)
-    parser.add_argument("profile", type=str, help="Name of the fake profile.")
+    parser = rootparser.add_parser("add", description=_do_pool_add.__doc__,
+                                   help="Add a pool")
+    parser.set_defaults(func=_do_pool_add)
+    parser.add_argument("pool", type=str, help="Name of the fake pool.")
     parser.add_argument("product", type=str, help="The type of product.")
     parser.add_argument("connection", type=str,
                         help="How to connect to the hypervisor. Format "
@@ -142,30 +142,30 @@ def add_subparser(subparser):
     ##
     # List
     parser = rootparser.add_parser("list",
-                                   description=_do_profile_list.__doc__,
-                                   help="List profiles")
-    parser.set_defaults(func=_do_profile_list)
+                                   description=_do_pool_list.__doc__,
+                                   help="List pools")
+    parser.set_defaults(func=_do_pool_list)
     ##
 
     ##
     # Details
     parser = rootparser.add_parser("detail",
-                                   description=_do_profile_detail.__doc__,
-                                   help="Show profile details.")
+                                   description=_do_pool_detail.__doc__,
+                                   help="Show pool details.")
     parser.add_argument("srch", type=str, nargs="*",
-                        help="Show profiles that match the srch.")
-    parser.set_defaults(func=_do_profile_detail)
+                        help="Show pools that match the srch.")
+    parser.set_defaults(func=_do_pool_detail)
     ##
 
     ##
     # Remove
     parser = rootparser.add_parser("remove",
-                                   description=_do_profile_remove.__doc__,
-                                   help="Remove a profile")
-    parser.set_defaults(func=_do_profile_remove)
-    parser.add_argument("profile", type=str, help="Profile name to delete.")
+                                   description=_do_pool_remove.__doc__,
+                                   help="Remove a pool")
+    parser.set_defaults(func=_do_pool_remove)
+    parser.add_argument("pool", type=str, help="Pool name to delete.")
     parser.add_argument("--immediate", action="store_true",
-                        help="Remove profile content from the database."
+                        help="Remove pool content from the database."
                         "Do not wait for Resources to be purged")
     ##
 

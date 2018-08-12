@@ -32,12 +32,11 @@ import pytest
 import testpool.core.database
 import testpool.core.commands
 import testpool.core.server
-import testpool.core.profile
+import testpool.core.pool
 
 ##
-# In order to run the examples against a real hypervisor, change this
-# IP address. These values are identical to the quick start guide on
-# purpose.
+# In order to run the examples against a real hypervisor, change this IP
+# address. These values are identical to the quick start guide on purpose.
 GLOBAL = {"hostname": "127.0.0.1",
           "connection": "qemu:///system",
           "profile": "example",

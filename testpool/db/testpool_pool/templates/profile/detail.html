@@ -2,22 +2,22 @@
 
 {% block content %}
 
-<H1>Profile</H1>
+<H1>Pool</H1>
 <table>
  <tr>
-  <th>Name</th><td>{{ profile.name }}</td>
+  <th>Name</th><td>{{ pool.name }}</td>
  </tr><tr>
-  <th>Template</th><td>{{ profile.template_name}}</td>
+  <th>Template</th><td>{{ pool.template_name}}</td>
  </tr><tr>
-  <th>Status</th><td>{{ profile.status_str }}</td>
+  <th>Status</th><td>{{ pool.status_str }}</td>
  </tr><tr>
-  <th>Hosts</th><td>{{profile.resource_set.count}}/{{ profile.resource_max}}</td>
+  <th>Hosts</th><td>{{pool.resource_set.count}}/{{ pool.resource_max}}</td>
  </tr>
 </table>
 
-{% if profile.traceback_set.all %}
+{% if pool.traceback_set.all %}
 <h1>Bad Status Details</h1>
- {% for level in profile.traceback_set.all %}
+ {% for level in pool.traceback_set.all %}
   <pre>{{ level }}</pre>
  {% endfor %}
 {% endif %}

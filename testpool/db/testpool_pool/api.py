@@ -25,12 +25,12 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import PermissionDenied
-from testpooldb.models import Profile
+from testpooldb.models import Pool
 from testpooldb.models import Resource
-from testpool_profile.views import ProfileStats
-from testpool_profile.serializers import ProfileSerializer
-from testpool_profile.serializers import ProfileStatsSerializer
-from testpool_profile.serializers import ResourceSerializer
+from testpool_pool.views import PoolStats
+from testpool_pool.serializers import PoolSerializer
+from testpool_pool.serializers import PoolStatsSerializer
+from testpool_pool.serializers import ResourceSerializer
 import testpool.core.algo
 
 LOGGER = logging.getLogger("django.testpool")
@@ -47,71 +47,71 @@ class JSONResponse(HttpResponse):
 
 
 @csrf_exempt
-def profile_list(request):
+def pool_list(request):
     """
     List all code snippets, or create a new snippet.
     """
 
-    LOGGER.info("testpool_profile.api.profile_list")
+    LOGGER.info("testpool_pool.api.pool_list")
 
     if request.method == 'GET':
-        profiles = [ProfileStats(item) for item in Profile.objects.all()]
-        serializer = ProfileStatsSerializer(profiles, many=True)
+        pools = [PoolStats(item) for item in Pool.objects.all()]
+        serializer = PoolStatsSerializer(pools, many=True)
         return JSONResponse(serializer.data)
     else:
-        msg = "profile_list method %s unsupported" % request.method
+        msg = "pool_list method %s unsupported" % request.method
         logging.error(msg)
         return JsonResponse({"msg": msg}, status=405)
 
 
 @csrf_exempt
-def profile_detail(request, profile_name):
-    """ Retrieve specific profile.  """
+def pool_detail(request, pool_name):
+    """ Retrieve specific pool.  """
 
-    LOGGER.info("testpool_profile.api.profile_detail")
+    LOGGER.info("testpool_pool.api.pool_detail")
 
     try:
-        profile = Profile.objects.get(name=profile_name)
-    except Profile.DoesNotExist:
-        msg = "profile %s not found" % profile_name
+        pool = Pool.objects.get(name=pool_name)
+    except Pool.DoesNotExist:
+        msg = "pool %s not found" % pool_name
         logging.error(msg)
         return JsonResponse({"msg": msg}, status=404)
 
     if request.method == "GET":
-        serializer = ProfileSerializer(profile)
+        serializer = PoolSerializer(pool)
         return JSONResponse(serializer.data)
     else:
-        msg = "profile_detail method %s unsupported" % request.method
+        msg = "pool_detail method %s unsupported" % request.method
         logging.error(msg)
         return JsonResponse({"msg": msg}, status=405)
 
 
 @csrf_exempt
-def profile_acquire(request, profile_name):
+def pool_acquire(request, pool_name):
     """
     Ac_seconds quire a Resource that is ready.
 
     @param expiration The mount of time in seconds before entry expires.
     """
 
-    LOGGER.info("profile_acquire %s", profile_name)
+    LOGGER.info("pool_acquire %s", pool_name)
     if request.method == 'GET':
         expiration_seconds = request.GET.get("expiration", 10 * 60)
         expiration_seconds = int(expiration_seconds)
         try:
-            profile = Profile.objects.get(name=profile_name)
-        except Profile.DoesNotExist:
-            msg = "profile %s not found" % profile_name
+            pool = Pool.objects.get(name=pool_name)
+        except Pool.DoesNotExist:
+            msg = "pool %s not found" % pool_name
             logging.error(msg)
             return JsonResponse({"msg": msg}, status=403)
 
-        LOGGER.info("profile_acquire found %s", profile_name)
+        LOGGER.info("pool_acquire found %s", pool_name)
 
         try:
-            rsrcs = profile.resource_set.filter(status=Resource.READY)
+            rsrcs = pool.resource_set.filter(status=Resource.READY)
 
             if rsrcs.count() == 0:
-                msg = "profile_acquire %s all resources taken" % profile_name
+                msg = "pool_acquire %s all resources taken" % pool_name
                 LOGGER.info(msg)
                 return JsonResponse({"msg": msg}, status=403)
             ##
@@ -119,7 +119,7 @@ def profile_acquire(request, profile_name):
             rsrc = rsrcs[0]
             ##
         except Resource.DoesNotExist:
-            msg = "profile %s empty" % profile_name
+            msg = "pool %s empty" % pool_name
             LOGGER.error(msg)
             return JsonResponse({"msg": msg}, status=403)
 
@@ -129,27 +129,27 @@ def profile_acquire(request, profile_name):
                         expiration_seconds)
 
         ##
-        LOGGER.info("profile %s resource acquired %s", profile_name, rsrc.name)
+        LOGGER.info("pool %s resource acquired %s", pool_name, rsrc.name)
         serializer = ResourceSerializer(rsrc)
         return JSONResponse(serializer.data)
         ##
     else:
-        msg = "profile_acquire method %s unsupported" % request.method
+        msg = "pool_acquire method %s unsupported" % request.method
         logging.error(msg)
         return JsonResponse({"msg": msg}, status=405)
 
 
 @csrf_exempt
-def profile_release(request, rsrc_id):
+def pool_release(request, rsrc_id):
     """ Release Resource. """
 
-    LOGGER.info("testpool_profile.api.profile_release %s", rsrc_id)
+    LOGGER.info("testpool_pool.api.pool_release %s", rsrc_id)
 
     if request.method == 'GET':
         try:
             rsrc = Resource.objects.get(id=rsrc_id)
         except Resource.DoesNotExist:
-            msg = "profile for %s not found" % rsrc_id
+            msg = "pool for %s not found" % rsrc_id
             logging.error(msg)
             return JsonResponse({"msg": msg}, status=403)
 
@@ -164,69 +164,62 @@ def profile_release(request, rsrc_id):
 
         return JSONResponse(content)
     else:
-        msg = "profile_release method %s unsupported" % request.method
+        msg = "pool_release method %s unsupported" % request.method
         logging.error(msg)
         return JsonResponse({"msg": msg}, status=405)
 
 
 @csrf_exempt
-def profile_remove(request, profile_name):
+def pool_remove(request, pool_name):
     """ Release Resource. """
 
-    LOGGER.info("testpool_profile.api.profile_remove %s", profile_name)
+    LOGGER.info("testpool_pool.api.pool_remove %s", pool_name)
 
     if request.method == 'DELETE':
         immediate = request.GET.get("immediate", False)
         try:
-            testpool.core.algo.profile_remove(profile_name, immediate)
-            content = {"detail": "profile %s removed" % profile_name}
+            testpool.core.algo.pool_remove(pool_name, immediate)
+            content = {"detail": "pool %s removed" % pool_name}
             return JSONResponse(content)
-        except Profile.DoesNotExist:
-            msg = "profile %s not found" % profile_name
+        except Pool.DoesNotExist:
+            msg = "pool %s not found" % pool_name
             logging.error(msg)
             return JsonResponse({"msg": msg}, status=403)
         except Exception as arg:
             logging.error(arg)
             return JsonResponse({"msg": arg}, status=500)
     else:
-        msg = "profile_release method %s unsupported" % request.method
+        msg = "pool_release method %s unsupported" % request.method
         logging.error(msg)
         return JsonResponse({"msg": msg}, status=405)
 
 
 @csrf_exempt
-def profile_add(request, profile_name):
-    """ Add a profile .  """
+def pool_add(request, pool_name):
+    """ Add a pool .  """
 
-    print "MARK: 1"
-
-    LOGGER.info("testpool_profile.api.profile_add %s", profile_name)
+    LOGGER.info("testpool_pool.api.pool_add %s", pool_name)
 
     if request.method != 'POST':
-        msg = "profile_add method %s unsupported" % request.method
+        msg = "pool_add method %s unsupported" % request.method
         logging.error(msg)
         return JsonResponse({"msg": msg}, status=405)
 
     if "resource_max" not in request.GET:
-        msg = "profile_add requires resource_max"
+        msg = "pool_add requires resource_max"
         return JsonResponse({"msg": msg}, status=404)
 
     if "template_name" not in request.GET:
-        msg = "profile_add requires template_name"
+        msg = "pool_add requires template_name"
         return JsonResponse({"msg": msg}, status=404)
-
-    print "MARK: 2"
 
     if "connection" not in request.GET:
-        msg = "profile_add requires connection"
+        msg = "pool_add requires connection"
         return JsonResponse({"msg": msg}, status=404)
-    print "MARK: 3"
 
     if "product" not in request.GET:
-        msg = "profile_add requires product"
+        msg = "pool_add requires product"
         return JsonResponse({"msg": msg}, status=404)
-
-    print "MARK: 4"
 
     resource_max = request.GET["resource_max"]
     template_name = request.GET["template_name"]
@@ -235,14 +228,13 @@ def profile_add(request, profile_name):
 
     try:
         resource_max = int(resource_max)
-        profile1 = testpool.core.algo.profile_add(connection, product,
-                                                  profile_name, resource_max,
-                                                  template_name)
-        serializer = ProfileSerializer(profile1)
+        pool1 = testpool.core.algo.pool_add(connection, product, pool_name,
+                                            resource_max, template_name)
+        serializer = PoolSerializer(pool1)
 
         return JSONResponse(serializer.data)
-    except Profile.DoesNotExist, arg:
-        msg = "profile %s not found" % profile_name
+    except Pool.DoesNotExist, arg:
+        msg = "pool %s not found" % pool_name
         logging.error(msg)
         return JsonResponse({"msg": msg}, status=403)
     except Exception, arg:

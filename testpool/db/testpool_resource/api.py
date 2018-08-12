@@ -25,7 +25,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.http import Http404
 from testpooldb.models import Resource
-from testpool_profile.serializers import ResourceSerializer
+from testpool_pool.serializers import ResourceSerializer
 
 LOGGER = logging.getLogger("django.testpool")
 

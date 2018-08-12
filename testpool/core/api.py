@@ -66,7 +66,7 @@ class Pool(object):
         self.context = context
 
     def new_name_get(self, template_name, index):
-        """ Given a profile, generate a new name. """
+        """ Given a pool, generate a new name. """
 
         raise NotImplementedError(NOT_IMPL % "new_name_get")
 
@@ -90,11 +90,11 @@ class Pool(object):
         """ Return the current name. """
         raise NotImplementedError(NOT_IMPL % "state_get")
 
-    def is_clone(self, profile1, name):
-        """ Return True if resource is a clone for the profile1. """
+    def is_clone(self, pool1, name):
+        """ Return True if resource is a clone for the pool1. """
 
         raise NotImplementedError(NOT_IMPL % "is_clone")
 
-    def list(self, profile1):
-        """ Return the list of resources for the profile1. """
+    def list(self, pool1):
+        """ Return the list of resources for the pool1. """
         raise NotImplementedError(NOT_IMPL % "list")

@@ -46,8 +46,7 @@ class ResourceHndl(object):
 
     As long as the object exists, the resource acquired will be renewed.
     """
-    def __init__(self, ip_addr, profile_name, expiration=60,
-                 blocking=False):
+    def __init__(self, ip_addr, pool_name, expiration=60, blocking=False):
         """ Acquire a resource given the parameters.
 
         @param expiration The time in seconds.
@@ -55,7 +54,7 @@ class ResourceHndl(object):
         """
         # pylint: disable=invalid-name
 
-        self.profile_name = profile_name
+        self.pool_name = pool_name
         self.ip_addr = ip_addr
         self.expiration = expiration
         self.blocking = blocking
@@ -126,7 +125,7 @@ class ResourceHndl(object):
         ##
         # This should be a config.
         url = "http://%s:8000/testpool/api/v1/" % self.ip_addr
-        return url + "profile/%s/%s" % (action, self.profile_name)
+        return url + "pool/%s/%s" % (action, self.pool_name)
 
     def detail_get(self):
         """ Create URL for the given action. """

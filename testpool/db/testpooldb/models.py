@@ -103,7 +103,7 @@ class KVP(models.Model):
 
 
 class ResourceKVP(models.Model):
-    """ Key value pair for profile. """
+    """ Key value pair for pool. """
 
     # pylint: disable=C0103
     resource = models.ForeignKey("Resource")
@@ -130,7 +130,7 @@ class Resource(models.Model):
     RESERVED = 1
     BAD = 0
 
-    profile = models.ForeignKey("Profile")
+    pool = models.ForeignKey("Pool")
     name = models.CharField(max_length=128)
     status = models.IntegerField(default=PENDING)
 
@@ -202,7 +202,7 @@ class Resource(models.Model):
 class Traceback(models.Model):
     """ Holds exception.  """
 
-    profile = models.ForeignKey("Profile", on_delete=models.CASCADE)
+    pool = models.ForeignKey("Pool", on_delete=models.CASCADE)
     level = models.IntegerField(default=0, null=True)
     file_name = models.CharField(max_length=128, null=True)
     lineno = models.IntegerField(default=0, null=True)
@@ -218,15 +218,15 @@ class Traceback(models.Model):
         return self.text
 
 
-class ProfileKVP(models.Model):
-    """ Key value pair for profile. """
+class PoolKVP(models.Model):
+    """ Key value pair for pool. """
 
-    profile = models.ForeignKey("Profile")
+    pool = models.ForeignKey("Pool", default=0, null=True)
     kvp = models.ForeignKey(KVP)
 
     def __str__(self):
         """ User representation. """
-        return "%s %s" % (str(self.profile), str(self.kvp))
+        return "%s %s" % (str(self.pool), str(self.kvp))
 
 
 class Host(models.Model):
@@ -250,7 +250,7 @@ class Host(models.Model):
 
 
 # pylint: disable=C0103
-class Profile(models.Model):
+class Pool(models.Model):
     """ A Testsuite holds a set of tests. """
 
     READY = 1
@@ -259,7 +259,7 @@ class Profile(models.Model):
     name = models.CharField(max_length=128, unique=True)
     host = models.ForeignKey(Host, on_delete=models.CASCADE)
     template_name = models.CharField(max_length=128)
-    kvps = models.ManyToManyField(KVP, through="ProfileKVP")
+    kvps = models.ManyToManyField(KVP, through="PoolKVP")
     resource_max = models.IntegerField(default=1)
     expiration = models.IntegerField(default=10*60)
 
@@ -279,7 +279,7 @@ class Profile(models.Model):
         return self.resource_max - self.resource_available()
 
     def stacktrace_set(self, msg, stack_trace):
-        """ Store the exception received while operating on a profile. """
+        """ Store the exception received while operating on a pool. """
 
         self.save()
 
@@ -311,9 +311,9 @@ class Profile(models.Model):
     def status_str(self):
         """ Return status as a string. """
 
-        if self.status == Profile.READY:
+        if self.status == Pool.READY:
             return "ready"
-        elif self.status == Profile.BAD:
+        elif self.status == Pool.BAD:
             return "bad"
         else:
             raise ValueError("unknown value %d" % self.status)
@@ -321,10 +321,10 @@ class Profile(models.Model):
     def deleteable(self):
         """ Return true if the model should be deleted.
 
-        Profiles can only be deleted if all of the resources have been
+        Pools can only be deleted if all of the resources have been
         deleted. Deleting a resource takes time. Only when maximum number
         is zero and all of the resources have been actualy been deleted will
-        the profile be deleted.
+        the pool be deleted.
         """
 
         return self.resource_max == 0 and self.resource_set.count() == 0
@@ -335,15 +335,15 @@ class Profile(models.Model):
         return str(self.name)
 
     def kvp_get_or_create(self, kvp):
-        """ Add kvp to profile. """
+        """ Add kvp to pool. """
 
-        return self.profilekvp_set.get_or_create(kvp=kvp)
+        return self.poolkvp_set.get_or_create(kvp=kvp)
 
     def kvp_value_get(self, key, default=None):
         """ Return value given key. """
 
         try:
-            kvp = self.profilekvp_set.get(kvp__key__value=key)
+            kvp = self.poolkvp_set.get(kvp__key__value=key)
             return kvp.kvp.value
-        except ProfileKVP.DoesNotExist:
+        except PoolKVP.DoesNotExist:
             return default

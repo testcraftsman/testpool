@@ -3,10 +3,10 @@
 # Changes in this section require restarting the tpl-daemon.
 ##
 tpldaemon:
-    profile:
+    pool:
         ##
         # Control logging content. If path is defined not empty then 
         # periodically status in regards to profile usage will be logged
         # with the given file.
-        # log: "/var/log/testpool/profile.log"
+        # log: "/var/log/testpool/pool.log"
         ##

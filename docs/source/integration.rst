@@ -4,9 +4,9 @@
 Log Stash Support
 *****************
 
-Testpool provides a structured log of profile status that includes the 
-number of available VMs for each profile. This information can be 
-pushed to logstash and visualized with Kibana or Graphana. 
+Testpool provides a structured log of pool status that includes the number of
+available VMs for each pool. This information can be pushed to logstash and
+visualized with Kibana or Graphana. 
 
 The following instructions explain how to enable structured logging and push
 them to Logstash using Filebeat.
@@ -21,7 +21,7 @@ http://www.itzgeek.com/how-tos/linux/ubuntu-how-tos/setup-elk-stack-ubuntu-16-04
 Testpool Configuration
 ======================
 
-Configure testpool to save profile status. Edit the YAML file::
+Configure testpool to save pool status. Edit the YAML file::
 
   /etc/testpool/testpool.yml
 
@@ -29,7 +29,7 @@ Validate changes::
   
   tplcfgcheck /etc/testpool/testpool.yml
 
-Uncomment tpldaemon.profile.log. The default value is **/var/log/testpool/profile.log** and restart testpool daemon::
+Uncomment tpldaemon.pool.log. The default value is **/var/log/testpool/pool.log** and restart testpool daemon::
 
   sudo systemctl restart tpl-daemon
 

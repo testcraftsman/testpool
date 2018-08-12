@@ -1,4 +1,5 @@
 -Generate a release on all tools.
+-Create virtual time for testing.
 -Profile add docker if missing template then fail.
 -Jenkins support
 -Look at tox

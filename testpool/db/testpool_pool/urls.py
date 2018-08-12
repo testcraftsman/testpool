@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
-""" URLS profiles. """
+""" URLS pools. """
 
 from django.conf.urls import url
 from . import views
@@ -22,17 +22,17 @@ from . import api
 
 # pylint: disable=C0103
 urlpatterns = [
-    url(r'api/v1/profile/release/(?P<rsrc_id>[\d]+$)', api.profile_release),
-    url(r'api/v1/profile/acquire/(?P<profile_name>[\.\w]+$)',
-        api.profile_acquire),
-    url(r'api/v1/profile/detail/(?P<profile_name>[\.\w]+$)',
-        api.profile_detail),
-    url(r'api/v1/profile/list', api.profile_list),
-    url(r'api/v1/profile/remove/(?P<profile_name>[\.\w]+$)',
-        api.profile_remove),
-    url(r'api/v1/profile/add/(?P<profile_name>[\.\w]+$)',
-        api.profile_add),
-    url(r"view/profile/detail/(?P<profile>.+)", views.detail),
-    url(r"view/profiles", views.profile_list),
+    url(r'api/v1/pool/release/(?P<rsrc_id>[\d]+$)', api.pool_release),
+    url(r'api/v1/pool/acquire/(?P<pool_name>[\.\w]+$)',
+        api.pool_acquire),
+    url(r'api/v1/pool/detail/(?P<pool_name>[\.\w]+$)',
+        api.pool_detail),
+    url(r'api/v1/pool/list', api.pool_list),
+    url(r'api/v1/pool/remove/(?P<pool_name>[\.\w]+$)',
+        api.pool_remove),
+    url(r'api/v1/pool/add/(?P<pool_name>[\.\w]+$)',
+        api.pool_add),
+    url(r"view/pool/detail/(?P<pool>.+)", views.detail),
+    url(r"view/pools", views.pool_list),
     url(r"view/dashboard", views.dashboard),
 ]

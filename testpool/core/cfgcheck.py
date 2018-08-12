@@ -23,7 +23,7 @@ def is_valid_path(key, value):
 # Dictionary of valid content with functions that validate value.
 VALID = {
     "tpldaemon": {
-        "profile": {
+        "pool": {
             "log": is_valid_path
         }
     }

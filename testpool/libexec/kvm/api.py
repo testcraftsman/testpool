@@ -128,7 +128,7 @@ class Pool(testpool.core.api.Pool):
             raise ValueError("unsupported connection %s" % url_name)
 
     def new_name_get(self, template_name, index):
-        """ Given a profile, generate a new name. """
+        """ Given a pool, generate a new name. """
         name = template_name + ".%d" % index
         return name
 
@@ -263,14 +263,14 @@ class Pool(testpool.core.api.Pool):
             LOGGER.debug("%s: ip address not set", name)
         return None
 
-    def list(self, profile1):
+    def list(self, pool1):
         """ Return the list of resources. """
 
         rtc = []
 
         for item in self.conn.listAllDomains():
             name = item.name()
-            if self.is_clone(profile1, name):
+            if self.is_clone(pool1, name):
                 rtc.append(name)
         return rtc
 
@@ -285,14 +285,14 @@ class Pool(testpool.core.api.Pool):
 
         return {}
 
-    def is_clone(self, profile1, name):
-        """ Return True if vm1 is a clone of profile1 template. """
+    def is_clone(self, pool1, name):
+        """ Return True if vm1 is a clone of pool1 template. """
 
-        return (name.startswith(profile1.template_name) and
-                name != profile1.template_name)
+        return (name.startswith(pool1.template_name) and
+                name != pool1.template_name)
 
     def info_get(self):
-        """ Return information about the hypervisor profile. """
+        """ Return information about the hypervisor pool. """
 
         host_info = self.conn.getInfo()
 
@@ -300,14 +300,14 @@ class Pool(testpool.core.api.Pool):
         return ret_value
 
 
-def pool_get(profile):
+def pool_get(pool):
     """ Return a handle to the KVM API. """
     ##
     # User qemu+ssh://hostname/system list --all
     # or
     # User qemu+tcp://username@hostname/system list --all
     try:
-        return Pool(profile.host.connection, profile.name)
+        return Pool(pool.host.connection, pool.name)
     except libvirt.libvirtError, arg:
         # LOGGER.exception(arg)
-        raise exceptions.ProfileError(str(arg), profile)
+        raise exceptions.PoolError(str(arg), pool)

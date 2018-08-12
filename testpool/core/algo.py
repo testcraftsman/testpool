@@ -50,30 +50,31 @@ def onerror(name):
     traceback.print_tb(trback)
 
 
-def adapt(pool, profile):
-    """ Adapt the pool to the profile size.
+def adapt(pool_api, pool):
+    """ Adapt the pool to the pool size.
 
     @return Returns the number of changes. Positive number indicates the
             number of resources created.
     """
-    logging.debug("%s: adapt started", profile.name)
+    logging.debug("%s: adapt started", pool.name)
 
     changes = 0
 
     ##
     # Check the database for the list of existing and pending virtual
     # items.
-    current = profile.resource_set.count()
+    current = pool.resource_set.count()
 
     ##
-    if current == profile.resource_max:
+    if current == pool.resource_max:
         return changes
-    elif current > profile.resource_max:
-        delta = pool.timing_get(testpool.core.api.Pool.TIMING_REQUEST_DESTROY)
+    elif current > pool.resource_max:
+        key = testpool.core.api.Pool.TIMING_REQUEST_DESTROY
+        delta = pool_api.timing_get(key)
         ##
         # Too many resources we need to remove one.
-        how_many = current - profile.resource_max
-        for rsrc in profile.resource_set.reverse():
+        how_many = current - pool.resource_max
+        for rsrc in pool.resource_set.reverse():
             if rsrc.status in [models.Resource.READY, models.Resource.PENDING]:
                 rsrc.transition(models.Resource.PENDING, ACTION_DESTROY, delta)
                 how_many -= 1
@@ -81,23 +82,23 @@ def adapt(pool, profile):
             if how_many <= 0:
                 break
     else:
-        missing = profile.resource_max - current
-        logging.debug("%s: adapt too few make %d more", profile.name, missing)
+        missing = pool.resource_max - current
+        logging.debug("%s: adapt too few make %d more", pool.name, missing)
         ##
         # There are not enough resources. Try to reuse the range of
         # names from 0 to resource_max. Start at 0 and walk up the range
         # looking for free slots.
-        for count in range(profile.resource_max):
-            name = pool.new_name_get(profile.template_name, count)
+        for count in range(pool.resource_max):
+            name = pool_api.new_name_get(pool.template_name, count)
             logging.info("%s checking", name)
-            (rsrc, action) = models.Resource.objects.get_or_create(
-                profile=profile, name=name)
+            (rsrc, action) = models.Resource.objects.get_or_create(pool=pool,
+                                                                   name=name)
 
             if not action:
                 # This is an existing resource. Keep looking
                 continue
 
-            state = pool.state_get(name)
+            state = pool_api.state_get(name)
             logging.debug("%s status %s", name, state)
 
             # If action is true then the database entry was just created.
@@ -105,21 +106,21 @@ def adapt(pool, profile):
             if state == testpool.core.api.Pool.STATE_NONE:
                 # This is a new database entry and the resource does
                 # not exist. Clone this.
-                logging.debug("%s expanding pool resource with %s ",
-                              profile.name, name)
+                logging.debug("%s expanding pool resource with %s ", pool.name,
+                              name)
                 key = testpool.core.api.Pool.TIMING_REQUEST_CLONE
-                delta = pool.timing_get(key)
+                delta = pool_api.timing_get(key)
                 rsrc.transition(models.Resource.PENDING, ACTION_CLONE, delta)
                 changes += 1
                 missing -= 1
             else:
                 logging.warning("%s: lost track of resource %s reclaiming",
-                                profile.name, rsrc.name)
+                                pool.name, rsrc.name)
                 ##
                 # Need to destroy the resource because we do not know its
                 # real state.
                 key = testpool.core.api.Pool.TIMING_REQUEST_DESTROY
-                delta = pool.timing_get(key)
+                delta = pool_api.timing_get(key)
                 rsrc.transition(models.Resource.PENDING, ACTION_DESTROY, delta)
                 ##
                 changes += 1
@@ -130,63 +131,64 @@ def adapt(pool, profile):
     return changes
 
 
-def clone(pool, rsrc):
+def clone(pool_api, rsrc):
     """ Clone a resource. """
 
-    pool.clone(rsrc.profile.template_name, rsrc.name)
-    state = pool.start(rsrc.name)
-    logging.debug("%s resource clone state %s", rsrc.profile.name, state)
+    pool_api.clone(rsrc.pool.template_name, rsrc.name)
+    state = pool_api.start(rsrc.name)
+    logging.debug("%s resource clone state %s", rsrc.pool.name, state)
 
     if state != testpool.core.api.Pool.STATE_RUNNING:
-        logging.error("%s resource clone %s failed", rsrc.profile.name,
+        logging.error("%s resource clone %s failed", rsrc.pool.name,
                       rsrc.name)
-        delta = pool.timing_get(testpool.core.api.Pool.TIMING_REQUEST_DESTROY)
+        key = testpool.core.api.Pool.TIMING_REQUEST_DESTROY
+        delta = pool_api.timing_get(key)
         rsrc.transition(models.Resource.BAD, ACTION_DESTROY, delta)
     else:
-        logging.debug("%s resource cloned %s", rsrc.profile.name, rsrc.name)
-        delta = pool.timing_get(testpool.core.api.Pool.TIMING_REQUEST_ATTR)
+        logging.debug("%s resource cloned %s", rsrc.pool.name, rsrc.name)
+        delta = pool_api.timing_get(testpool.core.api.Pool.TIMING_REQUEST_ATTR)
         rsrc.transition(models.Resource.PENDING, ACTION_ATTR, delta)
 
 
-def attr(pool, rsrc):
+def attr(pool_api, rsrc):
     """ Retrieve resource attributes. """
 
-    rsrc.ip_addr = pool.ip_get(rsrc.name)
-    for (key, value) in pool.resource_attr_get(rsrc.name).iteritems():
+    rsrc.ip_addr = pool_api.ip_get(rsrc.name)
+    for (key, value) in pool_api.resource_attr_get(rsrc.name).iteritems():
         (kvp, _) = models.KVP.get_or_create(key, value)
         models.ResourceKVP.objects.create(resource=rsrc, kvp=kvp)
         rsrc.transition(models.Resource.READY, ACTION_STATUS, 10*60)
 
 
-def destroy(pool, profile):
-    """ Reset profile and remove all resources from the host. """
+def destroy(pool_api, pool):
+    """ Reset pool and remove all resources from the host. """
 
-    for rsrc in profile.resource_set.all():
+    for rsrc in pool.resource_set.all():
         name = rsrc.name
-        logging.debug("%s removing resource %s", profile.name, name)
+        logging.debug("%s removing resource %s", pool.name, name)
 
-        state = pool.state_get(name)
+        state = pool_api.state_get(name)
         if state != testpool.core.api.Pool.STATE_NONE:
-            pool.destroy(name)
+            pool_api.destroy(name)
 
         try:
-            rsrc = models.Resource.objects.get(profile=profile, name=name)
+            rsrc = models.Resource.objects.get(pool=pool, name=name)
             rsrc.delete()
         except models.Resource.DoesNotExist:
             pass
 
 
-def pop(profile_name, expiration_seconds):
+def pop(pool_name, expiration_seconds):
     """ Pop one resource from the Pool. """
 
-    logging.info("algo.pop resource from %s", profile_name)
+    logging.info("algo.pop resource from %s", pool_name)
 
-    profile1 = models.Profile.objects.get(name=profile_name)
-    rsrcs = models.Resource.objects.filter(profile=profile1,
+    pool1 = models.Pool.objects.get(name=pool_name)
+    rsrcs = models.Resource.objects.filter(pool=pool1,
                                            status=models.Resource.PENDING)
 
     if rsrcs.count() == 0:
-        raise NoResources("%s: all resources taken" % profile_name)
+        raise NoResources("%s: all resources taken" % pool_name)
 
     rsrc = rsrcs[0]
     rsrc.transition(models.Resource.RESERVED, ACTION_DESTROY,
@@ -215,7 +217,7 @@ def resource_clone(pool, rsrc):
 
     logging.debug("reclaiming %s", rsrc.name)
 
-    pool.clone(rsrc.profile.template_name, rsrc.name)
+    pool.clone(rsrc.pool.template_name, rsrc.name)
     pool.start(rsrc.name)
     delta = pool.timing_get(testpool.core.api.Pool.TIMING_REQUEST_ATTR)
     rsrc.transition(models.Resource.PENDING, ACTION_ATTR, delta)
@@ -225,7 +227,7 @@ def resource_destroy(pool, rsrc):
     """ Destroy a single resource. """
 
     name = rsrc.name
-    logging.debug("%s removing resource %s", rsrc.profile.name, name)
+    logging.debug("%s removing resource %s", rsrc.pool.name, name)
 
     state = pool.state_get(name)
     if state == testpool.core.api.Pool.STATE_NONE:
@@ -242,39 +244,38 @@ def resource_destroy(pool, rsrc):
         ##
 
 
-def profile_add(connection, product, profile, resource_max, template):
-    """ Add a profile. """
+def pool_add(connection, product, pool, resource_max, template):
+    """ Add a pool. """
 
-    logging.debug("profile_add %s %s", profile, template)
+    logging.debug("pool_add %s %s", pool, template)
     (host1, _) = models.Host.objects.get_or_create(connection=connection,
                                                    product=product)
     defaults = {"resource_max": resource_max, "template_name": template}
-    (profile1, _) = models.Profile.objects.update_or_create(name=profile,
-                                                            host=host1,
-                                                            defaults=defaults)
+    (pool1, _) = models.Pool.objects.update_or_create(name=pool, host=host1,
+                                                      defaults=defaults)
     ##
     # Check to see if the number of Resources should change.
     exts = testpool.core.ext.api_ext_list()
-    pool = exts[product].pool_get(profile1)
-    adapt(pool, profile1)
+    pool = exts[product].pool_get(pool1)
+    adapt(pool, pool1)
     ##
-    return profile1
+    return pool1
 
 
-def profile_remove(name, immediate):
-    """ Remove a profile.
+def pool_remove(name, immediate):
+    """ Remove a pool.
 
-    Profiles can't be removed immediately, Resources are marked for purge
-    and when all Resources are gone the profile will be removed.
+    Pools can't be removed immediately, Resources are marked for purge
+    and when all Resources are gone the pool will be removed.
     """
 
-    profile = models.Profile.objects.get(name=name)
-    logging.debug("found profile %s", profile)
-    profile.resource_max = 0
-    profile.save()
+    pool = models.Pool.objects.get(name=name)
+    logging.debug("found pool %s", pool)
+    pool.resource_max = 0
+    pool.save()
 
     next_delta = 0
-    for rsrc in profile.resource_set.all():
+    for rsrc in pool.resource_set.all():
         if immediate:
             rsrc.delete()
         else:
@@ -283,4 +284,4 @@ def profile_remove(name, immediate):
             next_delta += 60
 
     if immediate:
-        profile.delete()
+        pool.delete()

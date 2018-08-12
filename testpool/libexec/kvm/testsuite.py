@@ -37,7 +37,7 @@ from testpool.core import ext
 from testpool.core import algo
 
 CONNECTION = "qemu:///system"
-TEST_PROFILE = "test.kvm.profile"
+TEST_POOL = "test.kvm.pool"
 TEMPLATE = "test.template"
 PRODUCT = "kvm"
 
@@ -46,23 +46,23 @@ class Testsuite(unittest.TestCase):
     """ tests various aspects of cloning a resource. """
 
     def setUp(self):
-        """ Create KVM profile. """
+        """ Create KVM pool. """
 
         (host1, _) = models.Host.objects.get_or_create(
             connection=CONNECTION, product=PRODUCT)
         defaults = {"resource_max": 3, "template_name": TEMPLATE}
-        models.Profile.objects.update_or_create(name=TEST_PROFILE, host=host1,
-                                                defaults=defaults)
+        models.Pool.objects.update_or_create(name=TEST_POOL, host=host1,
+                                             defaults=defaults)
 
     def tearDown(self):
-        """ Remove any previous test profiles1. """
+        """ Remove any previous test pools1. """
 
         try:
-            profile1 = models.Profile.objects.get(name=TEST_PROFILE)
-            for rsrc in models.Resource.objects.filter(profile=profile1):
+            pool1 = models.Pool.objects.get(name=TEST_POOL)
+            for rsrc in models.Resource.objects.filter(pool=pool1):
                 rsrc.delete()
-            profile1.delete()
-        except models.Profile.DoesNotExist:
+            pool1.delete()
+        except models.Pool.DoesNotExist:
             pass
 
         try:
@@ -129,9 +129,9 @@ class Testsuite(unittest.TestCase):
     def test_destroy_missing(self):
         """ test_destroy_missing. """
 
-        profile1 = models.Profile.objects.get(name=TEST_PROFILE)
+        pool1 = models.Pool.objects.get(name=TEST_POOL)
 
-        host1 = kvm.api.pool_get(profile1)
+        host1 = kvm.api.pool_get(pool1)
         self.assertTrue(host1)
 
         hndl = libvirt.open(CONNECTION)
@@ -161,19 +161,18 @@ class TestsuiteServer(unittest.TestCase):
     """ Test model output. """
 
     def tearDown(self):
-        """ Make sure profile is removed. """
+        """ Make sure pool is removed. """
         try:
             host1 = models.Host.objects.get(connection=CONNECTION,
                                             product=PRODUCT)
-            profile1 = models.Profile.objects.get(name=TEST_PROFILE,
-                                                  host=host1)
-            pool = kvm.api.pool_get(profile1)
-            algo.destroy(pool, profile1)
+            pool1 = models.Pool.objects.get(name=TEST_POOL, host=host1)
+            pool = kvm.api.pool_get(pool1)
+            algo.destroy(pool, pool1)
 
-            profile1.delete()
+            pool1.delete()
         except models.Host.DoesNotExist:
             pass
-        except models.Profile.DoesNotExist:
+        except models.Pool.DoesNotExist:
             pass
 
     def test_setup(self):
@@ -183,23 +182,23 @@ class TestsuiteServer(unittest.TestCase):
                                                        product=PRODUCT)
 
         defaults = {"resource_max": 1, "template_name": TEMPLATE}
-        (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, host=host1, defaults=defaults)
+        (pool1, _) = models.Pool.objects.update_or_create(
+            name=TEST_POOL, host=host1, defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
 
-        self.assertEqual(profile1.resource_set.all().count(), 1)
+        self.assertEqual(pool1.resource_set.all().count(), 1)
 
     def test_shrink(self):
-        """ test_shrink. test when the profile shrinks. """
+        """ test_shrink. test when the pool shrinks. """
 
         (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
                                                        product=PRODUCT)
         defaults = {"resource_max": 3, "template_name": TEMPLATE}
-        (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, host=host1, defaults=defaults)
+        (pool1, _) = models.Pool.objects.update_or_create(
+            name=TEST_POOL, host=host1, defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
@@ -207,9 +206,9 @@ class TestsuiteServer(unittest.TestCase):
 
         ##
         # Now shrink the pool to two
-        profile1.resource_max = 2
-        logging.debug("shrinking pool to %d", profile1.resource_max)
-        profile1.save()
+        pool1.resource_max = 2
+        logging.debug("shrinking pool to %d", pool1.resource_max)
+        pool1.save()
         ##
 
         args = FakeArgs()
@@ -219,22 +218,22 @@ class TestsuiteServer(unittest.TestCase):
         exts = ext.api_ext_list()
         logging.debug("process resource size")
 
-        pool = exts[PRODUCT].pool_get(profile1)
-        self.assertEqual(len(pool.list(profile1)), 2)
+        pool = exts[PRODUCT].pool_get(pool1)
+        self.assertEqual(len(pool.list(pool1)), 2)
 
     def test_expand(self):
-        """ test_expand. Check when profile increases. """
+        """ test_expand. Check when pool increases. """
 
         (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
                                                        product=PRODUCT)
         defaults = {"resource_max": 2, "template_name": TEMPLATE}
-        (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, host=host1, defaults=defaults)
+        (pool1, _) = models.Pool.objects.update_or_create(
+            name=TEST_POOL, host=host1, defaults=defaults)
 
         ##
         # Now expand to 3
-        profile1.resource_max = 3
-        profile1.save()
+        pool1.resource_max = 3
+        pool1.save()
         ##
 
         args = FakeArgs()
@@ -242,8 +241,8 @@ class TestsuiteServer(unittest.TestCase):
         self.assertEqual(server.main(args), 0)
 
         exts = ext.api_ext_list()
-        pool = exts[PRODUCT].pool_get(profile1)
-        self.assertEqual(len(pool.list(profile1)), 3)
+        pool = exts[PRODUCT].pool_get(pool1)
+        self.assertEqual(len(pool.list(pool1)), 3)
 
     def test_expiration(self):
         """ test_expiration. """
@@ -253,14 +252,15 @@ class TestsuiteServer(unittest.TestCase):
         (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
                                                        product=PRODUCT)
         defaults = {"resource_max": resource_max, "template_name": TEMPLATE}
-        (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, host=host1, defaults=defaults)
+        (pool1, _) = models.Pool.objects.update_or_create(name=TEST_POOL,
+                                                          host=host1,
+                                                          defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
 
-        rsrcs = profile1.resource_set.filter(status=models.Resource.READY)
+        rsrcs = pool1.resource_set.filter(status=models.Resource.READY)
         self.assertEqual(len(rsrcs), resource_max)
 
         rsrc = rsrcs[0]
@@ -281,7 +281,7 @@ class TestsuiteServer(unittest.TestCase):
         exts = ext.api_ext_list()
         server.adapt(exts)
 
-        rsrcs = profile1.resource_set.filter(status=models.Resource.READY)
+        rsrcs = pool1.resource_set.filter(status=models.Resource.READY)
 
         ##
         # Check to see if the expiration happens.

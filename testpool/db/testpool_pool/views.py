@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
 """
-View profile information.
+View pool information.
 """
 import json
 import logging
@@ -27,26 +27,26 @@ LOGGER = logging.getLogger("django.testpool")
 
 # pylint: disable=R0902
 # pylint: disable=R0903
-class ProfileStats(object):
-    """ Provides individual profile stats used in the profile view. """
+class PoolStats(object):
+    """ Provides individual pool stats used in the pool view. """
 
-    def __init__(self, profile):
-        """Contruct a profile view. """
+    def __init__(self, pool):
+        """Contruct a pool view. """
 
         ##
         # pylint: disable=C0103
         # The ID is needed for the JSON view.
-        self.id = profile.id
+        self.id = pool.id
         #
-        self.connection = profile.host.connection
-        self.name = profile.name
-        self.resource_max = profile.resource_max
+        self.connection = pool.host.connection
+        self.name = pool.name
+        self.resource_max = pool.resource_max
         self.rsrc_ready = 0
         self.rsrc_reserved = 0
         self.rsrc_pending = 0
         self.rsrc_bad = 0
 
-        for item in models.Resource.objects.filter(profile=profile):
+        for item in models.Resource.objects.filter(pool=pool):
             if item.status == models.Resource.RESERVED:
                 self.rsrc_reserved += 1
             elif item.status == models.Resource.PENDING:
@@ -57,35 +57,35 @@ class ProfileStats(object):
                 self.rsrc_bad += 1
 
 
-def profile_list(_):
+def pool_list(_):
     """ Summarize product information. """
-    LOGGER.debug("profile")
+    LOGGER.debug("pool")
 
-    profiles = models.Profile.objects.all()
-    profiles = [ProfileStats(item) for item in profiles]
+    pools = models.Pool.objects.all()
+    pools = [PoolStats(item) for item in pools]
 
-    html_data = {"profiles": profiles}
-    return render_to_response("profile/list.html", html_data)
+    html_data = {"pools": pools}
+    return render_to_response("pool/list.html", html_data)
 
 
-def detail(_, profile):
-    """ Provide profile details. """
+def detail(_, pool):
+    """ Provide pool details. """
 
-    LOGGER.debug("profile/detail/%s", profile)
+    LOGGER.debug("pool/detail/%s", pool)
 
-    profile1 = models.Profile.objects.get(name=profile)
-    rsrcs = [item for item in models.Host.objects.filter(profile=profile1)]
+    pool1 = models.Pool.objects.get(name=pool)
+    rsrcs = [item for item in models.Host.objects.filter(pool=pool1)]
     html_data = {
         "rsrcs": rsrcs,
-        "profile": profile1
+        "pool": pool1
     }
 
-    return render_to_response("profile/detail.html", html_data)
+    return render_to_response("pool/detail.html", html_data)
 
 
 def dashboard(_):
-    """ Provide summary of all profiles. """
+    """ Provide summary of all pools. """
 
     LOGGER.debug("views.dashboard")
 
-    return render_to_response('profile/index.html')
+    return render_to_response('pool/index.html')

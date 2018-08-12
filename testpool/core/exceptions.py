@@ -26,13 +26,13 @@ class ConnectionError(Exception):
         super(ConnectionError, self).__init__(message)
 
 
-class ProfileError(TestpoolError):
-    """ Thrown when a profile is considered bad. """
+class PoolError(TestpoolError):
+    """ Thrown when a pool is considered bad. """
 
-    def __init__(self, message, profile_error):
+    def __init__(self, message, pool_error):
         """ Constructor. """
-        super(ProfileError, self).__init__(message)
-        self.profile = profile_error
+        super(PoolError, self).__init__(message)
+        self.pool = pool_error
 
 
 # pylint: disable=W0703
@@ -40,12 +40,12 @@ def try_catch(func):
     """ Call func with args and catch all errors. """
     try:
         return func()
-    except ProfileError, arg:
+    except PoolError, arg:
         if LOG.isEnabledFor(logging.DEBUG):
             LOG.exception(arg)
         else:
             LOG.error(arg)
 
         stack_trace = sys.exc_info()[2]
-        arg.profile.stacktrace_set(str(arg), stack_trace)
+        arg.pool.stacktrace_set(str(arg), stack_trace)
         return 1

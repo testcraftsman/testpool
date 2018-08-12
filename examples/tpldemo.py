@@ -5,11 +5,27 @@ order to configure Testpool server and then come back to this script.
 
 This demo supports both the fake and docker products. Fake is a good
 tool for seeing behavior and development without having to setup additional
-tools. The docker product requires install docker locally in order to
-see the demo in action. Check the dashboard to see the status of the various
-pool of resources at:
+tools. To run the demo, in one shell
+  ./bin/tpl-daemon
+
+In another shell:
+
+  ./bin/tpl-db
+
+Finally in another shell,
+   tpl-demo -v
+
+
+The docker product requires install docker locally in order to see the demo in
+action. Check the dashboard to see the status of the various pool of resources
+at:
 
   http://127.0.0.1:8000/testpool/view/dashboard
+
+To run docker demo:
+  docker pull nginx:latest
+   tpl-demo --product  docker -v
+
 """
 import sys
 import random

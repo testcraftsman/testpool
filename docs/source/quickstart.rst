@@ -9,8 +9,10 @@ then replaces discarded VMs with a fresh clone.  Cloning VMs can take a
 considerable amount of time, but with a pool of VMs, acquiring a single VM
 is immediate. Testpool supports KVM and docker.
 
-There are two demonstrations of Testpool. One provides a functional simulation
-using fake resources. The second uses KVM on an actual hypervisors.
+There are three demonstrations of Testpool. One uses fake resources to
+demostrate a large deployment. The second demo usss docker and is designed
+to work on a sinlge laptop for the sake of having an easy demo. The third
+uses KVM hypervisors.
 
 Simulation Demonstration 
 ------------------------
@@ -27,7 +29,6 @@ We'll install Testpool from Debian.
        sudo apt-get install -y python-yaml python-pip python-all enchant
        sudo apt-get install -y fakeroot dh-python
        sudo apt-file update
-       sudo pip install -qr requirements.txt
        sudo pip install -q docker==3.4.1 docker-pycreds==0.3.0 requests>=2.19.1
        sudo pip install -q pytz>=2018.5 Django==1.11.13
        sudo pip install -q djangorestframework>=3.8.2
@@ -36,12 +37,16 @@ We'll install Testpool from Debian.
        sudo pip install -q libvirt-python==4.0 ipaddr>=2.1.11 structlog>=16.1.0
        sudo pip install -q pyyaml easydict pyenchant==2.0.0 pybuild==0.2.6
 
-  #. Download Testpool from github release page::
+  #. Download Testpool from github release page:
    
-    Check for the latest release, below is an example:
+    Check for the latest release at:
 
-    https://github.com/testcraftsman/testpool/releases/download/v0.1.2/python-testpool_0.1.3-1_all.deb
-    sudo dpkg -i python-testpool_0.1.3-1_all.deb
+    https://github.com/testcraftsman/testpool/releases
+
+    below is an example:
+
+    https://github.com/testcraftsman/testpool/releases/download/v0.1.5/python-testpool_0.1.5-1_all.deb
+    sudo dpkg -i python-testpool_0.1.5-1_all.deb
 
   #. Check testpool services are running:
 
@@ -52,7 +57,7 @@ We'll install Testpool from Debian.
 
        tpl-demo -v 
 
-     The demo creates several fake profiles, then periodically 
+     The demo creates several fake pools, then periodically 
      acquires a resource then releases it. After 60 seconds, all 
      resources are released for 1 minute. The dashboard shows the
      status of the various resources:
@@ -163,18 +168,17 @@ A Short Tour
 In order for Testpool to manage VMs, Hypervisor information is registered
 with Testpool along with a VM template.
 
-Create a VM on the KVM hypervisor called test.template and keep it shutdown. Now create a Testpool profile given the IP address and name of the VM template.
+Create a VM on the KVM hypervisor called test.template and keep it shutdown. Now create a Testpool pool given the IP address and name of the VM template.
 Since we're running on the hypervisor, the IP address is localhost.
 
 Where hypervisor-ip is replaced with the actual Hypervisor IP address.  While 
-running Testpool on the hypervisor, use the tpl CLI to create a test pool 
-profile::
+running Testpool on the hypervisor, use the tpl CLI to create a test pool::
 
-  ./bin/tpl profile add example kvm qemu:///system test.template 3
+  ./bin/tpl pool add example kvm qemu:///system test.template 3
 
-Confirm the profile is valid::
+Confirm the pool is valid::
 
-  ./bin/tpl profile detail example
+  ./bin/tpl pool detail example
 
 The Testpool Daemon will clone 3 VMs from the test.template. This can take
 a while which is the point of this product. In that, Testpool generates

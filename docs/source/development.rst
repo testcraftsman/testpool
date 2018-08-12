@@ -13,9 +13,8 @@ Additionally docker must be installed, tests and development rely on it.
 Web Development
 ===============
 
-To simplify web development, developers can avoid using an actual hypervisor
-which can be involved. Instead developers can create profiles using a fake 
-hypervisor. 
+To simplify web development, developers can avoid using an actual hypervisor.
+Instead developers can create a fake pool.
 
 Since testpool uses django, once the web server is running it will 
 automatically restart when content changes. In one shell, run the testpool
@@ -27,19 +26,19 @@ In a new shell start the testpool daemon.::
 
   ./bin/tpl-daemon -vv
 
-In a new shell, create several profiles. The following creates two profiles.
-The first profile uses template0 to generate two fake VMs. The second profile
+In a new shell, create several pools. The following creates two pool .
+The first pool uses template0 to generate two fake VMs. The second pool
 creates three fake VMs from template1.::
 
-  ./bin/tpl profile add localhost fake profile0 template0 2
-  ./bin/tpl profile add localhost fake profile1 template1 3
+  ./bin/tpl pool add localhost fake pool0 template0 2
+  ./bin/tpl pool add localhost fake pool1 template1 3
 
 The tpl-daemon will over time generate 5 VMs in the ready state. In other
 words, fake VMs are transitioned from pending to reserved over a short
 period of time. Testpool web content showing overall VM pool statistics can 
 be found::
 
-  http://127.0.0.1:8000/testpool/profile
+  http://127.0.0.1:8000/testpool/pool
 
 To manipulate VM content, meaning reserve and release VMs, review the vm
 command help::

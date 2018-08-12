@@ -15,28 +15,28 @@
 # You should have received a copy of the GNU General Public License
 # along with Testdb.  If not, see <http://www.gnu.org/licenses/>.
 """
-Profile serializers for model data.
+Pool serializers for model data.
 """
 from rest_framework import serializers
-from testpooldb.models import Profile
+from testpooldb.models import Pool
 from testpooldb.models import Resource
 from testpooldb.models import Key
 
 
 # pylint: disable=R0903
-class ProfileSerializer(serializers.ModelSerializer):
-    """ Serialize ProfileModel. """
+class PoolSerializer(serializers.ModelSerializer):
+    """ Serialize PoolModel. """
 
     class Meta(object):
         """ Define what is in a serialize response. """
 
-        model = Profile
+        model = Pool
         fields = ('id', 'template_name', 'name', "resource_max", 'expiration',
                   'kvps', "resource_available")
 
 
 class KeySerializer(serializers.ModelSerializer):
-    """ Serialize ProfileModel. """
+    """ Serialize PoolModel. """
 
     class Meta(object):
         """ Define what is in a serialize response. """
@@ -67,8 +67,8 @@ class ResourceSerializer(serializers.ModelSerializer):
 
 # pylint: disable=C0103
 # pylint: disable=W0223
-class ProfileStatsSerializer(serializers.Serializer):
-    """ Serialize ProfileStats object. """
+class PoolStatsSerializer(serializers.Serializer):
+    """ Serialize PoolStats object. """
 
     id = serializers.IntegerField()
     name = serializers.CharField(max_length=128)

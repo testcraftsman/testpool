@@ -28,13 +28,13 @@ class Testsuite(unittest.TestCase):
 
         (host1, _) = models.Host.objects.get_or_create(connection="localhost",
                                                        product="fake")
-        (profile1, _) = models.Profile.objects.get_or_create(
-            name="fake.profile", host=host1, template_name="test.template",
+        (pool1, _) = models.Pool.objects.get_or_create(
+            name="fake.pool", host=host1, template_name="test.template",
             resource_max=10)
 
-        pool = api.Pool("fake.profile")
-        algo.destroy(pool, profile1)
-        rtc = algo.adapt(pool, profile1)
+        pool = api.Pool("fake.pool")
+        algo.destroy(pool, pool1)
+        rtc = algo.adapt(pool, pool1)
         self.assertEqual(rtc, 10)
 
     def test_pop(self):
@@ -42,66 +42,66 @@ class Testsuite(unittest.TestCase):
 
         (host1, _) = models.Host.objects.get_or_create(connection="localhost",
                                                        product="fake")
-        (profile1, _) = models.Profile.objects.get_or_create(
-            name="fake.profile", host=host1, template_name="test.template",
+        (pool1, _) = models.Pool.objects.get_or_create(
+            name="fake.pool", host=host1, template_name="test.template",
             resource_max=10)
-        pool = api.Pool("fake.profile")
+        pool = api.Pool("fake.pool")
 
-        algo.destroy(pool, profile1)
-        rtc = algo.adapt(pool, profile1)
+        algo.destroy(pool, pool1)
+        rtc = algo.adapt(pool, pool1)
         self.assertEqual(rtc, 10)
 
         for count in range(10):
             logging.debug("pop count %d", count)
-            rsrc = algo.pop("fake.profile", 1)
+            rsrc = algo.pop("fake.pool", 1)
             self.assertTrue(rsrc)
 
         with self.assertRaises(algo.NoResources):
-            algo.pop("fake.profile", 1)
+            algo.pop("fake.pool", 1)
 
     def test_push(self):
         """ test_push. """
 
-        profile_name = "fake.profile"
+        pool_name = "fake.pool"
 
         (host1, _) = models.Host.objects.get_or_create(connection="localhost",
                                                        product="fake")
-        (profile1, _) = models.Profile.objects.get_or_create(
-            name="fake.profile", host=host1, resource_max=10,
+        (pool1, _) = models.Pool.objects.get_or_create(
+            name="fake.pool", host=host1, resource_max=10,
             template_name="test.template")
 
         pool = api.Pool("memory")
-        algo.destroy(pool, profile1)
-        rtc = algo.adapt(pool, profile1)
+        algo.destroy(pool, pool1)
+        rtc = algo.adapt(pool, pool1)
         self.assertEqual(rtc, 10)
 
         for count in range(10):
             logging.debug("pop count %d", count)
 
-            rsrc = algo.pop(profile_name, 1)
+            rsrc = algo.pop(pool_name, 1)
             self.assertTrue(rsrc)
 
         with self.assertRaises(algo.NoResources):
-            algo.pop(profile_name, 1)
+            algo.pop(pool_name, 1)
 
     def test_push_too_many(self):
         """ test_push_too_many"""
 
-        profile_name = "fake.profile"
+        pool_name = "fake.pool"
 
         (host1, _) = models.Host.objects.get_or_create(connection="localhost",
                                                        product="fake")
-        (profile1, _) = models.Profile.objects.get_or_create(
-            name="fake.profile", host=host1, template_name="test.template",
+        (pool1, _) = models.Pool.objects.get_or_create(
+            name="fake.pool", host=host1, template_name="test.template",
             resource_max=10)
 
-        pool = api.pool_get(profile1)
+        pool = api.pool_get(pool1)
         self.assertTrue(pool)
-        algo.destroy(pool, profile1)
-        rtc = algo.adapt(pool, profile1)
+        algo.destroy(pool, pool1)
+        rtc = algo.adapt(pool, pool1)
         self.assertEqual(rtc, 10)
 
-        rsrc = algo.pop(profile_name, 1)
+        rsrc = algo.pop(pool_name, 1)
         self.assertTrue(rsrc)
 
         algo.push(rsrc.id)
@@ -112,14 +112,14 @@ class Testsuite(unittest.TestCase):
         server.adapt(api_exts)
 
     def tearDown(self):
-        """ Remove any previous fake profiles1. """
+        """ Remove any previous fake pools1. """
 
         try:
-            profile1 = models.Profile.objects.get(name="fake.profile")
-            for rsrc in models.Resource.objects.filter(profile=profile1):
+            pool1 = models.Pool.objects.get(name="fake.pool")
+            for rsrc in models.Resource.objects.filter(pool=pool1):
                 rsrc.delete()
-            profile1.delete()
-        except models.Profile.DoesNotExist:
+            pool1.delete()
+        except models.Pool.DoesNotExist:
             pass
 
         try:

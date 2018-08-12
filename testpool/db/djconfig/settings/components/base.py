@@ -58,7 +58,7 @@ INSTALLED_APPS = (
     'pure_pagination',
     'testpooldb',
     'rest_framework',
-    'testpool_profile',
+    'testpool_pool',
     'testpool_resource',
 )
 

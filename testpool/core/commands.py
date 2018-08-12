@@ -27,7 +27,7 @@ import unittest
 import testpool.settings
 import testpool.version
 from testpool.core import logger
-from testpool.core import profile
+from testpool.core import pool
 from testpool.core import resource
 
 
@@ -67,7 +67,7 @@ def extensions_find(arg_parser):
 
     ##
     # Add common commands.
-    profile.add_subparser(subparser)
+    pool.add_subparser(subparser)
     resource.add_subparser(subparser)
     ##
 
@@ -105,32 +105,32 @@ def main():
 class Testsuite(unittest.TestCase):
     """ Test commands. """
 
-    def test_bad_profile(self):
-        """ Test that bad profiles are prevented. """
+    def test_bad_pool(self):
+        """ Test that bad pools are prevented. """
 
         arg_parser = main()
-        cmd = "profile add localhost bad bad.profile bad.template 10"
+        cmd = "pool add localhost bad bad.pool bad.template 10"
         args = arg_parser.parse_args(cmd.split())
         with self.assertRaises(ValueError):
             args_process(None, args)
 
     def test_resource_incr(self):
-        """ Test that bad profiles are prevented. """
+        """ Test that bad pools are prevented. """
 
         arg_parser = main()
 
-        cmd = "profile add test.profile fake localhost test.template 10"
+        cmd = "pool add test.pool fake localhost test.template 10"
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)
 
-        cmd = "resource incr test.profile"
+        cmd = "resource incr test.pool"
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)
 
-        cmd = "resource incr test.profile --count 2"
+        cmd = "resource incr test.pool --count 2"
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)
 
-        cmd = "profile remove test.profile"
+        cmd = "pool remove test.pool"
         args = arg_parser.parse_args(cmd.split())
         self.assertEqual(args_process(None, args), 0)

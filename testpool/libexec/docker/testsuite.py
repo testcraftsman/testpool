@@ -33,7 +33,7 @@ from testpool.core import algo
 from testpool.libexec.docker import api
 
 CONNECTION = "http://127.0.0.1"
-TEST_PROFILE = "test.docker.profile"
+TEST_POOL = "test.docker.pool"
 ##
 # Used nginx because it does not terminate.
 TEMPLATE = "nginx:1.13"
@@ -46,13 +46,13 @@ class Testsuite(unittest.TestCase):
     """ tests various aspects of cloning a container. """
 
     def setUp(self):
-        """ Create docker profile. """
+        """ Create docker pool. """
 
         (host1, _) = models.Host.objects.get_or_create(
             connection=CONNECTION, product=PRODUCT)
         defaults = {"resource_max": 3, "template_name": TEMPLATE}
-        models.Profile.objects.update_or_create(name=TEST_PROFILE, host=host1,
-                                                defaults=defaults)
+        models.Pool.objects.update_or_create(name=TEST_POOL, host=host1,
+                                             defaults=defaults)
 
         pool = api.Pool(CONNECTION, "test")
         try:
@@ -61,15 +61,15 @@ class Testsuite(unittest.TestCase):
             assert False, arg
 
     def tearDown(self):
-        """ Remove any previous test profiles1. """
+        """ Remove any previous test pools1. """
         logging.debug("tearDown")
 
         try:
-            profile1 = models.Profile.objects.get(name=TEST_PROFILE)
-            for rsrc1 in models.Resource.objects.filter(profile=profile1):
+            pool1 = models.Pool.objects.get(name=TEST_POOL)
+            for rsrc1 in models.Resource.objects.filter(pool=pool1):
                 rsrc1.delete()
-            profile1.delete()
-        except models.Profile.DoesNotExist:
+            pool1.delete()
+        except models.Pool.DoesNotExist:
             pass
 
         try:
@@ -108,9 +108,9 @@ class Testsuite(unittest.TestCase):
     def test_destroy_missing(self):
         """ test_destroy_missing. """
 
-        profile1 = models.Profile.objects.get(name=TEST_PROFILE)
+        pool1 = models.Pool.objects.get(name=TEST_POOL)
 
-        host1 = api.pool_get(profile1)
+        host1 = api.pool_get(pool1)
         self.assertTrue(host1)
 
         name = "%s.destroy" % TEMPLATE
@@ -134,19 +134,18 @@ class TestsuiteServer(unittest.TestCase):
     """ Test model output. """
 
     def tearDown(self):
-        """ Make sure profile is removed. """
+        """ Make sure pool is removed. """
 
         try:
             host1 = models.Host.objects.get(connection=CONNECTION,
                                             product=PRODUCT)
-            profile1 = models.Profile.objects.get(name=TEST_PROFILE,
-                                                  host=host1)
-            pool = api.pool_get(profile1)
-            algo.destroy(pool, profile1)
-            profile1.delete()
+            pool1 = models.Pool.objects.get(name=TEST_POOL, host=host1)
+            pool = api.pool_get(pool1)
+            algo.destroy(pool, pool1)
+            pool1.delete()
         except models.Host.DoesNotExist:
             pass
-        except models.Profile.DoesNotExist:
+        except models.Pool.DoesNotExist:
             pass
 
         host1 = docker.from_env()
@@ -159,13 +158,13 @@ class TestsuiteServer(unittest.TestCase):
                                                        product=PRODUCT)
 
         defaults = {"resource_max": 1, "template_name": TEMPLATE}
-        (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, host=host1, defaults=defaults)
+        (pool1, _) = models.Pool.objects.update_or_create(
+            name=TEST_POOL, host=host1, defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
-        self.assertEqual(profile1.resource_set.all().count(), 1)
+        self.assertEqual(pool1.resource_set.all().count(), 1)
 
     def test_create_one(self):
         """ Create one container. """
@@ -173,8 +172,8 @@ class TestsuiteServer(unittest.TestCase):
         (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
                                                        product=PRODUCT)
         defaults = {"resource_max": 1, "template_name": TEMPLATE}
-        models.Profile.objects.update_or_create(name=TEST_PROFILE, host=host1,
-                                                defaults=defaults)
+        models.Pool.objects.update_or_create(name=TEST_POOL, host=host1,
+                                             defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
@@ -186,21 +185,21 @@ class TestsuiteServer(unittest.TestCase):
         (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
                                                        product=PRODUCT)
         defaults = {"resource_max": 2, "template_name": TEMPLATE}
-        models.Profile.objects.update_or_create(name=TEST_PROFILE, host=host1,
-                                                defaults=defaults)
+        models.Pool.objects.update_or_create(name=TEST_POOL, host=host1,
+                                             defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
 
     def test_shrink(self):
-        """ test_shrink. test when the profile shrinks. """
+        """ test_shrink. test when the pool shrinks. """
 
         (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
                                                        product=PRODUCT)
         defaults = {"resource_max": 3, "template_name": TEMPLATE}
-        (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, host=host1, defaults=defaults)
+        (pool1, _) = models.Pool.objects.update_or_create(
+            name=TEST_POOL, host=host1, defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
@@ -208,8 +207,8 @@ class TestsuiteServer(unittest.TestCase):
 
         ##
         # Now shrink the pool to two
-        profile1.resource_max = 2
-        profile1.save()
+        pool1.resource_max = 2
+        pool1.save()
         ##
 
         args = FakeArgs()
@@ -218,22 +217,22 @@ class TestsuiteServer(unittest.TestCase):
         self.assertEqual(server.main(args), 0)
         exts = ext.api_ext_list()
 
-        pool = exts[PRODUCT].pool_get(profile1)
-        self.assertEqual(len(pool.list(profile1)), 2)
+        pool = exts[PRODUCT].pool_get(pool1)
+        self.assertEqual(len(pool.list(pool1)), 2)
 
     def test_expand(self):
-        """ test_expand. Check when profile increases. """
+        """ test_expand. Check when pool increases. """
 
         (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
                                                        product=PRODUCT)
         defaults = {"resource_max": 2, "template_name": TEMPLATE}
-        (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, host=host1, defaults=defaults)
+        (pool1, _) = models.Pool.objects.update_or_create(
+            name=TEST_POOL, host=host1, defaults=defaults)
 
         ##
         #  Now expand to 3
-        profile1.resource_max = 3
-        profile1.save()
+        pool1.resource_max = 3
+        pool1.save()
         ##
 
         args = FakeArgs()
@@ -241,8 +240,8 @@ class TestsuiteServer(unittest.TestCase):
         self.assertEqual(server.main(args), 0)
 
         exts = ext.api_ext_list()
-        pool = exts[PRODUCT].pool_get(profile1)
-        self.assertEqual(len(pool.list(profile1)), 3)
+        pool = exts[PRODUCT].pool_get(pool1)
+        self.assertEqual(len(pool.list(pool1)), 3)
 
     def test_expiration(self):
         """ test_expiration. """
@@ -252,14 +251,14 @@ class TestsuiteServer(unittest.TestCase):
         (host1, _) = models.Host.objects.get_or_create(connection=CONNECTION,
                                                        product=PRODUCT)
         defaults = {"resource_max": resource_max, "template_name": TEMPLATE}
-        (profile1, _) = models.Profile.objects.update_or_create(
-            name=TEST_PROFILE, host=host1, defaults=defaults)
+        (pool1, _) = models.Pool.objects.update_or_create(
+            name=TEST_POOL, host=host1, defaults=defaults)
 
         args = FakeArgs()
         server.args_process(args)
         self.assertEqual(server.main(args), 0)
 
-        rsrcs = profile1.resource_set.filter(status=models.Resource.READY)
+        rsrcs = pool1.resource_set.filter(status=models.Resource.READY)
         self.assertEqual(len(rsrcs), resource_max)
 
         rsrc = rsrcs[0]
@@ -280,7 +279,7 @@ class TestsuiteServer(unittest.TestCase):
         exts = ext.api_ext_list()
         server.adapt(exts)
 
-        rsrcs = profile1.resource_set.filter(status=models.Resource.READY)
+        rsrcs = pool1.resource_set.filter(status=models.Resource.READY)
 
         ##
         # Check to see if the expiration happens.

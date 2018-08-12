@@ -26,35 +26,35 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import Http404
 from django.core.exceptions import PermissionDenied
 from testpooldb.models import Host
-from testpooldb.models import Profile
+from testpooldb.models import Pool
 from testpooldb.models import Resource
-from testpool_profile.views import ProfileStats
-from testpool_profile.serializers import ProfileSerializer
-from testpool_profile.serializers import ProfileStatsSerializer
-from testpool_profile.serializers import ResourceSerializer
-from testpool_profile.api import JSONResponse
+from testpool_pool.views import PoolStats
+from testpool_pool.serializers import PoolSerializer
+from testpool_pool.serializers import PoolStatsSerializer
+from testpool_pool.serializers import ResourceSerializer
+from testpool_pool.api import JSONResponse
 import testpool.core
 
 LOGGER = logging.getLogger("django.testpool")
 
 
 @csrf_exempt
-def profile_add(request, name):
-    """ Create a profile .  """
+def pool_add(request, name):
+    """ Create a pool .  """
 
-    LOGGER.info("testpool_docker.api.profile_add %s", name)
+    LOGGER.info("testpool_docker.api.pool_add %s", name)
 
     if request.method != 'POST':
-        msg = "profile_add method %s unsupported" % request.method
+        msg = "pool_add method %s unsupported" % request.method
         logging.error(msg)
         return JsonResponse({"msg": msg}, status=405)
 
     if "resource_max" not in request.GET:
-        msg = "profile_add requires resource_max"
+        msg = "pool_add requires resource_max"
         return JsonResponse({"msg": msg}, status=404)
 
     if "template_name" not in request.GET:
-        msg = "profile_add requires template_name"
+        msg = "pool_add requires template_name"
         return JsonResponse({"msg": msg}, status=404)
 
     resource_max = request.GET["resource_max"]
@@ -62,13 +62,13 @@ def profile_add(request, name):
 
     try:
         resource_max = int(resource_max)
-        profile1 = testpool.core.algo.profile_add("localhost", "docker", name,
-                                                  resource_max, template_name)
-        serializer = ProfileSerializer(profile1)
+        pool1 = testpool.core.algo.pool_add("localhost", "docker", name,
+                                            resource_max, template_name)
+        serializer = PoolSerializer(pool1)
 
         return JSONResponse(serializer.data)
-    except Profile.DoesNotExist, arg:
-        msg = "profile %s not found" % profile_name
+    except Pool.DoesNotExist, arg:
+        msg = "pool %s not found" % pool_name
         logging.error(msg)
         return JsonResponse({"msg": msg}, status=403)
     except Exception, arg:
