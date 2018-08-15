@@ -1,6 +1,5 @@
 """
 Provide infrastructure for defining and supporting exceptions.
-
 """
 import sys
 import logging
