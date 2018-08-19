@@ -91,7 +91,7 @@ def add_pools(rest, args):
             template_name = "template_name.%s" % name
             logging.info("adding pool %s", name)
             rest.pool_add(name, "localhost", args.product, template_name,
-                             resource_max)
+                          resource_max)
         return FAKE_POOL_NAMES
     elif args.product == "docker":
         resource_maxes = [10]
@@ -99,7 +99,7 @@ def add_pools(rest, args):
         for (name, resource_max) in zip(DOCKER_POOL_NAMES, resource_maxes):
             logging.info("adding pool %s", name)
             rest.pool_add(name, "localhost", args.product, template_name,
-                             resource_max)
+                          resource_max)
         return DOCKER_POOL_NAMES
     else:
         raise ValueError("unsupported product %s" % args.product)

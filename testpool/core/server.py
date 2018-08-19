@@ -175,11 +175,10 @@ def action_destroy(exts, rsrc):
 def action_clone(exts, rsrc):
     """ Clone a new resource. """
 
+    rsrc_name = rsrc.name
+    LOGGER.info("%s: action_clone started %s %s", rsrc.pool.name,
+                rsrc.pool.host.product, rsrc.name)
     try:
-        rsrc_name = rsrc.name
-        LOGGER.info("%s: action_clone started %s %s",
-                    rsrc.pool.name, rsrc.pool.host.product, rsrc.name)
-
         ext1 = exts[rsrc.pool.host.product]
         pool = ext1.pool_get(rsrc.pool)
 
