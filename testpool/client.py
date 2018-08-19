@@ -1,4 +1,4 @@
-# Copyright (c) 2015-2018 Mark Hamilton, <mark.lee.hamilton@gmail.com>, All rights reserved
+# Copyright (c) 2015-2018 Mark Hamilton, All rights reserved
 """ Client python API to reserve resources. """
 
 import json
@@ -12,6 +12,7 @@ import testpool.core.exceptions
 
 class ResourceError(testpool.core.exceptions.TestpoolError):
     """ Thrown when there isn't enough resources. """
+
     def __init__(self, message):  # pylint: disable=useless-super-delegation
         super(ResourceError, self).__init__(message)
 

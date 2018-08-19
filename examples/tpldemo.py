@@ -82,38 +82,81 @@ FAKE_POOL_NAMES = ["ubuntu16.04", "centos7.0", "vmware", "ESX6.5"]
 DOCKER_POOL_NAMES = ["nginx"]
 
 
-def add_pools(rest, args):
-    """ Create all of the pools. """
+class PoolBaseIfc(object):
+    """ Interface for pool behavior. """
 
-    if args.product == "fake":
+    def __init__(self, rest, product):
+        self.rest = rest
+        self.product = product
+
+    def add(self):
+        """ Add pools. """
+        # pylint: disable=no-self-use
+
+        raise ValueError("add not implemented")
+
+    def remove(self):
+        """ Create all of the pools. """
+
+        for name in FAKE_POOL_NAMES + DOCKER_POOL_NAMES:
+            try:
+                logging.info("remove pool %s", name)
+                self.rest.pool_remove(name, immediate=True)
+            except Exception as arg:  # pylint: disable=broad-except
+                logging.info(arg)
+
+
+class FakePool(PoolBaseIfc):
+    """ Handle fake demo. """
+
+    def add(self):
+        """ Add fake pool. """
+
         resource_maxes = [10, 40, 100, 50]
         for (name, resource_max) in zip(FAKE_POOL_NAMES, resource_maxes):
             template_name = "template_name.%s" % name
             logging.info("adding pool %s", name)
-            rest.pool_add(name, "localhost", args.product, template_name,
-                          resource_max)
+            self.rest.pool_add(name, "localhost", self.product, template_name,
+                               resource_max)
         return FAKE_POOL_NAMES
-    elif args.product == "docker":
+
+    def sleep(self):
+        """ Sleep between fake operations. """
+        # pylint: disable=no-self-use
+
+        time.sleep(1)
+
+
+class DockerPool(PoolBaseIfc):
+    """ Handle docker demo. """
+
+    def add(self):
+        """ Add docker pool. """
+
         resource_maxes = [10]
         template_name = "nginx:latest"
         for (name, resource_max) in zip(DOCKER_POOL_NAMES, resource_maxes):
             logging.info("adding pool %s", name)
-            rest.pool_add(name, "localhost", args.product, template_name,
-                          resource_max)
+            self.rest.pool_add(name, "localhost", self.product, template_name,
+                               resource_max)
         return DOCKER_POOL_NAMES
+
+    def sleep(self):
+        """ Sleep between docker operations. """
+        # pylint: disable=no-self-use
+
+        time.sleep(10)
+
+
+def pool_base_get(rest, product):
+    """ Return appropriate pool manager. """
+
+    if product == "fake":
+        return FakePool(rest, product)
+    elif product == "docker":
+        return DockerPool(rest, product)
     else:
-        raise ValueError("unsupported product %s" % args.product)
-
-
-def remove_pools(rest):
-    """ Create all of the pools. """
-
-    for name in FAKE_POOL_NAMES + DOCKER_POOL_NAMES:
-        try:
-            logging.info("remove pool %s", name)
-            rest.pool_remove(name, immediate=True)
-        except Exception as arg:  # pylint: disable=broad-except
-            logging.info(arg)
+        raise ValueError("unsupported product %s" % product)
 
 
 class State(object):
@@ -154,11 +197,12 @@ def do_start(args):
 
     rest = Rest(args.hostname)
     acquired_resources = []
+    pool = pool_base_get(rest, args.product)
 
-    remove_pools(rest)
+    pool.remove()
     if args.cleanup:
         return 0
-    pool_names = add_pools(rest, args)
+    pool_names = pool.add()
     count = 0
 
     state = State()
@@ -168,23 +212,23 @@ def do_start(args):
         if value == State.ACTIVE:
             logging.info("acquire and releasing resources")
             action = random.choice(actions)
-            pool = random.choice(pool_names)
+            pool_name = random.choice(pool_names)
             if action == "acquire":
-                logging.info("acquire %s", pool)
-                resp = rest.acquire(pool)
+                logging.info("acquire %s", pool_name)
+                resp = rest.acquire(pool_name)
                 if resp.status_code == 200:
                     rsrc = resp.json()
                     acquired_resources.append(rsrc)
-                    logging.info("acquired %s:%s", pool, rsrc)
+                    logging.info("acquired %s:%s", pool_name, rsrc)
                 else:
                     logging.info("%s: %s", resp.status_code,
                                  resp.json()["msg"])
             elif action == "release" and acquired_resources:
-                logging.info("release %s", pool)
+                logging.info("release %s", pool_name)
                 index = random.randrange(0, len(acquired_resources))
                 rest.release(rsrc)
                 del acquired_resources[index]
-                logging.info("released %s:%s", pool, rsrc)
+                logging.info("released %s:%s", pool_name, rsrc)
         elif value == State.RELEASE and state.count() == 0:
             logging.info("releasing all resources")
             while acquired_resources:
@@ -192,7 +236,7 @@ def do_start(args):
                 rest.release(rsrc)
         elif value == State.WAIT and state.count() == 0:
             logging.info("sleeping")
-        time.sleep(1)
+        pool.sleep()
     return 0
 
 
