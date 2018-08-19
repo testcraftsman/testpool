@@ -44,9 +44,8 @@ class Rest(object):
         fmt = "http://%s:8000/testpool/api/v1/"
         self.url = fmt % hostname
 
-    def profile_add(self, name, connection, product, template_name,
-                    resource_max):
-        """ Add a profile. """
+    def pool_add(self, name, connection, product, template_name, resource_max):
+        """ Add a pool. """
 
         params = {
             "connection": connection,
@@ -54,64 +53,65 @@ class Rest(object):
             "resource_max": resource_max,
             "template_name": template_name
         }
-        url = self.url + "profile/add/%s" % name
+        url = self.url + "pool/add/%s" % name
         rtc = requests.post(url, params=params)
         rtc.raise_for_status()
         return rtc
 
-    def profile_remove(self, name, immediate=False):
-        """ Remove a profile. """
-        fmt = self.url + "profile/remove/%s?immediate=%s"
+    def pool_remove(self, name, immediate=False):
+        """ Remove a pool. """
+        fmt = self.url + "pool/remove/%s?immediate=%s"
         url = fmt % (name, immediate)
         rtc = requests.delete(url)
         rtc.raise_for_status()
         return rtc
 
-    def acquire(self, profile):
+    def acquire(self, pool_name):
         """ Acquire a resource. """
-        url = self.url + "profile/acquire/%s" % profile
+
+        url = self.url + "pool/acquire/%s" % pool_name
         return requests.get(url)
 
     def release(self, rsrc):
         """ Release a resource. """
-        url = self.url + "profile/release/%s" % rsrc
+        url = self.url + "pool/release/%s" % rsrc
         return requests.get(url)
 
 
-FAKE_PROFILE_NAMES = ["ubuntu16.04", "centos7.0", "vmware", "ESX6.5"]
-DOCKER_PROFILE_NAMES = ["nginx"]
+FAKE_POOL_NAMES = ["ubuntu16.04", "centos7.0", "vmware", "ESX6.5"]
+DOCKER_POOL_NAMES = ["nginx"]
 
 
-def add_profiles(rest, args):
-    """ Create all of the profiles. """
+def add_pools(rest, args):
+    """ Create all of the pools. """
 
     if args.product == "fake":
         resource_maxes = [10, 40, 100, 50]
-        for (name, resource_max) in zip(FAKE_PROFILE_NAMES, resource_maxes):
+        for (name, resource_max) in zip(FAKE_POOL_NAMES, resource_maxes):
             template_name = "template_name.%s" % name
-            logging.info("adding profile %s", name)
-            rest.profile_add(name, "localhost", args.product, template_name,
+            logging.info("adding pool %s", name)
+            rest.pool_add(name, "localhost", args.product, template_name,
                              resource_max)
-        return FAKE_PROFILE_NAMES
+        return FAKE_POOL_NAMES
     elif args.product == "docker":
         resource_maxes = [10]
         template_name = "nginx:latest"
-        for (name, resource_max) in zip(DOCKER_PROFILE_NAMES, resource_maxes):
-            logging.info("adding profile %s", name)
-            rest.profile_add(name, "localhost", args.product, template_name,
+        for (name, resource_max) in zip(DOCKER_POOL_NAMES, resource_maxes):
+            logging.info("adding pool %s", name)
+            rest.pool_add(name, "localhost", args.product, template_name,
                              resource_max)
-        return DOCKER_PROFILE_NAMES
+        return DOCKER_POOL_NAMES
     else:
         raise ValueError("unsupported product %s" % args.product)
 
 
-def remove_profiles(rest):
-    """ Create all of the profiles. """
+def remove_pools(rest):
+    """ Create all of the pools. """
 
-    for name in FAKE_PROFILE_NAMES + DOCKER_PROFILE_NAMES:
+    for name in FAKE_POOL_NAMES + DOCKER_POOL_NAMES:
         try:
-            logging.info("remove profile %s", name)
-            rest.profile_remove(name, immediate=True)
+            logging.info("remove pool %s", name)
+            rest.pool_remove(name, immediate=True)
         except Exception as arg:  # pylint: disable=broad-except
             logging.info(arg)
 
@@ -155,10 +155,10 @@ def do_start(args):
     rest = Rest(args.hostname)
     acquired_resources = []
 
-    remove_profiles(rest)
+    remove_pools(rest)
     if args.cleanup:
         return 0
-    profile_names = add_profiles(rest, args)
+    pool_names = add_pools(rest, args)
     count = 0
 
     state = State()
@@ -168,23 +168,23 @@ def do_start(args):
         if value == State.ACTIVE:
             logging.info("acquire and releasing resources")
             action = random.choice(actions)
-            profile = random.choice(profile_names)
+            pool = random.choice(pool_names)
             if action == "acquire":
-                logging.info("acquire %s", profile)
-                resp = rest.acquire(profile)
+                logging.info("acquire %s", pool)
+                resp = rest.acquire(pool)
                 if resp.status_code == 200:
                     rsrc = resp.json()
                     acquired_resources.append(rsrc)
-                    logging.info("acquired %s:%s", profile, rsrc)
+                    logging.info("acquired %s:%s", pool, rsrc)
                 else:
                     logging.info("%s: %s", resp.status_code,
                                  resp.json()["msg"])
             elif action == "release" and acquired_resources:
-                logging.info("release %s", profile)
+                logging.info("release %s", pool)
                 index = random.randrange(0, len(acquired_resources))
                 rest.release(rsrc)
                 del acquired_resources[index]
-                logging.info("released %s:%s", profile, rsrc)
+                logging.info("released %s:%s", pool, rsrc)
         elif value == State.RELEASE and state.count() == 0:
             logging.info("releasing all resources")
             while acquired_resources:
@@ -220,7 +220,7 @@ def argparser(progname):
     arg_parser.add_argument('--product', default="fake",
                             help="Product used for the demo")
     arg_parser.add_argument('--cleanup', default=False, action="store_true",
-                            help="Remove all demo profiles")
+                            help="Remove all demo pools")
     return arg_parser
 
 
