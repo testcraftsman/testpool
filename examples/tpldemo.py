@@ -80,6 +80,7 @@ class Rest(object):
 
 FAKE_POOL_NAMES = ["ubuntu16.04", "centos7.0", "vmware", "ESX6.5"]
 DOCKER_POOL_NAMES = ["nginx"]
+KVM_POOL_NAMES = ["ubuntu1804"]
 
 
 class PoolBaseIfc(object):
@@ -148,6 +149,26 @@ class DockerPool(PoolBaseIfc):
         time.sleep(10)
 
 
+class KvmPool(PoolBaseIfc):
+    """ Handle KVM demo. """
+
+    def add(self):
+        """ Add docker pool. """
+
+        resource_maxes = [5]
+        template_name = "test.template"
+        for (name, resource_max) in zip(KVM_POOL_NAMES, resource_maxes):
+            logging.info("adding pool %s", name)
+            self.rest.pool_add(name, "qemu:///system", self.product,
+                               template_name, resource_max)
+        return KVM_POOL_NAMES
+
+    def sleep(self):
+        """ Sleep between docker operations. """
+        # pylint: disable=no-self-use
+        time.sleep(120)
+
+
 def pool_base_get(rest, product):
     """ Return appropriate pool manager. """
 
@@ -155,6 +176,8 @@ def pool_base_get(rest, product):
         return FakePool(rest, product)
     elif product == "docker":
         return DockerPool(rest, product)
+    elif product == "kvm":
+        return KvmPool(rest, product)
     else:
         raise ValueError("unsupported product %s" % product)
 

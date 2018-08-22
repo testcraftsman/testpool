@@ -17,7 +17,7 @@ uses KVM hypervisors.
 Simulation Demonstration 
 ------------------------
 
-Installation
+Testpool Installation
 ------------
 
 We'll install Testpool from Debian.
@@ -64,6 +64,10 @@ We'll install Testpool from Debian.
    
        http://127.0.0.1:8000/testpool/view/dashboard
 
+     Alternatively, *tpl-demo* can be run with *--product docker*. Don't run
+     tpl-demo if going through the next section in the **Short Tour**.
+
+
 A Short Tour
 ------------
 
@@ -79,7 +83,7 @@ manage several hypervisors. Testpool supports KVM which is required for
 this demonstration. 
 
 To expedite this guide, Testpool content is installed on the KVM hypervisor.
-For final installation, Testpool can be installed either the hypervisor or a
+For final installation, Testpool can be installed either on the hypervisor or a
 separate system. The differences will be identified during the installation
 steps.
 
@@ -106,7 +110,7 @@ For this quick start guide, we'll need a single VM named test.template on
 the hypervisor which is off and ready to be cloned.  When the VMs starts
 it must use DHCP to acquire its IP address. What the VM is running is
 not important and there are good instructions on the internet for setting up a
-KVM hypervisor and creating a VM.  For installing KVM on Ubuntu 16.04, refer
+KVM hypervisor and creating a VM.  For installing KVM on Ubuntu 18.04, refer
 to this site https://help.ubuntu.com/community/KVM/Installation. Once complete, you will need the following information:
 
   - user and password that can install VMs. This is the user that is part of
@@ -115,17 +119,17 @@ to this site https://help.ubuntu.com/community/KVM/Installation. Once complete, 
     hypervisor
 
 For the rest of this guide, we'll assume the user tadmin with password 
-'password'. Since Testpool is installed on the hypervisor, the IP address used is
-localhost.
+'password'. Since Testpool is installed on the hypervisor, the IP address used
+is localhost.
 
 Now a single VM is required which represents the template that is managed
 and cloned by Testpool. Using virt-manager, these instructions will create
 an Ubuntu 16.04 server VM.
 
   #. sudo apt-get install virt-manager
-  #. Run virt-manager
-  #. From File, choose *Add Connection*.
-  #. If applicable, choose *Connect to remote host*
+  #. Run **virt-manager**
+  #. From File, choose **Add Connection**.
+  #. If applicable, choose **Connect to remote host**
   #. Enter admin for **Username** and IP address for the **Hostname**. This may
      be either localhost or the IP address of the KVM hypervisor.
      The default ssh method will probably work.
@@ -133,34 +137,11 @@ an Ubuntu 16.04 server VM.
   #. Select Hypervisor in the virt-manager,
   #. Choose **Create a new virtual manager**.
   #. Choose **Network Install (HTTP, FTP or NFS)** then Forward.
-  #. For URL, enter **http://us.archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/** The URL changes periodically, check the Ubuntu site for the 
+  #. For URL, enter **http://us.archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/** The URL changes periodically, check the Ubuntu site for the 
      latest valid links.
-
-
-Testpool Installation
----------------------
-
-We'll install Testpool from source.
-
-  #. Download Testpool from github release area::
-
-       wget https://github.com/testcraftsman/testpool/archive/v0.0.7.tar.gz
-       tar -xf testpool-0.0.7.tar.gz
-
-  #. Install several required packages::
-
-       cd testpool
-       cat requirements.system | sudo xargs apt-get install -y
-       sudo apt-file update
-       sudo pip install -qr requirements.txt
-
-  #. Run Testpool database. In a shell run::
-
-       ./bin/tpl-db runserver -v 3
-
-  #. In a second shell, run the Testpool daemon::
-
-       ./bin/tpl-daemon -v
+  #. Choose appropriate RAM and CPU. For a demo, select 512 and 1 CPU.
+  #. Create a disk with 5 GiB of space.
+  #. Then select Finish fro the network setup.
 
 A Short Tour
 ------------

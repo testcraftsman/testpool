@@ -1,2 +1,2 @@
-# (c) 2015 Mark Hamilton, <mark.lee.hamilton@gmail.com>
+# Copyright (c) 2015-2018 Mark Hamilton, All rights reserved
 """ Hold general testbed content.  """
