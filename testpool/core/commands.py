@@ -10,7 +10,6 @@ import argparse
 import traceback
 import unittest
 import testpool.settings
-import testpool.version
 from testpool.core import logger
 from testpool.core import pool
 from testpool.core import resource
@@ -28,8 +27,6 @@ def argparser(progname):
     """ Create top level argument parser. """
 
     arg_parser = argparse.ArgumentParser(prog=progname)
-    arg_parser.add_argument('--version', action="version",
-                            version=testpool.version.PACKAGE_VERSION)
     arg_parser.add_argument('--verbose', '-v', required=False, action="count",
                             help="enable debug verbosity.")
     return arg_parser

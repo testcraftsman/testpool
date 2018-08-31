@@ -4,7 +4,7 @@ include defs.mk
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/testpool
 PROJECT=testpool
-export VERSION:=`python ./setup.py --version`
+export VERSION:=`git describe --abbrev=0 --tag`
 
 ##
 # Use find when __init__.py does not exist in the directory.
@@ -39,16 +39,13 @@ clean::
 	rm -rf ../testpool_* testpool-* deb_dist testpool.egg-info
 	find . -name '*.pyc' -delete
 
-testpool/version.py: debian/changelog
-	dpkg-parsechangelog | sed -rne 's,^Version: (.*),PACKAGE_VERSION="\1", p' > testpool/version.py
-
 .PHONY: rpm.build
 rpm.build:
 	python setup.py bdist_rpm --post-install=rpm/postinstall \
                                   --pre-uninstall=rpm/preuninstall
 
 .PHONY: deb.source
-deb.source: testpool/version.py
+deb.source:
 	python setup.py -q --command-packages=stdeb.command sdist_dsc
 
 .PHONY: deb.build

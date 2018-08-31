@@ -3,15 +3,16 @@ Used for installation.
 """
 
 import os
+import subprocess
 from setuptools import setup, find_packages
-import testpool.version
 
 AUTHOR = "Mark Hamilton"
 AUTHOR_EMAIL = "mark.lee.hamilton@gmail.com"
 
 ##
 # Figure out version based on debian changelog
-VERSION = testpool.version.PACKAGE_VERSION
+CMD = "git describe --abbrev=0 --tag"
+VERSION = subprocess.check_output(CMD, shell=True).replace("\n", "")
 ##
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
