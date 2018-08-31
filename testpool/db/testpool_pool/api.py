@@ -185,8 +185,6 @@ def pool_add(request, pool_name):
 
     LOGGER.info("testpool_pool.api.pool_add %s", pool_name)
 
-    print "MARK: 1"
-
     if request.method != 'POST':
         msg = "pool_add method %s unsupported" % request.method
         logging.error(msg)
@@ -208,21 +206,17 @@ def pool_add(request, pool_name):
         msg = "pool_add requires product"
         return JsonResponse({"msg": msg}, status=404)
 
-    print "MARK: 2"
     resource_max = request.GET["resource_max"]
     template_name = request.GET["template_name"]
     connection = request.GET["connection"]
     product = request.GET["product"]
 
-    print "MARK: 2", product
     try:
         resource_max = int(resource_max)
         pool1 = testpool.core.algo.pool_add(connection, product, pool_name,
                                             resource_max, template_name)
-        print "MARK: 3", product, pool1
         serializer = PoolSerializer(pool1)
 
-        print "MARK: 4", product, pool1
         return JSONResponse(serializer.data)
     except Pool.DoesNotExist, arg:
         logging.exception(arg)
@@ -231,6 +225,5 @@ def pool_add(request, pool_name):
         return JsonResponse({"msg": msg}, status=403)
     except Exception, arg:
         logging.exception(arg)
-        print "MARK: 4", product, pool1, arg
         logging.error(arg)
         return JsonResponse({"msg": arg}, status=500)
