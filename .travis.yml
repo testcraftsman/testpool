@@ -14,8 +14,11 @@ script:
 - make deb.build
 deploy:
   provider: releases
+  skip_cleanup: true
+  file_glob: true
   api_key:
     secure: 4EaLCAa2RHaxPQuWfHSt1p8HqYKSvolQhb9L+wxEll1C6DL/tiMI719gIxeZE5YZtqadIExEwTynRyQ4lBIB2sZBlVD5Zit2IeYBDuJxGFHNqEYptrFZyVmsylzmA8ca0a2k5eBKfbTkXLWBJ8X0JMXvxOZHg2FDucegUKUbY1VrawLCieAtpaDMJjRK1d/NvscKnqyD6Bj9d1mOmDL8n8EOj9IqtsPLeXoifmKTQc1mumxutI0CLOQkue58W8yo1Aiv5FqYzPQXiQACPDqsX1QATDCQPmFUF+8EXtoP99pan6pP/C8YClo1WK4xUd5IGkGSJSGRfxLZzsQWJh3uzJyX8UMCQWGhNH3YPk9NiHJTjxIyYqeuIDN3MCPkCyHfgshKiuLZRx9UUARPapDpKfOpUpSl2bFM1iZ342oUVJX0g6M9wUVptVR2klznPlVcP8+BTcLfh6IZ9c+BfgjYVlWpZcpfdwzvsippgh60HOyFsJbQP8jn8riJ12gYmr3JfYjdFSA83u2K4NTvQihkFGI2hn18revO8XaaZPbv2rV7N1rhdnjsoYqzOBtKdR3oMJ4ElWN+W0iO6BTEmEkzAzTInUIEN48uGYya+r27lPij9RwQC62ToBveFsI9ioJCfrItpKJLv2+frYaiJRfEXo9/zn79NlK4gMysaoNCOnY=
   file: deb_dist/*.deb
   on:
     repo: testcraftsman/testpool
+    tags: true
