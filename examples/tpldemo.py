@@ -60,6 +60,7 @@ class Rest(object):
 
     def pool_remove(self, name, immediate=False):
         """ Remove a pool. """
+
         fmt = self.url + "pool/remove/%s?immediate=%s"
         url = fmt % (name, immediate)
         rtc = requests.delete(url)
