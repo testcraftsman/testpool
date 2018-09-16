@@ -227,3 +227,106 @@ def pool_add(request, pool_name):
         logging.exception(arg)
         logging.error(arg)
         return JsonResponse({"msg": arg}, status=500)
+
+@csrf_exempt
+def pool_release_all(request):
+    """ Release all resources. """
+
+    LOGGER.info("testpool_pool.api.pool_release_all")
+
+    if request.method == 'GET':
+        try:
+            rsrc = Resource.objects.get(id=rsrc_id)
+        except Resource.DoesNotExist:
+            msg = "pool for %s not found" % rsrc_id
+            logging.error(msg)
+            return JsonResponse({"msg": msg}, status=403)
+
+        if rsrc.status != Resource.RESERVED:
+            raise PermissionDenied("Resource %s is not reserved" % rsrc_id)
+
+        ##
+        # assert rsrc defined.
+        rsrc.transition(Resource.PENDING, Resource.ACTION_DESTROY, 1)
+        ##
+        content = {"detail": "Resource %s released" % rsrc_id}
+
+        return JSONResponse(content)
+    else:
+        msg = "pool_release method %s unsupported" % request.method
+        logging.error(msg)
+        return JsonResponse({"msg": msg}, status=405)
+
+
+@csrf_exempt
+def pool_remove(request, pool_name):
+    """ Release Resource. """
+
+    LOGGER.info("testpool_pool.api.pool_remove %s", pool_name)
+
+    if request.method == 'DELETE':
+        immediate = request.GET.get("immediate", False)
+        try:
+            testpool.core.algo.pool_remove(pool_name, immediate)
+            content = {"detail": "pool %s removed" % pool_name}
+            return JSONResponse(content)
+        except Pool.DoesNotExist:
+            msg = "pool %s not found" % pool_name
+            logging.error(msg)
+            return JsonResponse({"msg": msg}, status=403)
+        except Exception as arg:
+            logging.error(arg)
+            return JsonResponse({"msg": arg}, status=500)
+    else:
+        msg = "pool_release method %s unsupported" % request.method
+        logging.error(msg)
+        return JsonResponse({"msg": msg}, status=405)
+
+
+@csrf_exempt
+def pool_add(request, pool_name):
+    """ Add a pool .  """
+
+    LOGGER.info("testpool_pool.api.pool_add %s", pool_name)
+
+    if request.method != 'POST':
+        msg = "pool_add method %s unsupported" % request.method
+        logging.error(msg)
+        return JsonResponse({"msg": msg}, status=405)
+
+    if "resource_max" not in request.GET:
+        msg = "pool_add requires resource_max"
+        return JsonResponse({"msg": msg}, status=404)
+
+    if "template_name" not in request.GET:
+        msg = "pool_add requires template_name"
+        return JsonResponse({"msg": msg}, status=404)
+
+    if "connection" not in request.GET:
+        msg = "pool_add requires connection"
+        return JsonResponse({"msg": msg}, status=404)
+
+    if "product" not in request.GET:
+        msg = "pool_add requires product"
+        return JsonResponse({"msg": msg}, status=404)
+
+    resource_max = request.GET["resource_max"]
+    template_name = request.GET["template_name"]
+    connection = request.GET["connection"]
+    product = request.GET["product"]
+
+    try:
+        resource_max = int(resource_max)
+        pool1 = testpool.core.algo.pool_add(connection, product, pool_name,
+                                            resource_max, template_name)
+        serializer = PoolSerializer(pool1)
+
+        return JSONResponse(serializer.data)
+    except Pool.DoesNotExist, arg:
+        logging.exception(arg)
+        msg = "pool %s not found" % pool_name
+        logging.error(msg)
+        return JsonResponse({"msg": msg}, status=403)
+    except Exception, arg:
+        logging.exception(arg)
+        return JsonResponse({"msg": str(arg)}, status=500)
