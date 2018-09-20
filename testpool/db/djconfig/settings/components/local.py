@@ -15,10 +15,11 @@ DEFAULT = {
     'NAME': sqllite_path,
 }
 
-
-if "test" not in sys.argv:
+if "test" not in sys.argv and not os.path.exists(CONF):
     DATABASES["local"] = DEFAULT
     # Assume if default is defined that this application has been installed
     # and so is a release.
     if "default" not in DATABASES:
         DATABASES["default"] = DEFAULT
+    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+    print "MARK: local 2", STATIC_ROOT
