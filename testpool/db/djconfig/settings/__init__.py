@@ -6,7 +6,7 @@ include(
     'components/global.py',
 
     ##
-    # Local should be after global.py in order to override production 
+    # Local should be after global.py in order to override production
     # values.
     optional('components/local.py'),
     'components/end.py',
