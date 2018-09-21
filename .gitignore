@@ -19,3 +19,4 @@ t.sh
 .coverage
 .coveragerc
 #*.py#
+testpool/db/static

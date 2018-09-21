@@ -17,3 +17,4 @@ include bin/tpl-db
 include etc/logrotate.d/testpool
 include debian/python-testpool.postinst
 include debian/python-testpool.prerm
+exclude testpool/db/djconfig/settings/components/local.py

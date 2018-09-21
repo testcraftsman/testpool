@@ -37,6 +37,8 @@ def walkdir(dirname):
 
 STATIC_FILES = [(item.split("static")[1], [item])
                 for item in walkdir("testpool/db/static")]
+STATIC_FILES = [(os.path.split(item[0])[0], item[1])
+                for item in STATIC_FILES]
 STATIC_FILES = [("/var/lib/testpool/static" + item[0], item[1])
                 for item in STATIC_FILES]
 

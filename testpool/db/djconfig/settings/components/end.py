@@ -10,6 +10,3 @@ https://docs.djangoproject.com/en/1.8/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.8/ref/settings/
 """
-
-print "MARK: end", STATIC_ROOT
-
