@@ -228,6 +228,7 @@ def pool_add(request, pool_name):
         logging.error(arg)
         return JsonResponse({"msg": arg}, status=500)
 
+
 @csrf_exempt
 def pool_release_all(request):
     """ Release all resources. """
