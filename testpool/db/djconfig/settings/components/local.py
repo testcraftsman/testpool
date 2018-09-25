@@ -20,4 +20,6 @@ if "test" not in sys.argv:
     # and so is a release.
     if "default" not in DATABASES:
         DATABASES["default"] = DEFAULT
-    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+print "MARK: static", STATIC_ROOT
